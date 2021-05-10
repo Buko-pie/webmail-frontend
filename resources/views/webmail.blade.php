@@ -28,11 +28,11 @@
                     </button>
                     
                 </div>
-            </div>
-            
+            </div> 
         </div>
-      </nav>
-      <div class="flex p-3 hover:bg-gray-300 border border-l-0 border-r-0 border-gray-300">
+    </nav>
+    {{-- <inbox-component /> --}}
+    <div class="flex p-3 hover:bg-gray-300 border border-l-0 border-r-0 border-gray-300">
         <div class="grid grid-cols-3 gap-4 w-full">
             <div class="flex">
                 <input type="checkbox" class="form-checkbox mr-1 h-5 w-5 text-gray-600">
@@ -41,6 +41,6 @@
             <p>Mail 1</p>
             <p class="flex justify-end">May 1</p>
         </div>
-      </div>
+    </div>
 </div>
 @endsection

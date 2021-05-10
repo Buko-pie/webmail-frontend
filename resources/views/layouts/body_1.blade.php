@@ -19,15 +19,14 @@
     </style>
 </head>
 <body>
-    <div id="webmail">
+    <div id="app">
         @include('navbars.navbar_1')
         <div class="flex">
-            @include('navbars.sidebar_1')
             <main class="w-full">
                 @yield('content')
             </main>
         </div>
-        <webmail-component />
+        <example-component />
     </div>
 </body>
 </html>

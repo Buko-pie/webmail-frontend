@@ -3,7 +3,7 @@
     <div class="relative flex items-center justify-between h-16">
       <div class="flex items-center">
         <!-- Mobile menu button-->
-        <button type="button" class="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+        <button id="toggle_sidbar" @click="toggle_sidebar = !toggle_sidebar" type="button" class="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
           <span class="sr-only">Open main menu</span>
           <!--
             Icon when menu is closed.
@@ -128,7 +128,6 @@
             </svg>
           </button>
       </div>
-
     </div>
   </div>
 </nav>

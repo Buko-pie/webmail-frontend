@@ -17,3 +17,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/webmail', [WebmailController::class, 'index'])->name('webmail');
+Route::get('/test', [WebmailController::class, 'test'])->name('test');
