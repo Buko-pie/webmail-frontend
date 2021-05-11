@@ -1,7 +1,6 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./node_modules/@syncfusion/ej2-base/index.js":
 /*!****************************************************!*\
   !*** ./node_modules/@syncfusion/ej2-base/index.js ***!
   \****************************************************/
@@ -46547,8 +46546,6 @@ var GridPlugin = {
 /***/ }),
 
 /***/ "./node_modules/axios/index.js":
-/*!*************************************!*\
-  !*** ./node_modules/axios/index.js ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
