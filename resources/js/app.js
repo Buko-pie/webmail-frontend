@@ -14,5 +14,7 @@ import { createApp } from 'vue';
 // app.component("webmail-component", require("./components/WebmailComponent.vue").default);
 app.component("example-component", require("./components/ExampleComponent.vue").default);
 
+// app.component("vue-grid-component", require("./components/ExampleComponent.vue").default);
+
 // app.mount("#webmail");
 app.mount("#app");
