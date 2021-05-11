@@ -21,12 +21,12 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
+        <sidebar-component />
         <div class="flex">
             <main class="w-full">
                 @yield('content')
             </main>
         </div>
-        <example-component />
     </div>
 </body>
 </html>

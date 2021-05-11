@@ -1,6 +1,13 @@
 <template>
   <div id="app">
-    <ejs-grid :dataSource="localData"></ejs-grid>
+    <ejs-grid :dataSource="localData">
+      <e-columns>
+        <e-column type='checkbox' :allowFiltering='false' :allowSorting='false' width='60'></e-column>
+        <e-column field='sender' headerText=''></e-column>
+        <e-column field='message' headerText=''></e-column>
+        <e-column field='date' headerText='' text-align="Right"></e-column>
+      </e-columns>
+    </ejs-grid>
   </div>
 </template>
 
@@ -13,11 +20,11 @@ export default{
   data(){
     return{
       localData: [
-        { OrderID: 12345, CustomerID: "bruh", Price: 12.34 },
-        { OrderID: 12346, CustomerID: "test", Price: 5 },
-        { OrderID: 12347, CustomerID: "ee", Price: 14.34 },
-        { OrderID: 12348, CustomerID: "bwruh", Price: 22.34 },
-        { OrderID: 12349, CustomerID: "bruwah", Price: 15.34 },
+        { sender: "Gmail", message: "test1", date: "May 1" },
+        { sender: "Test1", message: "test2", date: "May 2" },
+        { sender: "John Doe", message: "test3", date: "May 3" },
+        { sender: "Emily Doe", message: "test4", date: "May 4" },
+        { sender: "James Baxter", message: "test5", date: "May 5" },
       ]
     }
   },

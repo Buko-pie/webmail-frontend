@@ -22,7 +22,9 @@
         "vue-template-compiler": "^2.6.11"
     },
     "dependencies": {
+        "@syncfusion/ej2-vue-buttons": "^19.1.54",
         "@syncfusion/ej2-vue-grids": "^19.1.59",
+        "@syncfusion/ej2-vue-navigations": "^19.1.59",
         "core-js": "^3.6.5",
         "vue": "^2.6.11"
     }

@@ -10677,6 +10677,487 @@ function setHiddenInput(proxy, wrap) {
 
 /***/ }),
 
+/***/ "./node_modules/@syncfusion/ej2-buttons/src/radio-button/radio-button.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/@syncfusion/ej2-buttons/src/radio-button/radio-button.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "RadioButton": () => (/* binding */ RadioButton)
+/* harmony export */ });
+/* harmony import */ var _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-base */ "./node_modules/@syncfusion/ej2-base/index.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./../common/common */ "./node_modules/@syncfusion/ej2-buttons/src/common/common.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+
+var LABEL = 'e-label';
+var RIPPLE = 'e-ripple-container';
+var RTL = 'e-rtl';
+var WRAPPER = 'e-radio-wrapper';
+var ATTRIBUTES = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
+/**
+ * The RadioButton is a graphical user interface element that allows you to select one option from the choices.
+ * It contains checked and unchecked states.
+ * ```html
+ * <input type="radio" id="radio"/>
+ * <script>
+ * var radioObj = new RadioButton({ label: "Default" });
+ * radioObj.appendTo("#radio");
+ * </script>
+ * ```
+ */
+var RadioButton = /** @class */ (function (_super) {
+    __extends(RadioButton, _super);
+    /**
+     * Constructor for creating the widget
+     *
+     * @private
+     * @param {RadioButtonModel} options - Specifies Radio button model
+     * @param {string | HTMLInputElement} element - Specifies target element
+     */
+    function RadioButton(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.isFocused = false;
+        return _this;
+    }
+    RadioButton_1 = RadioButton;
+    RadioButton.prototype.changeHandler = function (event) {
+        this.checked = true;
+        this.dataBind();
+        var value = this.element.getAttribute('value');
+        value = this.isVue && value ? this.element.value : this.value;
+        this.trigger('change', { value: value, event: event });
+        if (this.tagName === 'EJS-RADIOBUTTON') {
+            event.stopPropagation();
+        }
+    };
+    RadioButton.prototype.updateChange = function () {
+        var input;
+        var instance;
+        var radioGrp = this.getRadioGroup();
+        for (var i = 0; i < radioGrp.length; i++) {
+            input = radioGrp[i];
+            if (input !== this.element) {
+                instance = (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.getInstance)(input, RadioButton_1);
+                instance.checked = false;
+                if (this.tagName === 'EJS-RADIOBUTTON') {
+                    instance.angularValue = this.value;
+                }
+            }
+        }
+    };
+    /**
+     * Destroys the widget.
+     *
+     * @returns {void}
+     */
+    RadioButton.prototype.destroy = function () {
+        var _this = this;
+        var radioWrap = this.element.parentElement;
+        _super.prototype.destroy.call(this);
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            if (radioWrap.parentNode) {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            }
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.detach)(radioWrap);
+            this.element.checked = false;
+            ['name', 'value', 'disabled'].forEach(function (key) {
+                _this.element.removeAttribute(key);
+            });
+        }
+        else {
+            ['role', 'aria-checked', 'class'].forEach(function (key) {
+                radioWrap.removeAttribute(key);
+            });
+            radioWrap.innerHTML = '';
+        }
+    };
+    RadioButton.prototype.focusHandler = function () {
+        this.isFocused = true;
+    };
+    RadioButton.prototype.focusOutHandler = function () {
+        var label = this.getLabel();
+        if (label) {
+            label.classList.remove('e-focus');
+        }
+    };
+    RadioButton.prototype.getModuleName = function () {
+        return 'radio';
+    };
+    /**
+     * To get the value of selected radio button in a group.
+     *
+     * @method getSelectedValue
+     * @returns {string} - Selected Value
+     */
+    RadioButton.prototype.getSelectedValue = function () {
+        var input;
+        var radioGrp = this.getRadioGroup();
+        for (var i = 0, len = radioGrp.length; i < len; i++) {
+            input = radioGrp[i];
+            if (input.checked) {
+                return input.value;
+            }
+        }
+        return '';
+    };
+    RadioButton.prototype.getRadioGroup = function () {
+        return document.querySelectorAll('input.e-radio[name="' + this.element.getAttribute('name') + '"]');
+    };
+    /**
+     * Gets the properties to be maintained in the persistence state.
+     *
+     * @private
+     * @returns {string} - Persist Data
+     */
+    RadioButton.prototype.getPersistData = function () {
+        return this.addOnPersist(['checked']);
+    };
+    RadioButton.prototype.getLabel = function () {
+        if (this.element) {
+            return this.element.nextElementSibling;
+        }
+        else {
+            return null;
+        }
+    };
+    RadioButton.prototype.initialize = function () {
+        if ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
+        this.initWrapper();
+        this.updateHtmlAttribute();
+        if (this.name) {
+            this.element.setAttribute('name', this.name);
+        }
+        var value = this.element.getAttribute('value');
+        if (this.isVue && value && value === this.value) {
+            this.checked = true;
+        }
+        if (this.isVue ? this.value && !value : this.value) {
+            this.element.setAttribute('value', this.value);
+        }
+        if (this.checked) {
+            this.element.checked = true;
+        }
+        if (this.disabled) {
+            this.setDisabled();
+        }
+    };
+    RadioButton.prototype.initWrapper = function () {
+        var rippleSpan;
+        var wrapper = this.element.parentElement;
+        if (!wrapper.classList.contains(WRAPPER)) {
+            wrapper = this.createElement('div', { className: WRAPPER });
+            this.element.parentNode.insertBefore(wrapper, this.element);
+        }
+        var label = this.createElement('label', { attrs: { for: this.element.id } });
+        wrapper.appendChild(this.element);
+        wrapper.appendChild(label);
+        if (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isRippleEnabled) {
+            rippleSpan = this.createElement('span', { className: (RIPPLE) });
+            label.appendChild(rippleSpan);
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.rippleEffect)(rippleSpan, {
+                duration: 400,
+                isCenterRipple: true
+            });
+        }
+        wrapper.classList.add('e-wrapper');
+        if (this.enableRtl) {
+            label.classList.add(RTL);
+        }
+        if (this.cssClass) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([label], this.cssClass.split(' '));
+        }
+        if (this.label) {
+            this.setText(this.label);
+        }
+    };
+    RadioButton.prototype.keyUpHandler = function () {
+        if (this.isFocused) {
+            this.getLabel().classList.add('e-focus');
+        }
+    };
+    RadioButton.prototype.labelRippleHandler = function (e) {
+        var ripple = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        (0,_common_common__WEBPACK_IMPORTED_MODULE_1__.rippleMouseHandler)(e, ripple);
+    };
+    RadioButton.prototype.formResetHandler = function () {
+        this.checked = this.initialCheckedValue;
+        if (this.initialCheckedValue) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.attributes)(this.element, { 'checked': 'true' });
+        }
+    };
+    /**
+     * Called internally if any of the property value changes.
+     *
+     * @private
+     * @param {RadioButtonModel} newProp - Specifies New Properties
+     * @param {RadioButtonModel} oldProp - Specifies Old Properties
+     * @returns {void}
+     */
+    RadioButton.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var label = this.getLabel();
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'checked':
+                    if (newProp.checked) {
+                        this.updateChange();
+                    }
+                    this.element.checked = newProp.checked;
+                    break;
+                case 'disabled':
+                    if (newProp.disabled) {
+                        this.setDisabled();
+                        this.unWireEvents();
+                    }
+                    else {
+                        this.element.disabled = false;
+                        this.wireEvents();
+                    }
+                    break;
+                case 'cssClass':
+                    if (oldProp.cssClass) {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([label], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([label], newProp.cssClass.split(' '));
+                    }
+                    break;
+                case 'enableRtl':
+                    if (newProp.enableRtl) {
+                        label.classList.add(RTL);
+                    }
+                    else {
+                        label.classList.remove(RTL);
+                    }
+                    break;
+                case 'label':
+                    this.setText(newProp.label);
+                    break;
+                case 'labelPosition':
+                    if (newProp.labelPosition === 'Before') {
+                        label.classList.add('e-right');
+                    }
+                    else {
+                        label.classList.remove('e-right');
+                    }
+                    break;
+                case 'name':
+                    this.element.setAttribute('name', newProp.name);
+                    break;
+                case 'value':
+                    if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(this.htmlAttributes) && this.htmlAttributes.value) {
+                        break;
+                    }
+                    this.element.setAttribute('value', newProp.value);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttribute();
+                    break;
+            }
+        }
+    };
+    /**
+     * Initialize checked Property, Angular and React and Unique ID support.
+     *
+     * @private
+     * @returns {void}
+     */
+    RadioButton.prototype.preRender = function () {
+        var element = this.element;
+        this.formElement = (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.closest)(this.element, 'form');
+        this.tagName = this.element.tagName;
+        element = (0,_common_common__WEBPACK_IMPORTED_MODULE_1__.wrapperInitialize)(this.createElement, 'EJS-RADIOBUTTON', 'radio', element, WRAPPER, 'radio');
+        this.element = element;
+        if (this.element.getAttribute('type') !== 'radio') {
+            this.element.setAttribute('type', 'radio');
+        }
+        if (!this.element.id) {
+            this.element.id = (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.getUniqueID)('e-' + this.getModuleName());
+        }
+        if (this.tagName === 'EJS-RADIOBUTTON') {
+            var formControlName = this.element.getAttribute('formcontrolname');
+            if (formControlName) {
+                this.setProperties({ 'name': formControlName }, true);
+                this.element.setAttribute('name', formControlName);
+            }
+        }
+    };
+    /**
+     * Initialize the control rendering
+     *
+     * @private
+     * @returns {void}
+     */
+    RadioButton.prototype.render = function () {
+        this.initialize();
+        if (!this.disabled) {
+            this.wireEvents();
+        }
+        this.renderComplete();
+    };
+    RadioButton.prototype.setDisabled = function () {
+        this.element.disabled = true;
+    };
+    RadioButton.prototype.setText = function (text) {
+        var label = this.getLabel();
+        var textLabel = label.getElementsByClassName(LABEL)[0];
+        if (textLabel) {
+            textLabel.textContent = text;
+        }
+        else {
+            text = (this.enableHtmlSanitizer) ? _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.SanitizeHtmlHelper.sanitize(text) : text;
+            textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
+            label.appendChild(textLabel);
+        }
+        if (this.labelPosition === 'Before') {
+            this.getLabel().classList.add('e-right');
+        }
+        else {
+            this.getLabel().classList.remove('e-right');
+        }
+    };
+    RadioButton.prototype.updateHtmlAttribute = function () {
+        if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (ATTRIBUTES.indexOf(key) > -1) {
+                    var wrapper = this.element.parentElement;
+                    if (key === 'class') {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([wrapper], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'title' || key === 'style') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
+        }
+    };
+    RadioButton.prototype.unWireEvents = function () {
+        var label = this.getLabel();
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.element, 'change', this.changeHandler);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.element, 'focus', this.focusHandler);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
+        var rippleLabel = label.getElementsByClassName(LABEL)[0];
+        if (rippleLabel) {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
+        }
+        if (this.formElement) {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+    };
+    RadioButton.prototype.wireEvents = function () {
+        var label = this.getLabel();
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(this.element, 'change', this.changeHandler, this);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(this.element, 'focus', this.focusHandler, this);
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
+        var rippleLabel = label.getElementsByClassName(LABEL)[0];
+        if (rippleLabel) {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+        }
+        if (this.formElement) {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
+    };
+    /**
+     * Click the RadioButton element
+     * its native method
+     *
+     * @public
+     * @returns {void}
+     */
+    RadioButton.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to RadioButton
+     * its native method
+     *
+     * @public
+     * @returns {void}
+     */
+    RadioButton.prototype.focusIn = function () {
+        this.element.focus();
+    };
+    var RadioButton_1;
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], RadioButton.prototype, "change", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], RadioButton.prototype, "created", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], RadioButton.prototype, "checked", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('')
+    ], RadioButton.prototype, "cssClass", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], RadioButton.prototype, "disabled", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('')
+    ], RadioButton.prototype, "label", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('After')
+    ], RadioButton.prototype, "labelPosition", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('')
+    ], RadioButton.prototype, "name", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('')
+    ], RadioButton.prototype, "value", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], RadioButton.prototype, "enableHtmlSanitizer", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)({})
+    ], RadioButton.prototype, "htmlAttributes", void 0);
+    RadioButton = RadioButton_1 = __decorate([
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.NotifyPropertyChanges
+    ], RadioButton);
+    return RadioButton;
+}(_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Component));
+
+
+
+/***/ }),
+
 /***/ "./node_modules/@syncfusion/ej2-data/src/adaptors.js":
 /*!***********************************************************!*\
   !*** ./node_modules/@syncfusion/ej2-data/src/adaptors.js ***!
@@ -39223,6 +39704,751 @@ var Input;
 
 /***/ }),
 
+/***/ "./node_modules/@syncfusion/ej2-navigations/src/sidebar/sidebar.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/@syncfusion/ej2-navigations/src/sidebar/sidebar.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Sidebar": () => (/* binding */ Sidebar)
+/* harmony export */ });
+/* harmony import */ var _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-base */ "./node_modules/@syncfusion/ej2-base/index.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+var CONTROL = 'e-control';
+var ROOT = 'e-sidebar';
+var DOCKER = 'e-dock';
+var CLOSE = 'e-close';
+var OPEN = 'e-open';
+var TRASITION = 'e-transition';
+var DEFAULTBACKDROP = 'e-sidebar-overlay';
+var CONTEXTBACKDROP = 'e-backdrop';
+var RTL = 'e-rtl';
+var RIGHT = 'e-right';
+var LEFT = 'e-left';
+var OVER = 'e-over';
+var PUSH = 'e-push';
+var SLIDE = 'e-slide';
+var VISIBILITY = 'e-visibility';
+var MAINCONTENTANIMATION = 'e-content-animation';
+var DISABLEANIMATION = 'e-disable-animation';
+var CONTEXT = 'e-sidebar-context';
+var SIDEBARABSOLUTE = 'e-sidebar-absolute';
+/**
+ * Sidebar is an expandable or collapsible
+ * component that typically act as a side container to place the primary or secondary content alongside of the main content.
+ * ```html
+ * <aside id="sidebar">
+ * </aside>
+ * ```
+ * ```typescript
+ * <script>
+ *   let sidebarObject: Sidebar = new Sidebar();
+ *   sidebarObject.appendTo("#sidebar");
+ * </script>
+ * ```
+ */
+var Sidebar = /** @class */ (function (_super) {
+    __extends(Sidebar, _super);
+    /* eslint-enable */
+    function Sidebar(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.isBlazor = false;
+        return _this;
+    }
+    Sidebar.prototype.preRender = function () {
+        this.isBlazor = ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isBlazor)() && this.isServerRendered);
+        if (!this.isBlazor) {
+            this.setWidth();
+        }
+    };
+    Sidebar.prototype.render = function () {
+        this.initialize();
+        this.wireEvents();
+        this.renderComplete();
+    };
+    Sidebar.prototype.initialize = function () {
+        this.setTarget();
+        this.addClass();
+        if (!this.isBlazor) {
+            this.setZindex();
+        }
+        if (this.enableDock) {
+            this.setDock();
+        }
+        if (this.isOpen) {
+            this.show();
+        }
+        else {
+            this.setMediaQuery();
+        }
+        this.checkType(true);
+        this.setType(this.type);
+        this.setCloseOnDocumentClick();
+        if (!this.isBlazor) {
+            this.setEnableRTL();
+        }
+        if (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
+    };
+    Sidebar.prototype.setEnableRTL = function () {
+        (this.enableRtl ? _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass : _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], RTL);
+    };
+    Sidebar.prototype.setTarget = function () {
+        this.targetEle = this.element.nextElementSibling;
+        this.sidebarEleCopy = this.element.cloneNode(true);
+        if (typeof (this.target) === 'string') {
+            this.setProperties({ target: document.querySelector(this.target) }, true);
+        }
+        if (this.target) {
+            this.target.insertBefore(this.element, this.target.children[0]);
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], SIDEBARABSOLUTE);
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.target], CONTEXT);
+            this.targetEle = this.getTargetElement();
+        }
+    };
+    Sidebar.prototype.getTargetElement = function () {
+        var siblingElement = this.element.nextElementSibling;
+        while (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(siblingElement)) {
+            if (!siblingElement.classList.contains(ROOT)) {
+                break;
+            }
+            siblingElement = siblingElement.nextElementSibling;
+        }
+        return siblingElement;
+    };
+    Sidebar.prototype.setCloseOnDocumentClick = function () {
+        if (this.closeOnDocumentClick) {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(document, 'mousedown touchstart', this.documentclickHandler, this);
+        }
+        else {
+            _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(document, 'mousedown touchstart', this.documentclickHandler);
+        }
+    };
+    Sidebar.prototype.setWidth = function () {
+        if (this.enableDock && this.position === 'Left') {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'width': this.setDimension(this.dockSize) });
+        }
+        else if (this.enableDock && this.position === 'Right') {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'width': this.setDimension(this.dockSize) });
+        }
+        else if (!this.enableDock) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'width': this.setDimension(this.width) });
+        }
+    };
+    Sidebar.prototype.setDimension = function (width) {
+        if (typeof width === 'number') {
+            width = (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.formatUnit)(width);
+        }
+        else if (typeof width === 'string') {
+            width = (width.match(/px|%|em/)) ? width : (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.formatUnit)(width);
+        }
+        else {
+            width = '100%';
+        }
+        return width;
+    };
+    Sidebar.prototype.setZindex = function () {
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'z-index': '' + this.zIndex });
+    };
+    Sidebar.prototype.addClass = function () {
+        var classELement = document.querySelector('.e-main-content');
+        if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(classELement || this.targetEle)) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([classELement || this.targetEle], [MAINCONTENTANIMATION]);
+        }
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        if (!this.isBlazor) {
+            if (!this.enableDock && this.type !== 'Auto') {
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], [VISIBILITY]);
+            }
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
+            this.element.classList.add(ROOT);
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], (this.position === 'Right') ? RIGHT : LEFT);
+            if (this.enableDock) {
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], DOCKER);
+            }
+            this.element.setAttribute('tabindex', this.tabIndex);
+        }
+        if (this.type === 'Auto' && !_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice) {
+            this.show();
+        }
+        else if (!this.isOpen) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], CLOSE);
+        }
+    };
+    Sidebar.prototype.checkType = function (val) {
+        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
+            this.type = 'Auto';
+        }
+        else {
+            if (!this.element.classList.contains(CLOSE) && !val) {
+                this.hide();
+            }
+        }
+    };
+    Sidebar.prototype.transitionEnd = function (e) {
+        this.setDock();
+        if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(e) && e.target === this.element) {
+            this.triggerChange();
+        }
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
+    };
+    Sidebar.prototype.destroyBackDrop = function () {
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        if (this.target && this.showBackdrop && sibling) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([sibling], CONTEXTBACKDROP);
+        }
+        else if (this.showBackdrop && this.modal) {
+            this.modal.style.display = 'none';
+            this.modal.outerHTML = '';
+            this.modal = null;
+        }
+    };
+    /* eslint-disable */
+    /**
+     * Hide the Sidebar component, if it is in an open state.
+     *
+     * @returns {void}
+     *
+     */
+    Sidebar.prototype.hide = function (e) {
+        var _this = this;
+        var closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(e),
+            event: (e || null)
+        };
+        if ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isBlazor)()) {
+            delete closeArguments.model;
+        }
+        this.trigger('close', closeArguments, function (observedcloseArgs) {
+            if (!observedcloseArgs.cancel) {
+                if (_this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (_this.element.classList.contains(OPEN) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([_this.element], CLOSE);
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([_this.element], OPEN);
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(_this.element, { 'width': (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.formatUnit)(_this.enableDock ? _this.dockSize : _this.width) });
+                _this.setType(_this.type);
+                var sibling = document.querySelector('.e-main-content') || _this.targetEle;
+                if (!_this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    sibling.style[_this.position === 'Left' ? 'marginLeft' : 'marginRight'] = '0px';
+                }
+                _this.destroyBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: false }, true);
+                if (_this.enableDock) {
+                    setTimeout(function () { return _this.setTimeOut(); }, 50);
+                }
+                _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
+            }
+        });
+    };
+    Sidebar.prototype.setTimeOut = function () {
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var elementWidth = this.element.getBoundingClientRect().width;
+        if (this.element.classList.contains(OPEN) && sibling) {
+            if (this.position === 'Left') {
+                sibling.style.marginLeft = this.setDimension(this.width === 'auto' ? elementWidth : this.width);
+            }
+            else {
+                sibling.style.marginRight = this.setDimension(this.width === 'auto' ? elementWidth : this.width);
+            }
+        }
+        else if (this.element.classList.contains(CLOSE) && sibling) {
+            if (this.position === 'Left') {
+                sibling.style.marginLeft = this.setDimension(this.dockSize === 'auto' ? elementWidth : this.dockSize);
+            }
+            else {
+                sibling.style.marginRight = this.setDimension(this.dockSize === 'auto' ? elementWidth : this.dockSize);
+            }
+        }
+    };
+    /* eslint-disable */
+    /**
+     * Shows the Sidebar component, if it is in closed state.
+     *
+     * @returns {void}
+     */
+    Sidebar.prototype.show = function (e) {
+        var _this = this;
+        var openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(e),
+            event: (e || null)
+        };
+        if ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isBlazor)()) {
+            delete openArguments.model;
+        }
+        this.trigger('open', openArguments, function (observedopenArgs) {
+            if (!observedopenArgs.cancel) {
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([_this.element], VISIBILITY);
+                if (_this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (_this.element.classList.contains(CLOSE) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([_this.element], [OPEN, TRASITION]);
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(_this.element, { 'transform': '' });
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([_this.element], CLOSE);
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(_this.element, { 'width': (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.formatUnit)(_this.width) });
+                _this.setType(_this.type);
+                _this.createBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: true }, true);
+                _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
+            }
+        });
+    };
+    Sidebar.prototype.setAnimation = function () {
+        if (this.animate) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], DISABLEANIMATION);
+        }
+        else {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], DISABLEANIMATION);
+        }
+    };
+    Sidebar.prototype.triggerChange = function () {
+        var changeArguments = { name: 'change', element: this.element };
+        this.trigger('change', changeArguments);
+    };
+    Sidebar.prototype.setDock = function () {
+        if (this.enableDock && this.position === 'Left' && !this.getState()) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'transform': 'translateX(' + -100 + '%) translateX(' + this.setDimension(this.dockSize) + ')' });
+        }
+        else if (this.enableDock && this.position === 'Right' && !this.getState()) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'transform': 'translateX(' + 100 + '%) translateX(' + '-' + this.setDimension(this.dockSize) + ')' });
+        }
+        if (this.element.classList.contains(CLOSE) && this.enableDock) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(this.element, { 'width': this.setDimension(this.dockSize) });
+        }
+    };
+    Sidebar.prototype.createBackDrop = function () {
+        if (this.target && this.showBackdrop && this.getState()) {
+            var sibling = document.querySelector('.e-main-content') || this.targetEle;
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([sibling], CONTEXTBACKDROP);
+        }
+        else if (this.showBackdrop && !this.modal && this.getState()) {
+            this.modal = this.createElement('div');
+            this.modal.className = DEFAULTBACKDROP;
+            this.modal.style.display = 'block';
+            document.body.appendChild(this.modal);
+        }
+    };
+    Sidebar.prototype.getPersistData = function () {
+        return this.addOnPersist(['type', 'position', 'isOpen']);
+    };
+    /**
+     * Returns the current module name.
+     *
+     * @returns {string} - returns module name.
+     * @private
+     *
+     */
+    Sidebar.prototype.getModuleName = function () {
+        return 'sidebar';
+    };
+    /**
+     * Shows or hides the Sidebar based on the current state.
+     *
+     * @returns {void}
+     */
+    Sidebar.prototype.toggle = function (e) {
+        if (this.element.classList.contains(OPEN)) {
+            this.hide();
+        }
+        else {
+            this.show();
+        }
+    };
+    Sidebar.prototype.getState = function () {
+        return this.element.classList.contains(OPEN) ? true : false;
+    };
+    Sidebar.prototype.setMediaQuery = function () {
+        if (this.mediaQuery) {
+            var media = false;
+            if (typeof (this.mediaQuery) === 'string') {
+                media = window.matchMedia(this.mediaQuery).matches;
+            }
+            else {
+                media = (this.mediaQuery).matches;
+            }
+            if (media && this.windowWidth !== window.innerWidth) {
+                this.show();
+            }
+            else if (this.getState() && this.windowWidth !== window.innerWidth) {
+                this.hide();
+            }
+        }
+    };
+    Sidebar.prototype.resize = function (e) {
+        if (this.type === 'Auto') {
+            if (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice) {
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], OVER);
+            }
+            else {
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], PUSH);
+            }
+        }
+        this.setMediaQuery();
+        if (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
+    };
+    Sidebar.prototype.documentclickHandler = function (e) {
+        if ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.closest)(e.target, '.' + CONTROL + '' + '.' + ROOT)) {
+            return;
+        }
+        this.hide(e);
+    };
+    Sidebar.prototype.enableGestureHandler = function (args) {
+        if (!this.isOpen && this.position === 'Left' && args.swipeDirection === 'Right' &&
+            (args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
+            this.show();
+        }
+        else if (this.isOpen && this.position === 'Left' && args.swipeDirection === 'Left') {
+            this.hide();
+        }
+        else if (this.isOpen && this.position === 'Right' && args.swipeDirection === 'Right') {
+            this.hide();
+        }
+        else if (!this.isOpen && this.position === 'Right' && args.swipeDirection === 'Left'
+            && (window.innerWidth - args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
+            this.show();
+        }
+    };
+    Sidebar.prototype.setEnableGestures = function () {
+        if (this.enableGestures) {
+            this.mainContentEle = new _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Touch(document.body, { swipe: this.enableGestureHandler.bind(this) });
+            this.sidebarEle = new _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Touch(this.element, { swipe: this.enableGestureHandler.bind(this) });
+        }
+        else {
+            if (this.mainContentEle && this.sidebarEle) {
+                this.mainContentEle.destroy();
+                this.sidebarEle.destroy();
+            }
+        }
+    };
+    Sidebar.prototype.wireEvents = function () {
+        this.setEnableGestures();
+        window.addEventListener('resize', this.resize.bind(this));
+    };
+    Sidebar.prototype.unWireEvents = function () {
+        window.removeEventListener('resize', this.resize.bind(this));
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.EventHandler.remove(document, 'mousedown touchstart', this.documentclickHandler);
+        if (this.mainContentEle) {
+            this.mainContentEle.destroy();
+        }
+        if (this.sidebarEle) {
+            this.sidebarEle.destroy();
+        }
+    };
+    /**
+     * Called internally if any of the property value changed.
+     *
+     * @param {SidebarModel} newProp - specifies newProp value.
+     * @param {SidebarModel} oldProp - specifies oldProp value.
+     * @returns {void}
+     * @private
+     *
+     */
+    Sidebar.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var isRendered = this.isServerRendered;
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'isOpen':
+                    if (this.isOpen) {
+                        this.show();
+                    }
+                    else {
+                        this.hide();
+                    }
+                    break;
+                case 'width':
+                    this.setWidth();
+                    if (!this.getState()) {
+                        this.setDock();
+                    }
+                    break;
+                case 'animate':
+                    this.setAnimation();
+                    break;
+                case 'type':
+                    this.checkType(false);
+                    (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], [VISIBILITY]);
+                    this.addClass();
+                    (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], this.type === 'Auto' ? (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice ? ['e-over'] :
+                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                    break;
+                case 'position':
+                    this.element.style.transform = '';
+                    this.setDock();
+                    if (sibling) {
+                        sibling.style[this.position === 'Left' ? 'marginRight' : 'marginLeft'] = '0px';
+                    }
+                    if (this.position === 'Right') {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], LEFT);
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], RIGHT);
+                    }
+                    else {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], RIGHT);
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], LEFT);
+                    }
+                    this.setType(this.type);
+                    break;
+                case 'showBackdrop':
+                    if (this.showBackdrop) {
+                        this.createBackDrop();
+                    }
+                    else {
+                        if (this.modal) {
+                            this.modal.style.display = 'none';
+                            this.modal.outerHTML = '';
+                            this.modal = null;
+                        }
+                    }
+                    break;
+                case 'target':
+                    if (typeof (this.target) === 'string') {
+                        this.setProperties({ target: document.querySelector(this.target) }, true);
+                    }
+                    if ((0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(this.target)) {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], SIDEBARABSOLUTE);
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([oldProp.target], CONTEXT);
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.setStyleAttribute)(sibling, { 'margin-left': 0, 'margin-right': 0 });
+                        document.body.insertAdjacentElement('afterbegin', this.element);
+                    }
+                    this.isServerRendered = false;
+                    _super.prototype.refresh.call(this);
+                    this.isServerRendered = isRendered;
+                    break;
+                case 'closeOnDocumentClick':
+                    this.setCloseOnDocumentClick();
+                    break;
+                case 'enableDock':
+                    if (!this.getState()) {
+                        this.setDock();
+                    }
+                    break;
+                case 'zIndex':
+                    this.setZindex();
+                    break;
+                case 'mediaQuery':
+                    this.setMediaQuery();
+                    break;
+                case 'enableGestures':
+                    this.setEnableGestures();
+                    break;
+                case 'enableRtl':
+                    this.setEnableRTL();
+                    break;
+            }
+        }
+    };
+    Sidebar.prototype.setType = function (type) {
+        var elementWidth = this.element.getBoundingClientRect().width;
+        this.setZindex();
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        if (sibling) {
+            sibling.style.transform = 'translateX(' + 0 + 'px)';
+            if (!_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice && this.type !== 'Auto') {
+                sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = '0px';
+            }
+        }
+        var margin = this.position === 'Left' ? elementWidth + 'px' : elementWidth + 'px';
+        var eleWidth = this.position === 'Left' ? elementWidth : -(elementWidth);
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], [PUSH, OVER, SLIDE]);
+        switch (type) {
+            case 'Push':
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], [PUSH]);
+                if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
+                    sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = margin;
+                }
+                break;
+            case 'Slide':
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], [SLIDE]);
+                if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
+                    sibling.style.transform = 'translateX(' + eleWidth + 'px)';
+                }
+                break;
+            case 'Over':
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], [OVER]);
+                if (this.enableDock && this.element.classList.contains(CLOSE)) {
+                    if (sibling) {
+                        sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = margin;
+                    }
+                }
+                break;
+            case 'Auto':
+                (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], [TRASITION]);
+                if (_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Browser.isDevice) {
+                    if (sibling && (this.enableDock) && !this.getState()) {
+                        sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = margin;
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], PUSH);
+                    }
+                    else {
+                        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], OVER);
+                    }
+                }
+                else {
+                    (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.addClass)([this.element], PUSH);
+                    if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
+                        sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = margin;
+                    }
+                }
+                this.createBackDrop();
+        }
+    };
+    /**
+     * Removes the control from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
+     *
+     * @returns {void}
+     *
+     */
+    Sidebar.prototype.destroy = function () {
+        _super.prototype.destroy.call(this);
+        if (this.target) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.target], CONTEXT);
+        }
+        this.destroyBackDrop();
+        if (this.element) {
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
+            (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.removeClass)([this.element], SIDEBARABSOLUTE);
+            this.element.style.width = '';
+            this.element.style.zIndex = '';
+            this.element.style.transform = '';
+            if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(this.sidebarEleCopy.getAttribute('tabindex'))) {
+                this.element.setAttribute('tabindex', this.tabIndex);
+            }
+            else {
+                this.element.removeAttribute('tabindex');
+            }
+        }
+        this.windowWidth = null;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        if (!(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isNullOrUndefined)(sibling)) {
+            sibling.style.margin = '';
+            sibling.style.transform = '';
+        }
+        this.unWireEvents();
+    };
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('auto')
+    ], Sidebar.prototype, "dockSize", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(null)
+    ], Sidebar.prototype, "mediaQuery", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "enableDock", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('en-US')
+    ], Sidebar.prototype, "locale", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "enablePersistence", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(true)
+    ], Sidebar.prototype, "enableGestures", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "isOpen", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "enableRtl", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(true)
+    ], Sidebar.prototype, "animate", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('auto')
+    ], Sidebar.prototype, "height", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "closeOnDocumentClick", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('Left')
+    ], Sidebar.prototype, "position", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(null)
+    ], Sidebar.prototype, "target", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(false)
+    ], Sidebar.prototype, "showBackdrop", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('Auto')
+    ], Sidebar.prototype, "type", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)('auto')
+    ], Sidebar.prototype, "width", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Property)(1000)
+    ], Sidebar.prototype, "zIndex", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], Sidebar.prototype, "created", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], Sidebar.prototype, "close", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], Sidebar.prototype, "open", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], Sidebar.prototype, "change", void 0);
+    __decorate([
+        (0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Event)()
+    ], Sidebar.prototype, "destroyed", void 0);
+    Sidebar = __decorate([
+        _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.NotifyPropertyChanges
+    ], Sidebar);
+    return Sidebar;
+}(_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.Component));
+
+
+
+/***/ }),
+
 /***/ "./node_modules/@syncfusion/ej2-popups/src/common/collision.js":
 /*!*********************************************************************!*\
   !*** ./node_modules/@syncfusion/ej2-popups/src/common/collision.js ***!
@@ -45745,6 +46971,243 @@ function compile(templateElement, helper) {
 
 /***/ }),
 
+/***/ "./node_modules/@syncfusion/ej2-vue-buttons/src/button/button.component.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/@syncfusion/ej2-vue-buttons/src/button/button.component.js ***!
+  \*********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "properties": () => (/* binding */ properties),
+/* harmony export */   "modelProps": () => (/* binding */ modelProps),
+/* harmony export */   "ButtonComponent": () => (/* binding */ ButtonComponent),
+/* harmony export */   "ButtonPlugin": () => (/* binding */ ButtonPlugin)
+/* harmony export */ });
+/* harmony import */ var _syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-vue-base */ "./node_modules/@syncfusion/ej2-vue-base/index.js");
+/* harmony import */ var _syncfusion_ej2_buttons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @syncfusion/ej2-buttons */ "./node_modules/@syncfusion/ej2-buttons/src/button/button.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+var properties = ['content', 'cssClass', 'disabled', 'enableHtmlSanitizer', 'enablePersistence', 'enableRtl', 'iconCss', 'iconPosition', 'isPrimary', 'isToggle', 'locale', 'created'];
+var modelProps = [];
+/**
+ * Represents the Essential JS 2 VueJS Button Component
+ * ```html
+ * <ejs-button>Button</ejs-button>
+ * ```
+ */
+var ButtonComponent = /** @class */ (function (_super) {
+    __extends(ButtonComponent, _super);
+    function ButtonComponent() {
+        var _this = _super.call(this) || this;
+        _this.propKeys = properties;
+        _this.models = modelProps;
+        _this.hasChildDirective = false;
+        _this.hasInjectedModules = false;
+        _this.tagMapper = {};
+        _this.tagNameMapper = {};
+        _this.ej2Instances = new _syncfusion_ej2_buttons__WEBPACK_IMPORTED_MODULE_1__.Button({});
+        _this.bindProperties();
+        _this.ej2Instances._setProperties = _this.ej2Instances.setProperties;
+        _this.ej2Instances.setProperties = _this.setProperties;
+        return _this;
+    }
+    ButtonComponent.prototype.setProperties = function (prop, muteOnChange) {
+        var _this = this;
+        if (this.ej2Instances && this.ej2Instances._setProperties) {
+            this.ej2Instances._setProperties(prop, muteOnChange);
+        }
+        if (prop && this.models && this.models.length) {
+            Object.keys(prop).map(function (key) {
+                _this.models.map(function (model) {
+                    if ((key === model) && !(/datasource/i.test(key))) {
+                        _this.$emit('update:' + key, prop[key]);
+                    }
+                });
+            });
+        }
+    };
+    ButtonComponent.prototype.render = function (createElement) {
+        return createElement('button', this.$slots.default);
+    };
+    ButtonComponent.prototype.click = function () {
+        return this.ej2Instances.click();
+    };
+    ButtonComponent.prototype.focusIn = function () {
+        return this.ej2Instances.focusIn();
+    };
+    ButtonComponent = __decorate([
+        (0,_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_0__.EJComponentDecorator)({
+            props: properties
+        })
+    ], ButtonComponent);
+    return ButtonComponent;
+}(_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_0__.ComponentBase));
+
+var ButtonPlugin = {
+    name: 'ejs-button',
+    install: function (Vue) {
+        Vue.component(ButtonPlugin.name, ButtonComponent);
+    }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/@syncfusion/ej2-vue-buttons/src/radio-button/radiobutton.component.js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/@syncfusion/ej2-vue-buttons/src/radio-button/radiobutton.component.js ***!
+  \********************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "properties": () => (/* binding */ properties),
+/* harmony export */   "modelProps": () => (/* binding */ modelProps),
+/* harmony export */   "RadioButtonComponent": () => (/* binding */ RadioButtonComponent),
+/* harmony export */   "RadioButtonPlugin": () => (/* binding */ RadioButtonPlugin)
+/* harmony export */ });
+/* harmony import */ var _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-base */ "./node_modules/@syncfusion/ej2-base/index.js");
+/* harmony import */ var _syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @syncfusion/ej2-vue-base */ "./node_modules/@syncfusion/ej2-vue-base/index.js");
+/* harmony import */ var _syncfusion_ej2_buttons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @syncfusion/ej2-buttons */ "./node_modules/@syncfusion/ej2-buttons/src/radio-button/radio-button.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+var properties = ['checked', 'cssClass', 'disabled', 'enableHtmlSanitizer', 'enablePersistence', 'enableRtl', 'htmlAttributes', 'label', 'labelPosition', 'locale', 'name', 'value', 'change', 'created'];
+var modelProps = ['value'];
+/**
+ * Represents the Essential JS 2 VueJS RadioButton Component
+ * ```html
+ * <ejs-radiobutton label='Default'></ejs-radiobutton>
+ * ```
+ */
+var RadioButtonComponent = /** @class */ (function (_super) {
+    __extends(RadioButtonComponent, _super);
+    function RadioButtonComponent() {
+        var _this = _super.call(this) || this;
+        _this.propKeys = properties;
+        _this.models = modelProps;
+        _this.hasChildDirective = false;
+        _this.hasInjectedModules = false;
+        _this.tagMapper = {};
+        _this.tagNameMapper = {};
+        _this.ej2Instances = new _syncfusion_ej2_buttons__WEBPACK_IMPORTED_MODULE_2__.RadioButton({});
+        _this.ej2Instances._trigger = _this.ej2Instances.trigger;
+        _this.ej2Instances.trigger = _this.trigger;
+        _this.bindProperties();
+        _this.ej2Instances._setProperties = _this.ej2Instances.setProperties;
+        _this.ej2Instances.setProperties = _this.setProperties;
+        return _this;
+    }
+    RadioButtonComponent.prototype.setProperties = function (prop, muteOnChange) {
+        var _this = this;
+        if (this.ej2Instances && this.ej2Instances._setProperties) {
+            this.ej2Instances._setProperties(prop, muteOnChange);
+        }
+        if (prop && this.models && this.models.length) {
+            Object.keys(prop).map(function (key) {
+                _this.models.map(function (model) {
+                    if ((key === model) && !(/datasource/i.test(key))) {
+                        _this.$emit('update:' + key, prop[key]);
+                    }
+                });
+            });
+        }
+    };
+    RadioButtonComponent.prototype.trigger = function (eventName, eventProp, successHandler) {
+        if ((eventName === 'change' || eventName === 'input') && this.models && (this.models.length !== 0)) {
+            var key = this.models.toString().match(/checked|value/) || [];
+            var propKey = key[0];
+            if (eventProp && key && !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isUndefined)(eventProp[propKey])) {
+                this.$emit('update:' + propKey, eventProp[propKey]);
+                this.$emit('modelchanged', eventProp[propKey]);
+            }
+        }
+        else if ((eventName === 'actionBegin' && eventProp.requestType === 'dateNavigate') && this.models && (this.models.length !== 0)) {
+            var key = this.models.toString().match(/currentView|selectedDate/) || [];
+            var propKey = key[0];
+            if (eventProp && key && !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isUndefined)(eventProp[propKey])) {
+                this.$emit('update:' + propKey, eventProp[propKey]);
+                this.$emit('modelchanged', eventProp[propKey]);
+            }
+        }
+        if (this.ej2Instances && this.ej2Instances._trigger) {
+            this.ej2Instances._trigger(eventName, eventProp, successHandler);
+        }
+    };
+    RadioButtonComponent.prototype.render = function (createElement) {
+        return createElement('input', this.$slots.default);
+    };
+    RadioButtonComponent.prototype.click = function () {
+        return this.ej2Instances.click();
+    };
+    RadioButtonComponent.prototype.focusIn = function () {
+        return this.ej2Instances.focusIn();
+    };
+    RadioButtonComponent.prototype.getSelectedValue = function () {
+        return this.ej2Instances.getSelectedValue();
+    };
+    RadioButtonComponent = __decorate([
+        (0,_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__.EJComponentDecorator)({
+            props: properties,
+            model: {
+                event: 'modelchanged'
+            }
+        })
+    ], RadioButtonComponent);
+    return RadioButtonComponent;
+}(_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__.ComponentBase));
+
+var RadioButtonPlugin = {
+    name: 'ejs-radiobutton',
+    install: function (Vue) {
+        Vue.component(RadioButtonPlugin.name, RadioButtonComponent);
+    }
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/@syncfusion/ej2-vue-grids/src/grid/aggregate-columns.directive.js":
 /*!****************************************************************************************!*\
   !*** ./node_modules/@syncfusion/ej2-vue-grids/src/grid/aggregate-columns.directive.js ***!
@@ -46540,6 +48003,140 @@ var GridPlugin = {
         Vue.component(_aggregates_directive__WEBPACK_IMPORTED_MODULE_4__.AggregatesPlugin.name, _aggregates_directive__WEBPACK_IMPORTED_MODULE_4__.AggregatesDirective);
         Vue.component(_aggregate_columns_directive__WEBPACK_IMPORTED_MODULE_5__.AggregateColumnPlugin.name, _aggregate_columns_directive__WEBPACK_IMPORTED_MODULE_5__.AggregateColumnDirective);
         Vue.component(_aggregate_columns_directive__WEBPACK_IMPORTED_MODULE_5__.AggregateColumnsPlugin.name, _aggregate_columns_directive__WEBPACK_IMPORTED_MODULE_5__.AggregateColumnsDirective);
+    }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/@syncfusion/ej2-vue-navigations/src/sidebar/sidebar.component.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/@syncfusion/ej2-vue-navigations/src/sidebar/sidebar.component.js ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "properties": () => (/* binding */ properties),
+/* harmony export */   "modelProps": () => (/* binding */ modelProps),
+/* harmony export */   "SidebarComponent": () => (/* binding */ SidebarComponent),
+/* harmony export */   "SidebarPlugin": () => (/* binding */ SidebarPlugin)
+/* harmony export */ });
+/* harmony import */ var _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-base */ "./node_modules/@syncfusion/ej2-base/index.js");
+/* harmony import */ var _syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @syncfusion/ej2-vue-base */ "./node_modules/@syncfusion/ej2-vue-base/index.js");
+/* harmony import */ var _syncfusion_ej2_navigations__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @syncfusion/ej2-navigations */ "./node_modules/@syncfusion/ej2-navigations/src/sidebar/sidebar.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+var properties = ['animate', 'closeOnDocumentClick', 'dockSize', 'enableDock', 'enableGestures', 'enablePersistence', 'enableRtl', 'height', 'isOpen', 'locale', 'mediaQuery', 'position', 'showBackdrop', 'target', 'type', 'width', 'zIndex', 'change', 'close', 'created', 'destroyed', 'open'];
+var modelProps = ['isOpen'];
+/**
+ *  Represents the Essential JS 2 VueJS Sidebar Component.
+ * ```html
+ * <ejs-sidebar></ejs-sidebar>
+ * ```
+ */
+var SidebarComponent = /** @class */ (function (_super) {
+    __extends(SidebarComponent, _super);
+    function SidebarComponent() {
+        var _this = _super.call(this) || this;
+        _this.propKeys = properties;
+        _this.models = modelProps;
+        _this.hasChildDirective = false;
+        _this.hasInjectedModules = false;
+        _this.tagMapper = {};
+        _this.tagNameMapper = {};
+        _this.ej2Instances = new _syncfusion_ej2_navigations__WEBPACK_IMPORTED_MODULE_2__.Sidebar({});
+        _this.ej2Instances._trigger = _this.ej2Instances.trigger;
+        _this.ej2Instances.trigger = _this.trigger;
+        _this.bindProperties();
+        _this.ej2Instances._setProperties = _this.ej2Instances.setProperties;
+        _this.ej2Instances.setProperties = _this.setProperties;
+        return _this;
+    }
+    SidebarComponent.prototype.setProperties = function (prop, muteOnChange) {
+        var _this = this;
+        if (this.ej2Instances && this.ej2Instances._setProperties) {
+            this.ej2Instances._setProperties(prop, muteOnChange);
+        }
+        if (prop && this.models && this.models.length) {
+            Object.keys(prop).map(function (key) {
+                _this.models.map(function (model) {
+                    if ((key === model) && !(/datasource/i.test(key))) {
+                        _this.$emit('update:' + key, prop[key]);
+                    }
+                });
+            });
+        }
+    };
+    SidebarComponent.prototype.trigger = function (eventName, eventProp, successHandler) {
+        if ((eventName === 'change' || eventName === 'input') && this.models && (this.models.length !== 0)) {
+            var key = this.models.toString().match(/checked|value/) || [];
+            var propKey = key[0];
+            if (eventProp && key && !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isUndefined)(eventProp[propKey])) {
+                this.$emit('update:' + propKey, eventProp[propKey]);
+                this.$emit('modelchanged', eventProp[propKey]);
+            }
+        }
+        else if ((eventName === 'actionBegin' && eventProp.requestType === 'dateNavigate') && this.models && (this.models.length !== 0)) {
+            var key = this.models.toString().match(/currentView|selectedDate/) || [];
+            var propKey = key[0];
+            if (eventProp && key && !(0,_syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__.isUndefined)(eventProp[propKey])) {
+                this.$emit('update:' + propKey, eventProp[propKey]);
+                this.$emit('modelchanged', eventProp[propKey]);
+            }
+        }
+        if (this.ej2Instances && this.ej2Instances._trigger) {
+            this.ej2Instances._trigger(eventName, eventProp, successHandler);
+        }
+    };
+    SidebarComponent.prototype.render = function (createElement) {
+        return createElement('div', this.$slots.default);
+    };
+    SidebarComponent.prototype.hide = function (e) {
+        return this.ej2Instances.hide(e);
+    };
+    SidebarComponent.prototype.show = function (e) {
+        return this.ej2Instances.show(e);
+    };
+    SidebarComponent.prototype.toggle = function (e) {
+        return this.ej2Instances.toggle(e);
+    };
+    SidebarComponent = __decorate([
+        (0,_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__.EJComponentDecorator)({
+            props: properties,
+            model: {
+                event: 'modelchanged'
+            }
+        })
+    ], SidebarComponent);
+    return SidebarComponent;
+}(_syncfusion_ej2_vue_base__WEBPACK_IMPORTED_MODULE_1__.ComponentBase));
+
+var SidebarPlugin = {
+    name: 'ejs-sidebar',
+    install: function (Vue) {
+        Vue.component(SidebarPlugin.name, SidebarComponent);
     }
 };
 
@@ -48398,6 +49995,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 
 vue__WEBPACK_IMPORTED_MODULE_0__.default.use(_syncfusion_ej2_vue_grids__WEBPACK_IMPORTED_MODULE_1__.GridPlugin);
@@ -48405,25 +50009,25 @@ vue__WEBPACK_IMPORTED_MODULE_0__.default.use(_syncfusion_ej2_vue_grids__WEBPACK_
   data: function data() {
     return {
       localData: [{
-        OrderID: 12345,
-        CustomerID: "bruh",
-        Price: 12.34
+        sender: "Gmail",
+        message: "test1",
+        date: "May 1"
       }, {
-        OrderID: 12346,
-        CustomerID: "test",
-        Price: 5
+        sender: "Test1",
+        message: "test2",
+        date: "May 2"
       }, {
-        OrderID: 12347,
-        CustomerID: "ee",
-        Price: 14.34
+        sender: "John Doe",
+        message: "test3",
+        date: "May 3"
       }, {
-        OrderID: 12348,
-        CustomerID: "bwruh",
-        Price: 22.34
+        sender: "Emily Doe",
+        message: "test4",
+        date: "May 4"
       }, {
-        OrderID: 12349,
-        CustomerID: "bruwah",
-        Price: 15.34
+        sender: "James Baxter",
+        message: "test5",
+        date: "May 5"
       }]
     };
   },
@@ -48431,6 +50035,87 @@ vue__WEBPACK_IMPORTED_MODULE_0__.default.use(_syncfusion_ej2_vue_grids__WEBPACK_
     console.log("vue-grids mounted");
   }
 });
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js&":
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js& ***!
+  \***********************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
+/* harmony import */ var _syncfusion_ej2_vue_navigations__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @syncfusion/ej2-vue-navigations */ "./node_modules/@syncfusion/ej2-vue-navigations/src/sidebar/sidebar.component.js");
+/* harmony import */ var _syncfusion_ej2_vue_buttons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @syncfusion/ej2-vue-buttons */ "./node_modules/@syncfusion/ej2-vue-buttons/src/button/button.component.js");
+/* harmony import */ var _syncfusion_ej2_vue_buttons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @syncfusion/ej2-vue-buttons */ "./node_modules/@syncfusion/ej2-vue-buttons/src/radio-button/radiobutton.component.js");
+/* harmony import */ var _syncfusion_ej2_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @syncfusion/ej2-base */ "./node_modules/@syncfusion/ej2-base/index.js");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+
+vue__WEBPACK_IMPORTED_MODULE_1__.default.use(_syncfusion_ej2_vue_navigations__WEBPACK_IMPORTED_MODULE_2__.SidebarPlugin, _syncfusion_ej2_vue_buttons__WEBPACK_IMPORTED_MODULE_3__.ButtonPlugin, _syncfusion_ej2_vue_buttons__WEBPACK_IMPORTED_MODULE_4__.RadioButtonPlugin);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (vue__WEBPACK_IMPORTED_MODULE_1__.default.extend({
+  data: function data() {
+    return {
+      enableDock: true,
+      dockSize: '72px',
+      width: '16rem',
+      position: 'Left'
+    };
+  },
+  methods: {
+    toggleClick: function toggleClick() {
+      this.$refs.dockSidebar.toggle();
+    },
+    closeClick: function closeClick() {
+      this.$refs.dockSidebar.hide();
+    },
+    openClick: function openClick() {
+      this.$refs.dockSidebar.show();
+    }
+  }
+}));
 
 /***/ }),
 
@@ -48448,9 +50133,14 @@ __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
  // app.component("webmail-component", require("./components/WebmailComponent.vue").default);
 // app.component("example-component", require("./components/ExampleComponent.vue").default);
 
-vue__WEBPACK_IMPORTED_MODULE_0__.default.component("vue-grid-component", __webpack_require__(/*! ./components/ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue").default);
+var grid = vue__WEBPACK_IMPORTED_MODULE_0__.default.component("vue-grid-component", __webpack_require__(/*! ./components/ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue").default);
+var sidebar = vue__WEBPACK_IMPORTED_MODULE_0__.default.component("sidebar-component", __webpack_require__(/*! ./components/SidebarComponent.vue */ "./resources/js/components/SidebarComponent.vue").default);
 var app = new vue__WEBPACK_IMPORTED_MODULE_0__.default({
-  el: '#app'
+  el: '#app',
+  components: {
+    grid: grid,
+    sidebar: sidebar
+  }
 });
 
 /***/ }),
@@ -48505,6 +50195,30 @@ var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBP
 ___CSS_LOADER_EXPORT___.push([module.id, "@import url(https://cdn.syncfusion.com/ej2/material.css);"]);
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, "\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&":
+/*!*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "/* sample-level styles */\n.sidebar-default .title {\n  text-align: center;\n  font-size: 20px;\n  padding: 15px;\n}\n.sidebar-default .title.default{\n  padding: 25px 15px 15px;\n}\n.sidebar-default #hamburger.default{\n  padding: 9px 15px 0px;\n}\n.sidebar-default #wrapper .column {\n  display: inline-block;\n  padding: 10px;\n}\n.sidebar-default .sub-title {\n  text-align: center;\n  font-size: 16px;\n  padding: 10px;\n}\n.sidebar-default #dockSidebar {\n  background-color: rgb(25, 118, 210);\n  color: #ffffff;\n}\n.sidebar-default #dockSidebar .close-btn:hover {\n  color: rgba(0, 0, 0, .87);\n  background-color: #fafafa;\n}\n\n/* sample-level styles */\n.sidebar-default #hamburger.menu {\n  font-size: 25px;\n  cursor: pointer;\n  float: left;\n  line-height: 50px;\n  position: absolute;\n  z-index: 1000;\n}\n.sidebar-default #hamburger.menu:before {\n  content: '\\e10d';\n}\n.sidebar-default #hamburger.menu.e-rtl {\n  position:relative;\n  float: right;\n}\n.sidebar-default #wrapper #close:before {\n  content: \"\\e945\";\n}\n.sidebar-default .e-sidebar .title-header #close {\n  color: #fafafa;\n  cursor: pointer;\n  line-height: 25px;\n}\n.sidebar-default .title-header {\n  text-align: center;\n  font-size: 18px;\n  padding: 15px;\n}\n@font-face {\n  font-family: 'sidebar-icons';\n\n  src: url(data:application/x-font-ttf;charset=utf-8;base64,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) format('truetype');\n\n  font-weight: normal;\n\n  font-style: normal;\n}\n\n/* end of sidebar styles */\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -66047,6 +67761,47 @@ component.options.__file = "resources/js/components/ExampleComponent.vue"
 
 /***/ }),
 
+/***/ "./resources/js/components/SidebarComponent.vue":
+/*!******************************************************!*\
+  !*** ./resources/js/components/SidebarComponent.vue ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SidebarComponent.vue?vue&type=template&id=54833a28& */ "./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28&");
+/* harmony import */ var _SidebarComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./SidebarComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js&");
+/* harmony import */ var _SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./SidebarComponent.vue?vue&type=style&index=0&lang=css& */ "./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! !../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+;
+
+
+/* normalize component */
+
+var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__.default)(
+  _SidebarComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__.default,
+  _SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__.render,
+  _SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/SidebarComponent.vue"
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
+
+/***/ }),
+
 /***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
 /*!*******************************************************************************!*\
   !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
@@ -66060,6 +67815,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
  /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__.default); 
+
+/***/ }),
+
+/***/ "./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************!*\
+  !*** ./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SidebarComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5[0].rules[0].use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=script&lang=js&");
+ /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_0_rules_0_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__.default); 
 
 /***/ }),
 
@@ -66080,6 +67851,23 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28&":
+/*!*************************************************************************************!*\
+  !*** ./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28& ***!
+  \*************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */ });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_template_id_54833a28___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SidebarComponent.vue?vue&type=template&id=54833a28& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28&");
+
+
+/***/ }),
+
 /***/ "./resources/js/components/ExampleComponent.vue?vue&type=style&index=0&lang=css&":
 /*!***************************************************************************************!*\
   !*** ./resources/js/components/ExampleComponent.vue?vue&type=style&index=0&lang=css& ***!
@@ -66092,6 +67880,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
 /* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== "default") __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
+
+
+/***/ }),
+
+/***/ "./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&":
+/*!***************************************************************************************!*\
+  !*** ./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-style-loader/index.js!../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SidebarComponent.vue?vue&type=style&index=0&lang=css& */ "./node_modules/vue-style-loader/index.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&");
+/* harmony import */ var _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== "default") __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _node_modules_vue_style_loader_index_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_0_rules_0_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_SidebarComponent_vue_vue_type_style_index_0_lang_css___WEBPACK_IMPORTED_MODULE_0__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
 
 
@@ -66116,9 +67921,149 @@ var render = function() {
   return _c(
     "div",
     { attrs: { id: "app" } },
-    [_c("ejs-grid", { attrs: { dataSource: _vm.localData } })],
+    [
+      _c(
+        "ejs-grid",
+        { attrs: { dataSource: _vm.localData } },
+        [
+          _c(
+            "e-columns",
+            [
+              _c("e-column", {
+                attrs: {
+                  type: "checkbox",
+                  allowFiltering: false,
+                  allowSorting: false,
+                  width: "60"
+                }
+              }),
+              _vm._v(" "),
+              _c("e-column", { attrs: { field: "sender", headerText: "" } }),
+              _vm._v(" "),
+              _c("e-column", { attrs: { field: "message", headerText: "" } }),
+              _vm._v(" "),
+              _c("e-column", {
+                attrs: { field: "date", headerText: "", "text-align": "Right" }
+              })
+            ],
+            1
+          )
+        ],
+        1
+      )
+    ],
     1
   )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28&":
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=template&id=54833a28& ***!
+  \****************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render),
+/* harmony export */   "staticRenderFns": () => (/* binding */ staticRenderFns)
+/* harmony export */ });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "control-section sidebar-default" }, [
+    _c("div", { attrs: { id: "wrapper" } }, [
+      _c(
+        "div",
+        { staticClass: "col-lg-12 col-sm-12 col-md-12" },
+        [
+          _c(
+            "ejs-sidebar",
+            {
+              ref: "dockSidebar",
+              staticClass: "mt-16",
+              attrs: {
+                id: "dockSidebar",
+                enableDock: _vm.enableDock,
+                position: _vm.position,
+                width: _vm.width,
+                dockSize: _vm.dockSize
+              }
+            },
+            [
+              _c("div", { staticClass: "title-header" }, [
+                _c("div", { staticStyle: { display: "inline-block" } }, [
+                  _vm._v(" Sidebar")
+                ]),
+                _vm._v(" "),
+                _c("span", {
+                  staticClass: "sidebar-icons",
+                  attrs: { id: "close" },
+                  on: { click: _vm.closeClick }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "sub-title" }, [
+                _vm._v(
+                  "\r\n                    Place your primary content here.\r\n                "
+                )
+              ])
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            [
+              _c("vue-grid-component"),
+              _vm._v(" "),
+              _c("div", { staticClass: "title default" }, [
+                _vm._v("Main content")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "sub-title" }, [
+                _vm._v(
+                  " Click the button to open/close the sidebar.\r\n                    "
+                ),
+                _c(
+                  "div",
+                  {
+                    staticClass: "center-align",
+                    staticStyle: { padding: "20px" }
+                  },
+                  [
+                    _c(
+                      "button",
+                      {
+                        staticClass: "e-btn e-info",
+                        attrs: { "ejs-button": "", id: "toggle" },
+                        on: { click: _vm.toggleClick }
+                      },
+                      [_vm._v("Toggle sidebar")]
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _c("p", [
+                  _vm._v(
+                    "Click the radio button to switch the sidebar position."
+                  )
+                ])
+              ])
+            ],
+            1
+          )
+        ],
+        1
+      )
+    ])
+  ])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -66256,6 +68201,27 @@ if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
 var add = __webpack_require__(/*! !../../../node_modules/vue-style-loader/lib/addStylesClient.js */ "./node_modules/vue-style-loader/lib/addStylesClient.js").default
 var update = add("6765b3bd", content, false, {});
+// Hot Module Replacement
+if(false) {}
+
+/***/ }),
+
+/***/ "./node_modules/vue-style-loader/index.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&":
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-style-loader/index.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css& ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !!../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SidebarComponent.vue?vue&type=style&index=0&lang=css& */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9[0].rules[0].use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/SidebarComponent.vue?vue&type=style&index=0&lang=css&");
+if(content.__esModule) content = content.default;
+if(typeof content === 'string') content = [[module.id, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var add = __webpack_require__(/*! !../../../node_modules/vue-style-loader/lib/addStylesClient.js */ "./node_modules/vue-style-loader/lib/addStylesClient.js").default
+var update = add("aebbe14e", content, false, {});
 // Hot Module Replacement
 if(false) {}
 
