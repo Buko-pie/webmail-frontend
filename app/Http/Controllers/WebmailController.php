@@ -24,7 +24,8 @@ class WebmailController extends Controller
      */
     public function index()
     {
-        return view('webmail');
+        // return view('webmail');
+        return view('test_component');
     }
 
     public function test()

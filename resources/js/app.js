@@ -12,5 +12,10 @@ const app = new Vue({
     components:{
         grid,
         sidebar
+    },
+    methods:{
+        toggle_sidbar(){
+            this.$refs.sidebarComponent.toggleClick();
+        }
     }
 });

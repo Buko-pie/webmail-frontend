@@ -74,8 +74,11 @@
                 statusTemplate: function () {
                     return {
                         template: Vue.component('statusTemplate', {
-                            template: `<div id="status" :class="{'statustemp': true, 'e-activecolor': data.Status == active, 'e-inactivecolor': data.Status == inactive}">\
-             <span :class="{'statustxt': true, 'e-activecolor': data.Status == active, 'e-inactivecolor': data.Status == inactive}">{{data.Status}}</span></div>`,
+                            template: `
+                                <div id="status" :class="{'statustemp': true, 'e-activecolor': data.Status == active, 'e-inactivecolor': data.Status == inactive}">\
+                                    <span :class="{'statustxt': true, 'e-activecolor': data.Status == active, 'e-inactivecolor': data.Status == inactive}">{{data.Status}}</span>
+                                </div>
+                            `,
                             data: function () { return { data: {}, active: 'Active', inactive: 'Inactive' }; }
                         })
                     }

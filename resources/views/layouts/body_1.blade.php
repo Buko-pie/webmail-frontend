@@ -21,7 +21,7 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
-        <sidebar-component />
+        <sidebar-component ref="sidebarComponent" />
         <div class="flex">
             <main class="w-full">
                 @yield('content')

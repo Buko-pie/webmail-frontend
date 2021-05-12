@@ -27,7 +27,6 @@
                 @yield('content')
             </main>
         </div>
-        <webmail-component />
     </div>
 </body>
 </html>
