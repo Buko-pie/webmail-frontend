@@ -21,6 +21,8 @@
     },
     "dependencies": {
         "@syncfusion/ej2-vue-buttons": "^19.1.63",
+        "@syncfusion/ej2-vue-calendars": "^19.1.63",
+        "@syncfusion/ej2-vue-dropdowns": "^19.1.63",
         "@syncfusion/ej2-vue-grids": "^19.1.63",
         "@syncfusion/ej2-vue-inputs": "^19.1.63",
         "@syncfusion/ej2-vue-navigations": "^19.1.63",

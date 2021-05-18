@@ -10,15 +10,16 @@
 
         </button>
       </div>
-      <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+      <div class="flex-auto flex items-center justify-center sm:items-stretch sm:justify-start">
         <div class="flex-shrink-0 flex items-center">
           <h1 class="text-xl font-bold md:pr-20 lg:pr-20">Webmail</h1>
         </div>
-        <div class="hidden sm:block sm:ml-6 md:pl-1 lg:pl-1">
+        <div class="hidden w-full sm:block sm:ml-6 md:pl-3 lg:pl-3">
           <div class="flex space-x-4">
-            <div class="relative mx-auto ">
-              <input class="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
-                type="search" name="search" placeholder="Search">
+            <div class="w-full max-w-xl">
+              <searchbar-component/>
+              {{-- <input class="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none" --}}
+                {{-- type="search" name="search" placeholder="Search"> --}}
               <button type="submit" class="absolute right-0 p-3">
                 <i class="h-4 w-4 fas fa-search"></i>
               </button>
