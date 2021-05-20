@@ -14,19 +14,19 @@
             </button>
           </div>
           <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-            <a class="sidebar_items_selected" href="#">
+            <a @click="getInbox" class="sidebar_items_selected" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-inbox text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Inbox</p>
             </a>
-            <a class="sidebar_items" href="#">
+            <a @click="starredOnly" class="sidebar_items" href="#">
               <div class="sidebar_icons">
                 <i class="far fa-star text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Starred</p>
             </a>
-            <a class="sidebar_items" href="#">
+            <a @click="importantOnly" class="sidebar_items" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-thumbtack text-lg"></i>
               </div>
@@ -55,7 +55,7 @@
       <!-- end of sidebar element -->
       <!-- main content declaration -->
       <div>
-          <vue-grid-component :custom_labels="custom_labels"/>
+          <vue-grid-component ref="data_grid" :custom_labels="custom_labels"/>
       </div>
     </div> 
   </div>
@@ -88,6 +88,15 @@ export default Vue.extend({
   components:{
     grid
   },
+  mounted(){
+    
+    if(this.custom_labels.length > 0){
+      this.custom_labels.forEach(function(){
+        //add custome labels to sidebar here
+      });
+      console.log(this.custom_labels);
+    }
+  },
   methods: {
     toggleClick :function() {
       this.$refs.dockSidebar.toggle();
@@ -98,6 +107,35 @@ export default Vue.extend({
     },
     openClick:function() {
       this.$refs.dockSidebar.show();
+    },
+    getInbox:function(event){
+      this.$refs.data_grid.viewData = this.$refs.data_grid.localData;
+    },
+    starredOnly:function(event) {
+      console.log("starred Only");
+      let email_list = this.$refs.data_grid.localData;
+      let temp = [];
+
+      email_list.forEach(function(value, index, array){
+        if(value.starred){
+          temp.push(value);
+        }
+      });
+
+      this.$refs.data_grid.viewData = temp;
+    },
+    importantOnly:function(event) {
+      console.log("important Only");
+      let email_list = this.$refs.data_grid.localData;
+      let temp = [];
+
+      email_list.forEach(function(value, index, array){
+        if(value.important){
+          temp.push(value);
+        }
+      });
+
+      this.$refs.data_grid.viewData = temp;
     }
   }
 });

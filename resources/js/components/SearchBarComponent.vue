@@ -1,9 +1,9 @@
 <template>
 <div class="relative">
-  <div class="e-input-group">
-    <span id="searchbar_icon" class="e-input-group-icon e-input-picture"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
-    <input id="searchbar" class="e-input e-textbox" type="text" placeholder="Search">
-    <span id="show_filters_icon" @click="showFilters()" class="e-input-group-icon e-input-calendar"><i class="fas fa-caret-down"></i></span>
+  <div class="e-input-group" :class="{ 'e-input-focus': e_inputs[0].is_focused }"> 
+    <span id="searchbar_icon" @mousedown="icon_button_md(0)" @mouseup="icon_button_mu(0)" :class="{'e-input-btn-ripple': e_buttons[0].is_clicked}" class="e-input-group-icon e-input-picture"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+    <input id="searchbar" @focus="inputFocus(0)" @blur="inputBlur(0)" class="e-input e-textbox" type="text" placeholder="Search">
+    <span id="show_filters_icon" @click="showFilters" @mousedown="icon_button_md(1)" @mouseup="icon_button_mu(1)" :class="{'e-input-btn-ripple': e_buttons[1].is_clicked}" class="e-input-group-icon e-input-calendar"><i class="fas fa-caret-down"></i></span>
   </div>
 
   <!-- Filters -->
@@ -12,32 +12,32 @@
 
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
-      <div class="e-input-group col-span-4">
-        <input id="filter_from" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
+        <input id="filter_from" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Filter by Receiver -->
       <div class="flex flex-wrap content-center"><p class="text-sm">To</p></div>
-      <div class="e-input-group col-span-4">
-        <input id="filter_to" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[2].is_focused }">
+        <input id="filter_to" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Filter by Subject -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Subject</p></div>
-      <div class="e-input-group col-span-4">
-        <input id="filter_subject" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[3].is_focused }">
+        <input id="filter_subject" @focus="inputFocus(3)" @blur="inputBlur(3)" class="e-input e-textbox" type="text" placeholder="">
       </div>
       
       <!-- including words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Has the words</p></div>
-      <div class="e-input-group col-span-4">
-        <input id="filter_include_words" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[4].is_focused }">
+        <input id="filter_include_words" @focus="inputFocus(4)" @blur="inputBlur(4)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- excluding words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Doesn't have</p></div>
-      <div class="e-input-group col-span-4 ">
-        <input id="filter_exclude_words" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-4 " :class="{ 'e-input-focus': e_inputs[5].is_focused }">
+        <input id="filter_exclude_words" @focus="inputFocus(5)" @blur="inputBlur(5)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Size filter -->
@@ -45,8 +45,8 @@
       <div class="col-span-2">
         <ejs-dropdownlist id='filter_size_op' :dataSource="size_ops" :fields="data_fields" :index="0" ></ejs-dropdownlist>
       </div>
-      <div class="e-input-group col-span-1">
-        <input id="filter_size" class="e-input e-textbox" type="text" placeholder="">
+      <div class="e-input-group col-span-1" :class="{ 'e-input-focus': e_inputs[6].is_focused }">
+        <input id="filter_size" @focus="inputFocus(6)" @blur="inputBlur(6)" class="e-input e-textbox" type="text" placeholder="">
       </div>
       <div class="col-span-1">
         <ejs-dropdownlist id='filter_size_type' :dataSource="size_types" :fields="data_fields" :index="0" ></ejs-dropdownlist>
@@ -97,7 +97,8 @@ Vue.use(ButtonPlugin);
 
 export default Vue.extend({
   data: function() {
-    return { 
+    return {
+      is_focused: false,
       show_filters: false,
       has_attachment: false,
       size_ops:[
@@ -126,48 +127,38 @@ export default Vue.extend({
         {id: 3, option: "Sent"},
         {id: 4, option: "Drafts"},
       ],
+      e_inputs:[
+        {id: 0, is_focused: false, title: 'search'},
+        {id: 1, is_focused: false, title: 'from'},
+        {id: 2, is_focused: false, title: 'to'},
+        {id: 3, is_focused: false, title: 'subject'},
+        {id: 4, is_focused: false, title: 'include_words'},
+        {id: 5, is_focused: false, title: 'exclude_words'},
+        {id: 6, is_focused: false, title: 'size'}
+      ],
+      e_buttons:[
+        {id: 0, is_clicked: false, icon: 'search'},
+        {id: 1, is_clicked: false, icon: 'show_filter'}
+      ],
       data_fields: {value: "id", text: "option"}
      }
   },
-  mounted: function() {
-    let input = document.querySelectorAll("input.e-textbox");
-    let localObj = this;
-    
-    for (let i = 0; i < input.length; i++) {
-      //Focus Event binding for input component
-      input[i].addEventListener('focus', function() {
-        localObj.getParentNode(input[i]).classList.add('e-input-focus');
-      });
-      //Blur Event binding for input component
-      input[i].addEventListener('blur', function() {
-        localObj.getParentNode(input[i]).classList.remove('e-input-focus');
-      });
-    }
-    
-    document.getElementById("searchbar_icon").addEventListener("mousedown", function(){
-      this.classList.add('e-input-btn-ripple');
-    });
-
-    document.getElementById("searchbar_icon").addEventListener("mouseup", function(){
-      let ele = this;
-      setTimeout( function() {
-        ele.classList.remove('e-input-btn-ripple'); 
-      }, 500);
-    });
-
-    document.getElementById("show_filters_icon").addEventListener("mousedown", function(){
-      this.classList.add('e-input-btn-ripple');
-    });
-
-    document.getElementById("show_filters_icon").addEventListener("mouseup", function(){
-      let ele = this;
-      setTimeout( function() {
-        ele.classList.remove('e-input-btn-ripple'); 
-      }, 500);
-    });
+  mounted(){
   },
   methods: {
-    showFilters: function(){
+    inputFocus(index){
+      this.e_inputs[index].is_focused = true;
+    },
+    inputBlur(index){
+      this.e_inputs[index].is_focused = false;
+    },
+    icon_button_md(index){
+      this.e_buttons[index].is_clicked = true;
+    },
+    icon_button_mu(index){
+      setTimeout(() => this.e_buttons[index].is_clicked = false, 500);
+    },
+    showFilters(){
       this.show_filters = !this.show_filters;
       let filters = document.getElementById("filters_opton")
 
@@ -178,7 +169,7 @@ export default Vue.extend({
       }
       
     },
-    getParentNode: function(element) {
+    getParentNode(element) {
       let parentNode = element.parentNode;
       if (parentNode.classList.contains('e-input-in-wrap')) {
         return parentNode.parentNode;

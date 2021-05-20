@@ -1,7 +1,7 @@
 <template>
   <div>
     <ejs-grid 
-      :dataSource="localData" 
+      :dataSource="viewData" 
       :selectionSettings="selectionSettings" 
       :allowPaging='true' 
       :allowSorting='true'
@@ -19,10 +19,6 @@
         <e-column field='date' headerText='' width='80' text-align="Right"></e-column>
       </e-columns>
     </ejs-grid>
-    <!-- <ejs-contextmenu target='#target' :items='menuItems' :select='onSelect'></ejs-contextmenu> -->
-    <button @click="Custom()">
-      test
-    </button>
   </div>
 </template>
 
@@ -35,10 +31,7 @@ let important_template = Vue.component("important_template", require("./subcompo
 let attachment_template = Vue.component("important_template", require("./subcomponents/AttachmentTemplate.vue").default);
 
 Vue.use(GridPlugin);
-
-function Custom() {
-  console.log("bruh");
-}
+Vue.prototype.$eventHub = new Vue()
 
 export default{
   props:{
@@ -54,6 +47,7 @@ export default{
         { id: 3, starred: false, important: true, sender: "Emily Doe", message: "test4", date: "May 4", read: false, has_attachment: false, labels:[] },
         { id: 4, starred: true, important: false, sender: "James Baxter", message: "test5", date: "May 5", read: false, has_attachment: false, labels:[] }
       ],
+      viewData: [],
       menuItems:[
         { text: "Add Label" }
       ],
@@ -81,13 +75,9 @@ export default{
 
   mounted(){
     console.log("vue-grids mounted");
-
-    if(this.custom_labels.length > 0){
-      this.custom_labels.forEach(function(){
-
-      });
-      console.log(this.custom_labels);
-    }
+    this.viewData = this.localData;
+    console.log(this.viewData);
+    
   },
 
   methods:{
@@ -106,7 +96,7 @@ export default{
         console.log(this.custom_labels);
       }
     },
-    getContextMenu:function(args){
+    getContextMenu: function(args){
       console.log("bruh");
     },
     Custom(){
@@ -116,6 +106,20 @@ export default{
 
   provide: {
     grid: [ContextMenu, Sort, Edit, Page]
+  },
+
+  created(){
+    this.$eventHub.$on("toggled_starred", (e)=>{
+      console.log(e);
+      this.localData[e.id].starred = e.starred;
+      this.viewData = this.localData;
+    });
+
+    this.$eventHub.$on("toggled_important", (e)=>{
+      console.log(e);
+      this.localData[e.id].important = e.important;
+      this.viewData = this.localData;
+    });
   }
 }
 </script>
