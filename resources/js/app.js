@@ -1,5 +1,6 @@
 require('./bootstrap');
 import Vue from 'vue';
+import axios from 'axios'
 
 // app.component("webmail-component", require("./components/WebmailComponent.vue").default);
 // app.component("example-component", require("./components/ExampleComponent.vue").default);

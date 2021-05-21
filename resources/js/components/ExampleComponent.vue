@@ -16,7 +16,7 @@
         <e-column field='sender' headerText='' minWidth="100" width="150" maxWidth="160"></e-column>
         <e-column field='message' headerText=''></e-column>
         <e-column field='has_attachment' width='60' text-align="Right" headerText='' :template='attachment_template'></e-column>
-        <e-column field='date' headerText='' width='80' text-align="Right"></e-column>
+        <e-column field='created_at' headerText='' width='150' text-align="Right"></e-column>
       </e-columns>
     </ejs-grid>
   </div>
@@ -35,17 +35,18 @@ Vue.prototype.$eventHub = new Vue()
 
 export default{
   props:{
-    custom_labels: Array
+    custom_labels: Array,
+    routes: Object
   },
 
   data(){
     return{
       localData: [
-        { id: 0, starred: true, important: true, sender: "Gmail", message: "test1", date: "May 1", read: false, has_attachment: false, labels:[]} ,
-        { id: 1, starred: false, important: false, sender: "Test1", message: "test2", date: "May 2", read: false, has_attachment: true, labels:[] },
-        { id: 2, starred: true, important: false, sender: "John Doe", message: "test3", date: "May 3", read: false, has_attachment: true, labels:[] },
-        { id: 3, starred: false, important: true, sender: "Emily Doe", message: "test4", date: "May 4", read: false, has_attachment: false, labels:[] },
-        { id: 4, starred: true, important: false, sender: "James Baxter", message: "test5", date: "May 5", read: false, has_attachment: false, labels:[] }
+        { id: 0, starred: true, important: true, sender: "Gmail", message: "test1", created_at: "May 1", read: false, has_attachment: false, labels:[]} ,
+        { id: 1, starred: false, important: false, sender: "Test1", message: "test2", created_at: "May 2", read: false, has_attachment: true, labels:[] },
+        { id: 2, starred: true, important: false, sender: "John Doe", message: "test3", created_at: "May 3", read: false, has_attachment: true, labels:[] },
+        { id: 3, starred: false, important: true, sender: "Emily Doe", message: "test4", created_at: "May 4", read: false, has_attachment: false, labels:[] },
+        { id: 4, starred: true, important: false, sender: "James Baxter", message: "test5", created_at: "May 5", read: false, has_attachment: false, labels:[] }
       ],
       viewData: [],
       menuItems:[
@@ -75,9 +76,27 @@ export default{
 
   mounted(){
     console.log("vue-grids mounted");
-    this.viewData = this.localData;
-    console.log(this.viewData);
+    // this.viewData = this.localData;
+    let _this = this;
     
+    axios({
+      method: "GET",
+      url: this.routes.data_route,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{ csrf_token() }}"
+      },
+      params: {
+        token: "{{ csrf_token() }}",
+        option: "get_all"
+      }
+    }).then(function (response) {
+      _this.viewData = response.data.dummy_data;
+      console.log(response.data.dummy_data);
+    }).catch(error => {
+      console.log(error);
+      alert("somthing went wrong");
+    });
   },
 
   methods:{
@@ -109,16 +128,58 @@ export default{
   },
 
   created(){
+    let _this = this;
+
     this.$eventHub.$on("toggled_starred", (e)=>{
       console.log(e);
-      this.localData[e.id].starred = e.starred;
-      this.viewData = this.localData;
+
+      axios({
+        method: "GET",
+        url: _this.routes.toggle_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          column: "starred",
+          id: e.id,
+          value: e.starred
+        }
+      }).then(function (response) {
+        _this.viewData[e.id].starred = e.starred;
+        console.log(response.data.data_update);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
+
     });
 
     this.$eventHub.$on("toggled_important", (e)=>{
       console.log(e);
-      this.localData[e.id].important = e.important;
-      this.viewData = this.localData;
+
+      axios({
+        method: "GET",
+        url: _this.routes.toggle_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          column: "important",
+          id: e.id,
+          value: e.important
+        }
+      }).then(function (response) {
+        _this.viewData[e.id].important = e.important;
+        //DO:: find id function
+        console.log(response.data.data_update);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     });
   }
 }

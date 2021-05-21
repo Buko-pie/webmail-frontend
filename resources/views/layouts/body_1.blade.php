@@ -11,7 +11,7 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
-        <sidebar-component ref="sidebarComponent" />
+        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}"/>
         <div class="flex">
             <main class="w-full">
                 @yield('content')
@@ -21,3 +21,7 @@
     <link href="{{ asset('css/tablecell_override.css') }}" rel="stylesheet">
 </body>
 </html>
+
+<script>
+  
+</script>

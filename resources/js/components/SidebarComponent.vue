@@ -55,7 +55,7 @@
       <!-- end of sidebar element -->
       <!-- main content declaration -->
       <div>
-          <vue-grid-component ref="data_grid" :custom_labels="custom_labels"/>
+          <vue-grid-component ref="data_grid" :custom_labels="custom_labels" :routes="routes"/>
       </div>
     </div> 
   </div>
@@ -72,6 +72,9 @@ Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
 const grid = Vue.component("vue-grid-component", require("./ExampleComponent.vue").default);
 
 export default Vue.extend({
+  props:{
+    routes: { type: Object, required: true }
+  },
   data: function() {
     return {
       enableDock:  true,
@@ -89,13 +92,15 @@ export default Vue.extend({
     grid
   },
   mounted(){
-    
+    console.log(this.routes.data_route);
+    console.log(typeof this.routes);
     if(this.custom_labels.length > 0){
       this.custom_labels.forEach(function(){
         //add custome labels to sidebar here
       });
       console.log(this.custom_labels);
     }
+    
   },
   methods: {
     toggleClick :function() {
@@ -109,33 +114,72 @@ export default Vue.extend({
       this.$refs.dockSidebar.show();
     },
     getInbox:function(event){
-      this.$refs.data_grid.viewData = this.$refs.data_grid.localData;
+      console.log("get all");
+      let _this = this;
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          option: "get_all"
+        }
+      }).then(function (response) {
+        _this.$refs.data_grid.viewData = response.data.dummy_data;
+        console.log(response.data.dummy_data);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     },
     starredOnly:function(event) {
       console.log("starred Only");
-      let email_list = this.$refs.data_grid.localData;
-      let temp = [];
+      let _this = this;
 
-      email_list.forEach(function(value, index, array){
-        if(value.starred){
-          temp.push(value);
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          option: "starred_only"
         }
+      }).then(function (response) {
+        _this.$refs.data_grid.viewData = response.data.dummy_data;
+        console.log(response.data.dummy_data);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
       });
-
-      this.$refs.data_grid.viewData = temp;
     },
     importantOnly:function(event) {
       console.log("important Only");
-      let email_list = this.$refs.data_grid.localData;
-      let temp = [];
+      let _this = this;
 
-      email_list.forEach(function(value, index, array){
-        if(value.important){
-          temp.push(value);
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          option: "important_only"
         }
+      }).then(function (response) {
+        _this.$refs.data_grid.viewData = response.data.dummy_data;
+        console.log(response.data.dummy_data);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
       });
-
-      this.$refs.data_grid.viewData = temp;
     }
   }
 });

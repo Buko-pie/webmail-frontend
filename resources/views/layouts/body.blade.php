@@ -23,9 +23,9 @@
         @include('navbars.navbar_1')
         <div class="flex">
             @include('navbars.sidebar_1')
-            <main class="w-full">
+            {{-- <main class="w-full">
                 @yield('content')
-            </main>
+            </main> --}}
         </div>
     </div>
 </body>
