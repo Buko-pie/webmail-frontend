@@ -41,6 +41,7 @@ export default{
 
   data(){
     return{
+      index: 0,
       localData: [
         { id: 0, starred: true, important: true, sender: "Gmail", message: "test1", created_at: "May 1", read: false, has_attachment: false, labels:[]} ,
         { id: 1, starred: false, important: false, sender: "Test1", message: "test2", created_at: "May 2", read: false, has_attachment: true, labels:[] },
@@ -118,8 +119,14 @@ export default{
     getContextMenu: function(args){
       console.log("bruh");
     },
-    Custom(){
-      console.log("bruh");
+    get_table_index_by_id(id){
+      let _this = this;
+      this.viewData.forEach(function(data, index) {
+        if(data.id === id){
+          console.log(index);
+          _this.index = index;
+        }
+      });
     }
   },
 
@@ -147,7 +154,9 @@ export default{
           value: e.starred
         }
       }).then(function (response) {
-        _this.viewData[e.id].starred = e.starred;
+        _this.get_table_index_by_id(e.id);
+        _this.viewData[_this.index].starred = e.starred;
+        
         console.log(response.data.data_update);
       }).catch(error => {
         console.log(error);
@@ -173,8 +182,9 @@ export default{
           value: e.important
         }
       }).then(function (response) {
-        _this.viewData[e.id].important = e.important;
-        //DO:: find id function
+        _this.get_table_index_by_id(e.id);
+        _this.viewData[_this.index].important = e.important;
+
         console.log(response.data.data_update);
       }).catch(error => {
         console.log(error);
