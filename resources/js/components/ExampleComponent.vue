@@ -7,6 +7,10 @@
       :allowSorting='true'
       :contextMenuItems="menuItems"
       :contextMenuClick="onSelect"
+      :contextMenuOpen="contextMenuOpen"
+      :rowDataBound="rowDataBound"
+      :recordClick="recordClick"
+      :rowSelected="rowSelected"
     >
       <e-columns>
         <e-column type='checkbox' :allowFiltering='false' :allowSorting='false' width='45'></e-column>
@@ -42,16 +46,10 @@ export default{
   data(){
     return{
       index: 0,
-      localData: [
-        { id: 0, starred: true, important: true, sender: "Gmail", message: "test1", created_at: "May 1", read: false, has_attachment: false, labels:[]} ,
-        { id: 1, starred: false, important: false, sender: "Test1", message: "test2", created_at: "May 2", read: false, has_attachment: true, labels:[] },
-        { id: 2, starred: true, important: false, sender: "John Doe", message: "test3", created_at: "May 3", read: false, has_attachment: true, labels:[] },
-        { id: 3, starred: false, important: true, sender: "Emily Doe", message: "test4", created_at: "May 4", read: false, has_attachment: false, labels:[] },
-        { id: 4, starred: true, important: false, sender: "James Baxter", message: "test5", created_at: "May 5", read: false, has_attachment: false, labels:[] }
-      ],
       viewData: [],
       menuItems:[
-        { text: "Add Label" }
+        { id: 0, text: "Mark As Unread" },
+        // { text: "Add Label" }
       ],
       filter: {
         type: "CheckBox"
@@ -106,24 +104,94 @@ export default{
       this.$emit("change", value);
     },
     onSelect: function(args) {
-      console.log(args);
+
+      let _this = this;
       if(args.item.text === "Add Label") {
+        //Add Label
         let row_data = args.rowInfo.rowData;
         /////Last construction here
         this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
         args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
         console.log(row_data);
         console.log(this.custom_labels);
+      }else if(args.item.text === "Mark As Unread"){
+        //Mark As Unread
+        axios({
+          method: "GET",
+          url: _this.routes.toggle_route,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {{ csrf_token() }}"
+          },
+          params: {
+            token: "{{ csrf_token() }}",
+            column: "read",
+            id: args.rowInfo.rowData.id,
+            value: false
+          }
+        }).then(function (response) {
+          _this.viewData[args.rowInfo.rowIndex].read = 0;
+          args.rowInfo.row.classList.add("font-black");
+
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
       }
     },
     getContextMenu: function(args){
       console.log("bruh");
     },
+    rowDataBound(args){
+      console.log(args);
+      if(!args.data.read){
+        args.row.classList.add("font-black");
+      }
+    },
+    //Mark As Read on Email Click
+    recordClick(args){
+      let _this = this;
+      if(args.cellIndex > 3 && args.cellIndex < 8){
+        axios({
+          method: "GET",
+          url: _this.routes.toggle_route,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {{ csrf_token() }}"
+          },
+          params: {
+            token: "{{ csrf_token() }}",
+            column: "read",
+            id: args.rowData.id,
+            value: true
+          }
+        }).then(function (response) {
+          _this.viewData[args.rowIndex].read = 1;
+          args.row.classList.remove("font-black");
+
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+       
+      }
+    },
+    contextMenuOpen(args){
+      //On Context Menu Open
+      
+    },
+    rowSelected(args){
+      console.log(args);
+      if(!args.data.read){
+        this.menuItems[0].text = "Mark As Read";
+
+        console.log(this.menuItems);
+      }
+    },
     get_table_index_by_id(id){
       let _this = this;
       this.viewData.forEach(function(data, index) {
         if(data.id === id){
-          console.log(index);
           _this.index = index;
         }
       });
@@ -136,9 +204,9 @@ export default{
 
   created(){
     let _this = this;
-
+    //Mark email as starred
     this.$eventHub.$on("toggled_starred", (e)=>{
-      console.log(e);
+      // console.log(e);
 
       axios({
         method: "GET",
@@ -164,9 +232,9 @@ export default{
       });
 
     });
-
+    //Mark email as important
     this.$eventHub.$on("toggled_important", (e)=>{
-      console.log(e);
+      // console.log(e);
 
       axios({
         method: "GET",
@@ -195,6 +263,4 @@ export default{
 }
 </script>
 
-<style>
-  @import url(https://cdn.syncfusion.com/ej2/material.css);
-</style>
+

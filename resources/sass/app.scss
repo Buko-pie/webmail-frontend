@@ -11271,7 +11271,7 @@ video {
 }
 
 .font-black {
-  font-weight: 900;
+  font-weight: 900 !important;
 }
 
 .h-0 {
@@ -187489,4 +187489,8 @@ video {
   margin-right: 1rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.e-grid td.e-active {
+  font-weight: auto;
 }

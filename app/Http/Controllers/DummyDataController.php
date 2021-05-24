@@ -30,7 +30,7 @@ class DummyDataController extends Controller
   {
     if(isset($request['id'])){
       $value = ($request['value'] == 'true') ? 1 : 0;
-      error_log($value);
+
       if($request['column'] == 'starred'){
         $data_update = DummyData::find($request['id']);
         if(isset($data_update)){
@@ -45,6 +45,19 @@ class DummyDataController extends Controller
         if(isset($data_update)){
           $data_update->important = $value;
           $data_update->save();
+        }else{
+          return response()->json(['error_msg' => 'data not found', 404]);
+        }
+      }else if($request['column'] == 'read'){
+        $data_update = DummyData::find($request['id']);
+        if(isset($data_update)){
+          if($value == 1){
+            $data_update->read = 1;
+            $data_update->save();
+          }else{
+            $data_update->read = 0;
+            $data_update->save();
+          }
         }else{
           return response()->json(['error_msg' => 'data not found', 404]);
         }
