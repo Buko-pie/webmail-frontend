@@ -64,12 +64,27 @@
 
 <script>
 import Vue from "vue";
+import moment from "moment";
 import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
 import { enableRipple } from '@syncfusion/ej2-base';
 
 Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
 const grid = Vue.component("vue-grid-component", require("./ExampleComponent.vue").default);
+
+function formatDate(data) {
+  data.forEach(function(value) {
+    if(moment(value.created_at).isSame(new Date(), "day")){
+      value.created_at = moment(value.created_at).format("LT");
+    }else if(moment(value.created_at).isSame(new Date(), "year")){
+      value.created_at = moment(value.created_at).format("MMM DD");
+    }else{
+      value.created_at = moment(value.created_at).format("YYYY/MM/DD");
+    }
+  });
+
+  return data;
+}
 
 export default Vue.extend({
   props:{
@@ -151,7 +166,8 @@ export default Vue.extend({
           option: "starred_only"
         }
       }).then(function (response) {
-        _this.$refs.data_grid.viewData = response.data.dummy_data;
+        let data = response.data.dummy_data;
+        _this.$refs.data_grid.viewData = formatDate(data);
         console.log(response.data.dummy_data);
       }).catch(error => {
         console.log(error);
@@ -174,7 +190,8 @@ export default Vue.extend({
           option: "important_only"
         }
       }).then(function (response) {
-        _this.$refs.data_grid.viewData = response.data.dummy_data;
+        let data = response.data.dummy_data;
+        _this.$refs.data_grid.viewData = formatDate(data);
         console.log(response.data.dummy_data);
       }).catch(error => {
         console.log(error);

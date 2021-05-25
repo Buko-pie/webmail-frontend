@@ -14450,7 +14450,7 @@ video {
 }
 
 .overflow-visible {
-  overflow: visible;
+  overflow: visible !important;
 }
 
 .overflow-scroll {
@@ -187493,4 +187493,8 @@ video {
 
 .e-grid td.e-active {
   font-weight: auto;
+}
+
+.e-grid .e-gridheader .e-sortfilter .e-headercelldiv, .e-grid .e-gridheader .e-stackedheadercelldiv, .e-grid .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
+  padding: 0;
 }

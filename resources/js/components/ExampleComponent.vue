@@ -1,9 +1,11 @@
 <template>
   <div>
-    <ejs-grid 
+    <ejs-grid
+      ref="grid"
+      id="gridcomp"
       :dataSource="viewData" 
       :selectionSettings="selectionSettings" 
-      :allowPaging='true' 
+      :allowPaging='true'
       :allowSorting='true'
       :contextMenuItems="menuItems"
       :contextMenuClick="onSelect"
@@ -13,14 +15,7 @@
       :rowSelected="rowSelected"
     >
       <e-columns>
-        <e-column type='checkbox' :allowFiltering='false' :allowSorting='false' width='45'></e-column>
-        <e-column field='id' headerText='' width='38' :template='starred_template' :visible='false'></e-column>
-        <e-column field='starred' headerText='' width='38' :template='starred_template'></e-column>
-        <e-column field='important' headerText='' width='40' :template='important_template'></e-column>
-        <e-column field='sender' headerText='' minWidth="100" width="150" maxWidth="160"></e-column>
-        <e-column field='message' headerText=''></e-column>
-        <e-column field='has_attachment' width='60' text-align="Right" headerText='' :template='attachment_template'></e-column>
-        <e-column field='created_at' headerText='' width='150' text-align="Right"></e-column>
+        <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
       </e-columns>
     </ejs-grid>
   </div>
@@ -28,14 +23,31 @@
 
 <script>
 import Vue from "vue";
+import moment from "moment";
 import { GridPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
 
+let header_template = Vue.component("header_template", require("./subcomponents/HeaderTemplate.vue").default);
+let subheader_template = Vue.component("subheader_template", require("./subcomponents/SubheaderTemplate.vue").default);
 let starred_template = Vue.component("starred_template", require("./subcomponents/StarredTemplate.vue").default);
 let important_template = Vue.component("important_template", require("./subcomponents/ImportantTemplate.vue").default);
 let attachment_template = Vue.component("important_template", require("./subcomponents/AttachmentTemplate.vue").default);
 
 Vue.use(GridPlugin);
 Vue.prototype.$eventHub = new Vue()
+
+function formatDate(data) {
+  data.forEach(function(value) {
+    if(moment(value.created_at).isSame(new Date(), "day")){
+      value.created_at = moment(value.created_at).format("LT");
+    }else if(moment(value.created_at).isSame(new Date(), "year")){
+      value.created_at = moment(value.created_at).format("MMM DD");
+    }else{
+      value.created_at = moment(value.created_at).format("YYYY/MM/DD");
+    }
+  });
+
+  return data;
+}
 
 export default{
   props:{
@@ -46,27 +58,101 @@ export default{
   data(){
     return{
       index: 0,
+      test:["read", "ascending"],
       viewData: [],
       menuItems:[
-        { id: 0, text: "Mark As Unread" },
+        { id: "mark_unread", text: "Mark as unread" },
+        { id: "mark_read", text: "Mark as read" },
         // { text: "Add Label" }
       ],
       filter: {
         type: "CheckBox"
       },
-      starred_template: function(){
-        return{
-          template: starred_template
+      custom_column:[
+        {
+          //Column - Check box
+          type: "checkbox",
+          allowFiltering: false,
+          allowSorting: false,
+          headerTemplate: function(){
+            return{
+              template: subheader_template
+            }
+          },
+          width: "45",
+          customAttributes:{class: "overflow-visible"}
+        },{
+          //Column - ID
+          field: "id",
+          headerText: "",
+          visible: false
+        },{
+          //Column - Starred
+          field: "starred",
+          headerText: "",
+          width: "38",
+          allowSorting: false,
+          template: function(){
+            return{
+              template: starred_template
+            }
+          },
+          allowSorting: false
+        },{
+          //Column - Important
+          field: "important",
+          headerText: "",
+          width: "40",
+          allowSorting: false,
+          template: function(){
+            return{
+              template: important_template
+            }
+          },
+          allowSorting: false
+        },{
+          //Column - Sender
+          field: "sender",
+          headerText: "",
+          minWidth: "100",
+          width: "150",
+          maxWidth: "160",
+          allowSorting: false
+        },{
+          //Column - Message
+          field: "message",
+          headerText: "",
+          allowSorting: false
+        },{
+          //Column - Has attachment
+          field: "has_attachment",
+          headerText: "",
+          width: "60",
+          "text-align": "Right",
+          template: function(){
+            return{
+              template: attachment_template
+            }
+          },
+          allowSorting: false
+        },{
+          //Column - Created At
+          field: "created_at",
+          headerText: "",
+          width: "80",
+          "text-align": "Right",
+          allowSorting: false
+        },{
+          //Column - Read
+          field: "read",
+          headerText: "",
+          "text-align": "Right",
+          visible: false
         }
-      },
-      important_template: function(){
+      ],
+      header_template: function(){
         return{
-          template: important_template
-        }
-      },
-      attachment_template: function(){
-        return{
-          template: attachment_template
+          template: header_template
         }
       },
       selectionSettings: { checkboxOnly: true }
@@ -90,7 +176,8 @@ export default{
         option: "get_all"
       }
     }).then(function (response) {
-      _this.viewData = response.data.dummy_data;
+      let data = response.data.dummy_data;
+      _this.viewData = formatDate(data);
       console.log(response.data.dummy_data);
     }).catch(error => {
       console.log(error);
@@ -114,7 +201,7 @@ export default{
         args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
         console.log(row_data);
         console.log(this.custom_labels);
-      }else if(args.item.text === "Mark As Unread"){
+      }else if(args.item.text === "Mark as unread"){
         //Mark As Unread
         axios({
           method: "GET",
@@ -137,13 +224,35 @@ export default{
           console.log(error);
           alert("somthing went wrong");
         });
+      }else if(args.item.text === "Mark as read"){
+        //Mark as read
+        axios({
+          method: "GET",
+          url: _this.routes.toggle_route,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {{ csrf_token() }}"
+          },
+          params: {
+            token: "{{ csrf_token() }}",
+            column: "read",
+            id: args.rowInfo.rowData.id,
+            value: true
+          }
+        }).then(function (response) {
+          _this.viewData[args.rowInfo.rowIndex].read = 1;
+          args.rowInfo.row.classList.remove("font-black");
+
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
       }
     },
     getContextMenu: function(args){
       console.log("bruh");
     },
     rowDataBound(args){
-      console.log(args);
       if(!args.data.read){
         args.row.classList.add("font-black");
       }
@@ -178,15 +287,17 @@ export default{
     },
     contextMenuOpen(args){
       //On Context Menu Open
-      
+      let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
+      if(!args.rowInfo.rowData.read){
+        contextMenuObj.showItems(["Mark as read"]);
+        contextMenuObj.hideItems(["Mark as unread"]);
+      }else{
+        contextMenuObj.showItems(["Mark as unread"]);
+        contextMenuObj.hideItems(["Mark as read"]);
+      }
     },
     rowSelected(args){
-      console.log(args);
-      if(!args.data.read){
-        this.menuItems[0].text = "Mark As Read";
-
-        console.log(this.menuItems);
-      }
+     
     },
     get_table_index_by_id(id){
       let _this = this;
@@ -195,7 +306,7 @@ export default{
           _this.index = index;
         }
       });
-    }
+    },
   },
 
   provide: {
@@ -258,6 +369,14 @@ export default{
         console.log(error);
         alert("somthing went wrong");
       });
+    });
+    //Sort by read toggle
+    this.$eventHub.$on("read_sort_toggle", (e)=>{
+      if(e.value){
+        _this.$refs.grid.sortColumn("read", "Ascending");
+      }else{
+        _this.$refs.grid.sortColumn("read", "Descending");
+      }
     });
   }
 }

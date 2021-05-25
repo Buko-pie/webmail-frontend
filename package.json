@@ -27,6 +27,7 @@
         "@syncfusion/ej2-vue-inputs": "^19.1.63",
         "@syncfusion/ej2-vue-navigations": "^19.1.63",
         "core-js": "^3.6.5",
+        "moment": "^2.29.1",
         "vue": "^2.6.12",
         "vuex": "^3.6.2"
     }
