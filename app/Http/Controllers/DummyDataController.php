@@ -11,11 +11,11 @@ class DummyDataController extends Controller
   {
     if(isset($request['option'])){
       if($request['option'] == 'get_all'){
-        $dummy_data = DummyData::all();
+        $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'starred_only'){
-        $dummy_data = DummyData::where('starred', true)->get();
+        $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'important_only'){
-        $dummy_data = DummyData::where('important', true)->get();
+        $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
       }
 
       if(isset($dummy_data)){

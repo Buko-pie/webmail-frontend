@@ -196,7 +196,7 @@ export default{
       if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
-        /////Last construction here
+        /////Last construction here on add custome labels context menu
         this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
         args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
         console.log(row_data);
