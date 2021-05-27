@@ -11,6 +11,7 @@
       :contextMenuClick="onSelect"
       :contextMenuOpen="contextMenuOpen"
       :rowDataBound="rowDataBound"
+      :dataBound="dataBound"
       :recordClick="recordClick"
       :rowSelected="rowSelected"
     >
@@ -33,7 +34,7 @@ let important_template = Vue.component("important_template", require("./subcompo
 let attachment_template = Vue.component("important_template", require("./subcomponents/AttachmentTemplate.vue").default);
 
 Vue.use(GridPlugin);
-Vue.prototype.$eventHub = new Vue()
+Vue.prototype.$eventHub = new Vue();
 
 function formatDate(data) {
   data.forEach(function(value) {
@@ -65,6 +66,8 @@ export default{
         { id: "mark_read", text: "Mark as read" },
         // { text: "Add Label" }
       ],
+      select_option: null,
+      selected_rows: [],
       filter: {
         type: "CheckBox"
       },
@@ -163,7 +166,7 @@ export default{
     console.log("vue-grids mounted");
     // this.viewData = this.localData;
     let _this = this;
-    
+
     axios({
       method: "GET",
       url: this.routes.data_route,
@@ -249,14 +252,41 @@ export default{
         });
       }
     },
+
+    dropDownSelect(args){
+      console.log(args);
+    },
+
     getContextMenu: function(args){
       console.log("bruh");
     },
+
     rowDataBound(args){
+      let _this = this;
       if(!args.data.read){
         args.row.classList.add("font-black");
       }
+
+      if(this.select_option){
+        if(this.select_option.text === "Read" && args.data.read){
+          this.selected_rows.push(parseInt(args.row.getAttribute("aria-rowindex")));
+        }else if(this.select_option.text === "Unread" && !args.data.read){
+          this.selected_rows.push(parseInt(args.row.getAttribute("aria-rowindex")));
+        }else if(this.select_option.text === "Starred" && args.data.starred){
+          this.selected_rows.push(parseInt(args.row.getAttribute("aria-rowindex")));
+        }else if(this.select_option.text === "Unstarred" && !args.data.starred){
+          this.selected_rows.push(parseInt(args.row.getAttribute("aria-rowindex")));
+        }
+      }
     },
+
+    dataBound(args){
+      this.$refs.grid.ej2Instances.selectRows(this.selected_rows);
+
+      this.selected_rows = [];
+      this.select_option = null;
+    },
+
     //Mark As Read on Email Click
     recordClick(args){
       let _this = this;
@@ -285,6 +315,7 @@ export default{
        
       }
     },
+
     contextMenuOpen(args){
       //On Context Menu Open
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
@@ -377,6 +408,50 @@ export default{
       }else{
         _this.$refs.grid.sortColumn("read", "Descending");
       }
+    });
+
+    //Select by options
+    this.$eventHub.$on("select_by", (e)=>{
+      if(e.text == "All"){
+        let indexes = []
+        for (let i = 0; i < this.viewData.length; i++) {
+          indexes.push(i)
+        }
+
+        this.$refs.grid.ej2Instances.selectRows(indexes);
+      }else if(e.text === "None"){
+        this.$refs.grid.ej2Instances.refresh();
+      }else{
+        this.select_option = e;
+        this.$refs.grid.ej2Instances.refresh();
+      }
+    });
+
+    //Refresh Inbox
+    this.$eventHub.$on("refresh_inbox", (e)=>{
+      console.log("refresh_inbox");
+
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          option: "get_all"
+        }
+      }).then(function (response) {
+        let data = response.data.dummy_data;
+        _this.viewData = formatDate(data);
+        _this.$eventHub.$emit("stop_loading", {
+          event: "stop_loading"
+        });
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     });
   }
 }

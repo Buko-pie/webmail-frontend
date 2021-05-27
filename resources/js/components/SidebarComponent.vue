@@ -97,7 +97,7 @@
               
               <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
                 <div class="sidebar_icons">
-                  <i class="fas fa-percent text-lg"></i>
+                  <i class="fas fa-bullhorn text-lg"></i>
                 </div>
                 <p class="sidebar_text" v-show="toggled">Promotions</p>
               </a>
@@ -139,6 +139,8 @@ import VModal from 'vue-js-modal';
 import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
 import { enableRipple } from '@syncfusion/ej2-base';
+
+enableRipple(true);
 
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
