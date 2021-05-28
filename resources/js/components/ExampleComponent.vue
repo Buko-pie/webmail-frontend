@@ -14,6 +14,7 @@
       :dataBound="dataBound"
       :recordClick="recordClick"
       :rowSelected="rowSelected"
+      :rowDeselected="rowDeselected"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
@@ -59,6 +60,8 @@ export default{
   data(){
     return{
       index: 0,
+      selected_item_unread: 0,
+      selected_items_count: 0,
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
@@ -327,9 +330,81 @@ export default{
         contextMenuObj.hideItems(["Mark as read"]);
       }
     },
+
     rowSelected(args){
-     
+      if(args.rowIndexes){
+        this.selected_items_count = args.rowIndexes.length;
+      }
+
+      if(args.data.length){
+        args.data.forEach(value => {
+          if(!value.read){
+            this.selected_item_unread++;
+          }
+        });
+      }else{
+        if(!args.data.read){
+          this.selected_item_unread++;
+        }
+      }
+
+      //read toggle button condition
+      if(this.selected_item_unread === 0){
+        this.$eventHub.$emit("items_selected_unread", {
+          value: false
+        });
+      }else{
+        this.$eventHub.$emit("items_selected_unread", {
+          value: true
+        });
+      }
+
+      this.$eventHub.$emit("toggle_rowSelected", {
+        value: true
+      });
     },
+
+    rowDeselected(args){
+      if(args.rowIndexes){
+        this.selected_items_count = this.selected_items_count - args.rowIndexes.length;
+        
+        if(args.data.length){
+          args.data.forEach(value => {
+            if(!value.read){
+              this.selected_item_unread--;
+            }
+          });
+        }else{
+          if(!args.data.read){
+            this.selected_item_unread--;
+          }
+        }
+
+        //read toggle button condition
+        if(this.selected_item_unread === 0){
+          this.$eventHub.$emit("items_selected_unread", {
+            value: false
+          });
+        }else{
+          this.$eventHub.$emit("items_selected_unread", {
+            value: true
+          });
+        }
+
+        if(this.selected_items_count <= 0){
+          this.$eventHub.$emit("toggle_rowSelected", {
+            value: false
+          });
+        }
+        
+      }else{
+        this.$eventHub.$emit("toggle_rowSelected", {
+          value: false
+        });
+      }
+      
+    },
+
     get_table_index_by_id(id){
       let _this = this;
       this.viewData.forEach(function(data, index) {

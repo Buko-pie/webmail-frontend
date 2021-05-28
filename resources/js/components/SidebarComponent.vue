@@ -65,7 +65,7 @@
 
             <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
               <div class="sidebar_icons">
-                <i class="fas fa-tag text-lg"></i>
+                <i class="fas fa-mail-bulk text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Categories</p>
               <div class="sidebar_icons_rightmost">
@@ -107,7 +107,7 @@
             <div ref="sidebar_custom_labels">
               <a v-for="labels in custom_labels" :key="labels.id" class="sidebar_items" href="#">
                 <div class="sidebar_icons">
-                  <i class="fas fa-sticky-note text-lg"></i>
+                  <i class="fas fa-tag fa-rotate-135 text-lg"></i>
                 </div>
                 <p class="sidebar_text" v-show="toggled">{{ labels.title }}</p>
               </a>
