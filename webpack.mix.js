@@ -11,6 +11,15 @@ const mix = require('laravel-mix');
  |
  */
 
+mix.disableNotifications();
+
+if(!mix.inProduction()){
+  mix.webpackConfig({ devtool: "inline-source-map" });
+}
+
 mix.js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css')
-    .sass('resources/sass/tablecell_override.scss', 'public/css');
+    .sass('resources/sass/tablecell_override.scss', 'public/css')
+    .sass('resources/sass/syncfustion_material.scss', 'public/css')
+    .sourceMaps(false)
+;
