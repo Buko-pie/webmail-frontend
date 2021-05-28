@@ -20,6 +20,6 @@ if(!mix.inProduction()){
 mix.js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css')
     .sass('resources/sass/tablecell_override.scss', 'public/css')
-    .sass('resources/sass/syncfustion_material.scss', 'public/css')
+    .sass('resources/sass/syncfusion_material.scss', 'public/css')
     .sourceMaps(false)
 ;
