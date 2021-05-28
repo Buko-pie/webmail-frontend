@@ -4,7 +4,7 @@
       <i class="fas fa-paperclip text-base"></i>
   </div>
   <div v-else>
-      
+
   </div>
 </div>
 </template>

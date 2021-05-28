@@ -31,7 +31,7 @@ class WebmailController extends Controller
         'data_route' => $data_route,
         'toggle_route' => $toggle_route
       ];
-      return view('test_component',)->with(['routes' => $routes]);
+      return view('test_component')->with(['routes' => $routes]);
     }
 
     public function test()
