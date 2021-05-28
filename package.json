@@ -20,6 +20,7 @@
         "vue-template-compiler": "^2.6.12"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.15.3",
         "@syncfusion/ej2-vue-buttons": "^19.1.63",
         "@syncfusion/ej2-vue-calendars": "^19.1.63",
         "@syncfusion/ej2-vue-dropdowns": "^19.1.63",
