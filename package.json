@@ -34,6 +34,7 @@
         "core-js": "^3.13.1",
         "moment": "^2.29.1",
         "vue": "^2.6.12",
+        "vue-clickaway": "^2.2.2",
         "vue-js-modal": "^2.0.0-rc.6",
         "vue-template-compiler": "^2.6.12",
         "vuex": "^3.6.2"

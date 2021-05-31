@@ -6,6 +6,8 @@
     <title>Document</title> 
     
     <link href="{{ asset('css/syncfusion_material.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/sidebarTemplate.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/inboxTemplate.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <script src="{{ asset('js/app.js') }}" defer></script>
 </head>
@@ -22,7 +24,3 @@
     <link href="{{ asset('css/tablecell_override.css') }}" rel="stylesheet">
 </body>
 </html>
-
-<script>
-  
-</script>

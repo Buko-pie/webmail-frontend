@@ -24,7 +24,7 @@
         </ejs-tooltip>
         
         <ejs-tooltip content="More" position="BottomCenter">
-          <ejs-button @click.native="btnMore" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" ></ejs-button>
+          <ejs-dropdownbutton :items="more_items" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
         </ejs-tooltip>
       </div>
       <div :class="{'hidden': !items_selected}" class="grid grid-cols-3 divide-x">
@@ -50,29 +50,27 @@
           </ejs-tooltip>
           <!-- Button Snooze  -->
           <ejs-tooltip content="Snooze" position="BottomCenter">
-            <ejs-button @click.native="btnSnooze" iconCss="fas fa-clock" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-dropdownbutton :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
           </ejs-tooltip>
           <!-- Button Move to  -->
           <ejs-tooltip content="Move to" position="BottomCenter">
-            <ejs-button @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-dropdownbutton :items="more_items" iconCss="fas fa-file-export" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
           </ejs-tooltip>
         </div>
 
         <div class="px-2 flex">
           <!-- Button Labels  -->
           <ejs-tooltip content="Labels" position="BottomCenter">
-            <ejs-button @click.native="btnLabels" iconCss="fas fa-tag fa-rotate-135" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-button ref="btn_labels" @click.native="btnLabels" iconCss="fas fa-tag rotate-135" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
-            <ejs-button @click.native="btnMore" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-dropdownbutton :items="more_items_selected" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
           </ejs-tooltip>
         </div>
       </div>
       
     </div>
-    
-    
   </div>
 </template>
 
@@ -117,6 +115,30 @@ export default Vue.extend({
         },{
           id: 5,
           text: 'Unstarred'
+        }
+      ],
+      more_items:[  
+        {
+          text: "Mark all as read"
+        }
+      ],
+      more_items_selected: [
+        {
+          text: "Mark as read"
+        },{
+          text: "Mark as unread"
+        },{
+          text: "Mark as Important"
+        },{
+          text: "Mark as not Important"
+        },{
+          text: "Add star"
+        },{
+          text: "Remove star"
+        },{
+          text: "Mute"
+        },{
+          text: "Forward as attachment"
         }
       ]
     };
@@ -173,7 +195,11 @@ export default Vue.extend({
     },
 
     btnLabels(){
-      console.log("Label selected emails");
+      this.$eventHub.$emit("show_custom_dropdown", {
+        button: "btn_labels",
+        top: this.$refs.btn_labels.$el.getBoundingClientRect().top,
+        left: this.$refs.btn_labels.$el.getBoundingClientRect().left
+      });
     },
 
     btnMore(){

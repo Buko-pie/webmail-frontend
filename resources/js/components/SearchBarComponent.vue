@@ -97,7 +97,7 @@ Vue.use(ButtonPlugin);
 
 export default Vue.extend({
   name: "SearchBarComponent",
-  data: function() {
+  data() {
     return {
       is_focused: false,
       show_filters: false,

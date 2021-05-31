@@ -1,5 +1,7 @@
 {
     "/js/app.js": "/js/app.js",
     "/css/syncfusion_material.css": "/css/syncfusion_material.css",
-    "/css/app.css": "/css/app.css"
+    "/css/app.css": "/css/app.css",
+    "/css/inboxTemplate.css": "/css/inboxTemplate.css",
+    "/css/sidebarTemplate.css": "/css/sidebarTemplate.css"
 }

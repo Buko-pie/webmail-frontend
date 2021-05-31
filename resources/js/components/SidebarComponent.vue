@@ -128,6 +128,23 @@
       </div>
     </div> 
   </div>
+
+  <!-- label drop down -->
+  <div 
+    v-on-clickaway="test_trigger"
+    class="custom-dropdown-menu bg-white p-3" 
+    :class="{'hidden' : !dropdown_btn_tgl}" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px', 
+      'z-index': dropdown_zIndex
+    }"
+  >
+    <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
+      <input id="searchbar_label" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+      <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+    </div>
+  </div>
 </div>
 </template>
 
@@ -139,6 +156,7 @@ import VModal from 'vue-js-modal';
 import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
 import { enableRipple } from '@syncfusion/ej2-base';
+import { mixin as clickaway } from 'vue-clickaway';
 
 enableRipple(true);
 
@@ -175,10 +193,11 @@ function isExistLabel(new_label, custom_labels){
 
 export default Vue.extend({
   name: "SidebarComponent",
+  mixins: [ clickaway ],
   props:{
     routes: { type: Object, required: true }
   },
-  data: function() {
+  data() {
     return {
       enableDock:  true,
       dockSize : "72px",
@@ -193,14 +212,20 @@ export default Vue.extend({
       custom_labels:[
         {id: 0, title: "test_label"},
         {id: 1, title: "test_label_2"}
-      ]
+      ],
+      searchbar_label: false,
+      dropdown_btn_tgl: false,
+      dropdown_zIndex: 1005,
+      dropdown_label:{
+        top: 0,
+        left: 0
+      }
     }
   },
   components:{
     grid
   },
   mounted(){
-
     if(this.custom_labels.length > 0){
       this.custom_labels.forEach(function(){
         //add custome labels to sidebar here
@@ -210,6 +235,11 @@ export default Vue.extend({
     
   },
   methods: {
+    test_trigger(){
+      console.log("bruhs");
+      this.dropdown_btn_tgl = false;
+    },
+
     modalShow(){
       this.$modal.show('new_label_modal',{
         buttons:[
@@ -319,6 +349,7 @@ export default Vue.extend({
         alert("somthing went wrong");
       });
     },
+
     importantOnly(event) {
       console.log("important Only");
       let _this = this;
@@ -342,7 +373,7 @@ export default Vue.extend({
         console.log(error);
         alert("somthing went wrong");
       });
-    }
+    },
   },
 
   computed:{
@@ -350,6 +381,17 @@ export default Vue.extend({
       console.log(this.category_toggle);
       return this.category_toggle ? "fas fa-chevron-up text-base" : "fas fa-chevron-down text-base";
     }
+  },
+
+  created(){
+    this.$eventHub.$on("show_custom_dropdown", (e) => {
+      this.dropdown_btn_tgl = !this.dropdown_btn_tgl;
+      this.dropdown_zIndex++;
+      if(e.button === "btn_labels"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left);
+      }
+    });
   }
 });
 </script>
