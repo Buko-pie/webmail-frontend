@@ -54,7 +54,7 @@
           </ejs-tooltip>
           <!-- Button Move to  -->
           <ejs-tooltip content="Move to" position="BottomCenter">
-            <ejs-dropdownbutton :items="more_items" iconCss="fas fa-file-export" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
         </div>
 
@@ -69,7 +69,6 @@
           </ejs-tooltip>
         </div>
       </div>
-      
     </div>
   </div>
 </template>
@@ -191,20 +190,54 @@ export default Vue.extend({
     },
 
     btnMove(){
-      console.log("Move emails to other inbox");
+      let _this = this;
+      this.$eventHub.$emit("show_custom_dropdown", {
+        button: "btn_move",
+        top: this.$refs.btn_move.$el.getBoundingClientRect().top,
+        left: this.$refs.btn_move.$el.getBoundingClientRect().left
+      });
+
+      setTimeout(function() {
+        _this.$store.dispatch("dropdown_btn_mv_toggle", !this.dropdown_btn_mv);
+      }, 0);
     },
 
     btnLabels(){
+      let _this = this;
       this.$eventHub.$emit("show_custom_dropdown", {
         button: "btn_labels",
         top: this.$refs.btn_labels.$el.getBoundingClientRect().top,
         left: this.$refs.btn_labels.$el.getBoundingClientRect().left
       });
+
+      setTimeout(function() {
+        _this.$store.dispatch("dropdown_btn_lbl_toggle", !this.dropdown_btn_lbl);
+      }, 0);
+      
     },
 
     btnMore(){
       console.log("Show more options on selected emails");
     }
+  },
+
+  computed:{
+    message(){
+      return this.$store.state.message;
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
+    }
+  },
+
+  mounted(){
+    console.log(this.message + "bruhs");
+    console.log(this.dropdown_btn_lbl);
   },
 
   created(){

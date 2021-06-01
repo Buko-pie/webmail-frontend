@@ -73,8 +73,8 @@
       </div>
 
       <div class="col-span-5 flex justify-end">
-         <ejs-button class="mr-3">Create Filter</ejs-button>
-         <ejs-button :isPrimary="true">Search</ejs-button>
+        <ejs-button class="mr-3">Create Filter</ejs-button>
+        <ejs-button :isPrimary="true">Search</ejs-button>
       </div>
     </div>
   </div>

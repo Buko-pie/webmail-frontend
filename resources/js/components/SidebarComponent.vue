@@ -109,7 +109,7 @@
                 <div class="sidebar_icons">
                   <i class="fas fa-tag rotate-135 text-lg"></i>
                 </div>
-                <p class="sidebar_text" v-show="toggled">{{ labels.title }}</p>
+                <p class="sidebar_text" v-show="toggled">{{ labels.text }}</p>
               </a>
             </div>
 
@@ -131,20 +131,60 @@
 
   <!-- label drop down -->
   <div 
-    v-on-clickaway="test_trigger"
+    v-click-outside="dropdown_hide_label"
     class="custom-dropdown-menu bg-white p-3" 
-    :class="{'hidden' : !dropdown_btn_tgl}" 
+    :class="[!dropdown_btn_lbl ? 'hidden' : 'block']" 
     :style="{
       top: dropdown_label.top + 'px', 
       left: dropdown_label.left + 'px', 
       'z-index': dropdown_zIndex
     }"
   >
-    <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
-      <input id="searchbar_label" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
-      <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+  <div class="grid grid-cols-1 divide-y">
+    <div>
+        <p>Label as:</p>
+        <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
+          <input id="searchbar_label" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+        </div>
+        <div class="overflow-y-auto w-full h-72">
+          <ejs-listview id='listview' :dataSource="custom_labels" showCheckBox="true"></ejs-listview>
+        </div>
+      </div>
+      <div>
+        <ejs-listview id='listview2' :dataSource="labels_options"></ejs-listview>
+      </div>
     </div>
   </div>
+
+  <!-- move to drop down -->
+  <div 
+    v-click-outside="dropdown_hide_moveTo"
+    class="custom-dropdown-menu bg-white p-3" 
+    :class="[!dropdown_btn_mv ? 'hidden' : 'block']" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px', 
+      'z-index': dropdown_zIndex
+    }"
+  >
+  <div class="grid grid-cols-1 divide-y">
+    <div>
+        <p>Move to:</p>
+        <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
+          <input id="searchbar_moveTo" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+        </div>
+        <div class="overflow-y-auto w-full h-72">
+          <ejs-listview id='listview' :dataSource="custom_labels" showCheckBox="true"></ejs-listview>
+        </div>
+      </div>
+      <div>
+        <ejs-listview id='listview2' :dataSource="labels_options"></ejs-listview>
+      </div>
+    </div>
+  </div>
+    
 </div>
 </template>
 
@@ -152,16 +192,18 @@
 import Vue from "vue";
 import moment from "moment";
 import VModal from 'vue-js-modal';
+import ClickOutside from 'vue-click-outside';
 
 import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
+import { ListViewPlugin } from '@syncfusion/ej2-vue-lists';
 import { enableRipple } from '@syncfusion/ej2-base';
-import { mixin as clickaway } from 'vue-clickaway';
 
 enableRipple(true);
 
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
+Vue.use(ListViewPlugin);
 
 const grid = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const new_label_modal = Vue.component("new_label_modal", require("./modalcomponents/NewLabelComponent").default);
@@ -193,10 +235,10 @@ function isExistLabel(new_label, custom_labels){
 
 export default Vue.extend({
   name: "SidebarComponent",
-  mixins: [ clickaway ],
   props:{
     routes: { type: Object, required: true }
   },
+
   data() {
     return {
       enableDock:  true,
@@ -210,8 +252,12 @@ export default Vue.extend({
       category_toggle: false,
       new_lbl_txt: "Please enter new label name:",
       custom_labels:[
-        {id: 0, title: "test_label"},
-        {id: 1, title: "test_label_2"}
+        {id: 0, text: "test_label"},
+        {id: 1, text: "test_label_2"}
+      ],
+      labels_options:[
+        {id: 0, text: "Create new"}, 
+        {id: 1, text: "Manage label"}
       ],
       searchbar_label: false,
       dropdown_btn_tgl: false,
@@ -222,22 +268,31 @@ export default Vue.extend({
       }
     }
   },
+
   components:{
     grid
   },
+
   mounted(){
     if(this.custom_labels.length > 0){
       this.custom_labels.forEach(function(){
         //add custome labels to sidebar here
       });
       console.log(this.custom_labels);
+      console.log(this.$store);
     }
-    
+    console.log(this.message);
   },
+
   methods: {
-    test_trigger(){
-      console.log("bruhs");
-      this.dropdown_btn_tgl = false;
+    dropdown_hide_label(){
+      console.log("hide lavel as");
+      this.$store.dispatch("dropdown_btn_lbl_toggle", false);
+    },
+
+    dropdown_hide_moveTo(){
+      console.log("hide move to");
+      this.$store.dispatch("dropdown_btn_mv_toggle", false);
     },
 
     modalShow(){
@@ -291,7 +346,7 @@ export default Vue.extend({
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
           console.log(this.new_lbl_name);
-          this.custom_labels.push({id: (this.custom_labels.length), title: this.new_lbl_name});
+          this.custom_labels.push({id: (this.custom_labels.length), text: this.new_lbl_name});
           this.new_lbl_name = null;
           this.$modal.hide('new_label_modal');
         }
@@ -380,14 +435,33 @@ export default Vue.extend({
     category_toggles(){
       console.log(this.category_toggle);
       return this.category_toggle ? "fas fa-chevron-up text-base" : "fas fa-chevron-down text-base";
+    },
+
+    message(){
+      return this.$store.state.message;
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
     }
+  },
+
+  directives: {
+    ClickOutside
   },
 
   created(){
     this.$eventHub.$on("show_custom_dropdown", (e) => {
-      this.dropdown_btn_tgl = !this.dropdown_btn_tgl;
+      // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
       if(e.button === "btn_labels"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left);
+      }else if(e.button === "btn_move"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
       }
