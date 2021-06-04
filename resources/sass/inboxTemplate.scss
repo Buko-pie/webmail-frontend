@@ -21,3 +21,7 @@
   -o-transform: rotate(135deg);
   transform: rotate(135deg);
 }
+
+.e-listview .e-list-item.e-active {
+  background-color: #fff;
+}

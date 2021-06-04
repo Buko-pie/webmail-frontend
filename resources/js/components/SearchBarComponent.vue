@@ -1,7 +1,7 @@
 <template>
 <div class="relative">
   <div class="e-input-group" :class="{ 'e-input-focus': e_inputs[0].is_focused }"> 
-    <span id="searchbar_icon" @mousedown="icon_button_md(0)" @mouseup="icon_button_mu(0)" :class="{'e-input-btn-ripple': e_buttons[0].is_clicked}" class="e-input-group-icon e-input-picture"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
+    <span id="searchbar_icon" @mousedown="icon_button_md(0)" @mouseup="icon_button_mu(0)" :class="{'e-input-btn-ripple': e_buttons[0].is_clicked}" class="e-input-group-icon e-input-picture"><i class="w-4 text-lg fas fa-search mr-2"></i></span>
     <input id="searchbar" @focus="inputFocus(0)" @blur="inputBlur(0)" class="e-input e-textbox" type="text" placeholder="Search">
     <span id="show_filters_icon" @click="showFilters" @mousedown="icon_button_md(1)" @mouseup="icon_button_mu(1)" :class="{'e-input-btn-ripple': e_buttons[1].is_clicked}" class="e-input-group-icon e-input-calendar"><i class="fas fa-caret-down"></i></span>
   </div>

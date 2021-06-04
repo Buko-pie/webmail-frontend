@@ -20,7 +20,7 @@
     <div id="wrapper">
       <div class="col-lg-12 col-sm-12 col-md-12">
         <!-- Sidebar element declaration -->
-        <ejs-sidebar id="dockSidebar" ref="dockSidebar" class="mt-16 bg-white text-gray-700" :enableDock='enableDock' :position="position" :width='width' :dockSize='dockSize'>
+        <ejs-sidebar id="dockSidebar" ref="dockSidebar" class="mt-16 bg-white text-gray-700" :enableDock='enableDock' :position="position" :width='width' :dockSize='dockSize' :close="sidebarClose" :open="sidebarOpen">
           <div class="compose_btn_container">
             <button class="compose_btn shadow-black pill">
               <i class="fas fa-plus-circle text-lg"></i>
@@ -176,14 +176,68 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview id='listview' :dataSource="custom_labels" showCheckBox="true"></ejs-listview>
+          <ejs-listview id='listview' :dataSource="moveTo_locations"></ejs-listview>
         </div>
+      </div>
+      <div>
+        <ejs-listview id='listview2' :dataSource="moveTo_options"></ejs-listview>
       </div>
       <div>
         <ejs-listview id='listview2' :dataSource="labels_options"></ejs-listview>
       </div>
     </div>
   </div>
+
+  <!-- user drop down menu -->
+  <div 
+    v-click-outside="dropdown_hide_user"
+    ref="user_dropdown"
+    class="custom-dropdown-user bg-white p-3" 
+    :class="[!dropdown_btn_user ? 'hidden' : 'block']" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px', 
+      'z-index': dropdown_zIndex
+    }"
+  >
+    <div class="grid grid-cols-1 divide-y">
+      <div>
+        <div class="flex mb-5">
+          <div class="relative">
+            <img class="h-20 w-20 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+            <div class="absolute bottom-1.5 right-0.5">
+              <button class="bg-white rounded-full text-gray-400 hover:text-pink-500 focus:outline-none">
+                <i class="w-6 p-0.5 fas fa-camera text-sm"></i>
+              </button>
+            </div>
+          </div>
+          <div class="m-4 items-center">
+            <b>John Doe</b>
+            <p>john.doe@email.com</p>
+          </div>
+        </div>
+        <div class="flex justify-center mb-3">
+          <ejs-button iconCss="" cssClass='shadow-none bg-gray-200'>Manage your account</ejs-button>
+        </div>
+      </div>
+      <div>
+        <ejs-listview id='accounts_listView' :dataSource="email_accounts" :template="accounts_list_template"></ejs-listview>
+      </div>
+      <div>
+        <div class="m-3 flex justify-center">
+          <ejs-button iconCss="" cssClass='shadow-none p-3 bg-gray-200'>Sign Out</ejs-button>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-center items-center mt-3">
+          <ejs-button iconCss="" cssClass='shadow-none bg-white text-xs text-gray-500'>Privacy Policy</ejs-button>
+          <i class="fas fa-circle text-2xs text-gray-400"></i>
+          <ejs-button iconCss="" cssClass='shadow-none bg-white text-xs text-gray-500'>Terms of Service</ejs-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
     
 </div>
 </template>
@@ -206,7 +260,8 @@ Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
 Vue.use(ListViewPlugin);
 
 const grid = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
-const new_label_modal = Vue.component("new_label_modal", require("./modalcomponents/NewLabelComponent").default);
+const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
+// const new_label_modal = Vue.component("new_label_modal", require("./modalcomponents/NewLabelComponent").default);
 
 function formatDate(data) {
   data.forEach(function(value) {
@@ -257,14 +312,33 @@ export default Vue.extend({
       ],
       labels_options:[
         {id: 0, text: "Create new"}, 
-        {id: 1, text: "Manage label"}
+        {id: 1, text: "Manage labels"}
       ],
+      moveTo_options:[
+        {id: 0, text: "Spam"}, 
+        {id: 1, text: "Trash"}
+      ],
+      categories:[
+        { id: 0, text: "Social" },
+        { id: 0, text: "Updates" },
+        { id: 0, text: "Forums" },
+        { id: 0, text: "Promotions" }
+      ],
+      moveTo_locations:[],
       searchbar_label: false,
       dropdown_btn_tgl: false,
       dropdown_zIndex: 1005,
       dropdown_label:{
         top: 0,
         left: 0
+      },
+      email_accounts:[
+        {id: 0, text: "Add another account"}
+      ],
+      accounts_list_template(){
+        return{
+          template: accounts_list_template
+        }
       }
     }
   },
@@ -275,37 +349,26 @@ export default Vue.extend({
 
   mounted(){
     if(this.custom_labels.length > 0){
-      this.custom_labels.forEach(function(){
-        //add custome labels to sidebar here
-      });
-      console.log(this.custom_labels);
-      console.log(this.$store);
+      this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
-    console.log(this.message);
+
   },
 
   methods: {
     dropdown_hide_label(){
-      console.log("hide lavel as");
       this.$store.dispatch("dropdown_btn_lbl_toggle", false);
     },
 
     dropdown_hide_moveTo(){
-      console.log("hide move to");
       this.$store.dispatch("dropdown_btn_mv_toggle", false);
     },
 
+    dropdown_hide_user(){
+      this.$store.dispatch("dropdown_btn_user_toggle", false);
+    },
+
     modalShow(){
-      this.$modal.show('new_label_modal',{
-        buttons:[
-          {
-            title: "Cancel",
-            handler:() => {
-              this.$modal.hide("new_label_modal")
-            }
-          }
-        ]
-      });
+      this.$modal.show('new_label_modal');
     },
 
     modalHide(){
@@ -315,21 +378,26 @@ export default Vue.extend({
     modalOpened(){
       if(this.toggled){
         this.$refs.dockSidebar.toggle();
-        this.toggled = !this.toggled;
       }
     },
     
     modalClosed(){
-      if(this.toggled_sidebar_before_modal_open === false){
+      if(!this.toggled_sidebar_before_modal_open){
         this.$refs.dockSidebar.toggle();
-        this.toggled = !this.toggled;
       }
     },
 
     toggleClick() {
       this.$refs.dockSidebar.toggle();
-      this.toggled = !this.toggled;
       this.toggled_sidebar_before_modal_open = !this.toggled_sidebar_before_modal_open;
+    },
+
+    sidebarClose(){
+      this.toggled = !this.toggled;
+    },
+
+    sidebarOpen(){
+      this.toggled = !this.toggled;
     },
 
     closeClick() {
@@ -347,6 +415,9 @@ export default Vue.extend({
         }else{
           console.log(this.new_lbl_name);
           this.custom_labels.push({id: (this.custom_labels.length), text: this.new_lbl_name});
+          
+          this.moveTo_locations = this.custom_labels.concat(this.categories);
+
           this.new_lbl_name = null;
           this.$modal.hide('new_label_modal');
         }
@@ -447,6 +518,10 @@ export default Vue.extend({
 
     dropdown_btn_mv(){
       return this.$store.state.dropdown_btn_mv;
+    },
+
+    dropdown_btn_user(){
+      return this.$store.state.dropdown_btn_user;
     }
   },
 
@@ -455,6 +530,8 @@ export default Vue.extend({
   },
 
   created(){
+    let _this = this;
+
     this.$eventHub.$on("show_custom_dropdown", (e) => {
       // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
@@ -464,6 +541,10 @@ export default Vue.extend({
       }else if(e.button === "btn_move"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
+      }else if(e.button === "user_dropdown"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left - 298);
+        console.log(this.$refs.user_dropdown.clientWidth);
       }
     });
   }

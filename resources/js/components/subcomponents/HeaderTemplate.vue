@@ -1,5 +1,12 @@
 <template>
   <div ref="header_template" class="flex relative items-center h-14">
+    <!-- Date picker modal -->
+    <modal name="date_picker_modal">
+      <div class="p-5 h-full relative">
+        bruh
+      </div>
+    </modal>
+
     <div e-mappinguid="grid-column0">
       <div class="e-checkbox-wrapper e-css z-40">
         <input class="e-checkselectall e-focus" type="checkbox">
@@ -13,7 +20,7 @@
         <ejs-tooltip content="Refresh" position="BottomCenter">
           <ejs-progressbutton id="refresh_progress" ref="refresh_progress"
           :enableProgress="true"
-          :begin="refreshInbox" 
+          :begin="refreshInbox"
           :progress="onProgress"
           :spinSettings="{position: 'Center'}" 
           :duration="loading_duration"
@@ -50,7 +57,8 @@
           </ejs-tooltip>
           <!-- Button Snooze  -->
           <ejs-tooltip content="Snooze" position="BottomCenter">
-            <ejs-dropdownbutton :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-dropdownbutton target="#snooze_listView" :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-listview id="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
           </ejs-tooltip>
           <!-- Button Move to  -->
           <ejs-tooltip content="Move to" position="BottomCenter">
@@ -75,14 +83,19 @@
 
 <script>
 import Vue from "vue";
+import moment from "moment";
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { TooltipPlugin } from "@syncfusion/ej2-vue-popups";
+import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
+
+const snooze_template = Vue.component("snooze_template", require("./SnoozeListViewTemplate").default);
 
 Vue.use(DropDownButtonPlugin);
 Vue.use(ProgressButtonPlugin);
 Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
+Vue.use(ListViewPlugin);
 
 export default Vue.extend({
   name: "HeaderTemplate",
@@ -96,51 +109,40 @@ export default Vue.extend({
       read_tgl_button_icon: "",
       loading_duration: 15000,
       drop_down_items:[
-        {
-          id: 0,
-          text: 'All'
-        },{
-          id: 1,
-          text: 'None'
-        },{
-          id: 2,
-          text: 'Read'
-        },{
-          id: 3,
-          text: 'Unread'
-        },{
-          id: 4,
-          text: 'Starred'
-        },{
-          id: 5,
-          text: 'Unstarred'
-        }
+        { id: 0, text: 'All' },
+        { id: 1, text: 'None' },
+        { id: 2, text: 'Read' },
+        { id: 3, text: 'Unread' },
+        { id: 4, text: 'Starred' },
+        { id: 5, text: 'Unstarred' }
       ],
       more_items:[  
-        {
-          text: "Mark all as read"
-        }
+        { id: 0, text: "Mark all as read" }
       ],
       more_items_selected: [
-        {
-          text: "Mark as read"
-        },{
-          text: "Mark as unread"
-        },{
-          text: "Mark as Important"
-        },{
-          text: "Mark as not Important"
-        },{
-          text: "Add star"
-        },{
-          text: "Remove star"
-        },{
-          text: "Mute"
-        },{
-          text: "Forward as attachment"
+        { id: 0, text: "Mark as read" },
+        { id: 1, text: "Mark as unread" },
+        { id: 2, text: "Mark as Important" },
+        { id: 3, text: "Mark as not Important" },
+        { id: 4, text: "Add star" },
+        { id: 5, text: "Remove star" },
+        { id: 6, text: "Mute" },
+        { id: 7, text: "Forward as attachment" }
+      ],
+      snooze_opitons :[
+        { id: 0, class: "data", text: "Later today", day_time: "6:00 PM", category: "Snooze until..." },
+        { id: 1, class: "data", text: "Tommorow", day_time: moment().add(1,'days').format("ddd") + ", 8:00 AM", category: "Snooze until..." },
+        { id: 2, class: "data", text: "This weekend", day_time: "Sat, 8:00 AM", category: "Snooze until..." },
+        { id: 3, class: "data", text: "Next week", day_time: "Mon, 8:00 AM", category: "Snooze until..." },
+        { id: 4, class: "data", text: "Pick date & time", category: "Snooze until..." }
+      ],
+      snooze_fields: { text: 'text', groupBy: 'category' },
+      snooze_template(){
+        return{
+          template: snooze_template
         }
-      ]
-    };
+      },
+    }
   },
 
   methods:{
@@ -218,7 +220,13 @@ export default Vue.extend({
 
     btnMore(){
       console.log("Show more options on selected emails");
-    }
+    },
+
+    snoozeSelect(args){
+      if(args.data === 4){
+
+      }
+    },
   },
 
   computed:{
@@ -236,8 +244,9 @@ export default Vue.extend({
   },
 
   mounted(){
-    console.log(this.message + "bruhs");
-    console.log(this.dropdown_btn_lbl);
+    console.log(moment().add(1,'days').format("ddd") + ", 8:00 AM");
+    // this.snooze_opitons[1].day_time = ;
+    // console.log(this.snooze_opitons[1].day_time);
   },
 
   created(){

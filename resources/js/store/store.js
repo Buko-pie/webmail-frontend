@@ -9,7 +9,8 @@ export const store = new Vuex.Store({
     message: "Vuex Active",
     counter: 0,
     dropdown_btn_lbl: false,
-    dropdown_btn_mv: false
+    dropdown_btn_mv: false,
+    dropdown_btn_user: false,
   },
 
   mutations:{
@@ -18,7 +19,11 @@ export const store = new Vuex.Store({
     },
 
     dropdown_btn_mv_toggle(state, payload){
-      state.dropdown_btn_lbl = payload;
+      state.dropdown_btn_mv = payload;
+    },
+
+    dropdown_btn_user_toggle(state, payload){
+      state.dropdown_btn_user = payload;
     }
   },
 
@@ -29,6 +34,10 @@ export const store = new Vuex.Store({
 
     dropdown_btn_mv_toggle(state, payload){
       state.commit('dropdown_btn_mv_toggle', payload);
+    },
+
+    dropdown_btn_user_toggle(state, payload){
+      state.commit('dropdown_btn_user_toggle', payload);
     }
   },
 
