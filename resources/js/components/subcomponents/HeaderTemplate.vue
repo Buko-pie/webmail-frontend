@@ -1,12 +1,5 @@
 <template>
   <div ref="header_template" class="flex relative items-center h-14">
-    <!-- Date picker modal -->
-    <modal name="date_picker_modal">
-      <div class="p-5 h-full relative">
-        bruh
-      </div>
-    </modal>
-
     <div e-mappinguid="grid-column0">
       <div class="e-checkbox-wrapper e-css z-40">
         <input class="e-checkselectall e-focus" type="checkbox">
@@ -58,7 +51,7 @@
           <!-- Button Snooze  -->
           <ejs-tooltip content="Snooze" position="BottomCenter">
             <ejs-dropdownbutton target="#snooze_listView" :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
-            <ejs-listview id="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
+            <ejs-listview id="snooze_listView" ref="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
           </ejs-tooltip>
           <!-- Button Move to  -->
           <ejs-tooltip content="Move to" position="BottomCenter">
@@ -73,7 +66,7 @@
           </ejs-tooltip>
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
-            <ejs-dropdownbutton :items="more_items_selected" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-dropdownbutton :items="more_items_selected" :select="moreOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
           </ejs-tooltip>
         </div>
       </div>
@@ -84,6 +77,8 @@
 <script>
 import Vue from "vue";
 import moment from "moment";
+import VModal from 'vue-js-modal';
+
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { TooltipPlugin } from "@syncfusion/ej2-vue-popups";
@@ -96,6 +91,30 @@ Vue.use(ProgressButtonPlugin);
 Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
 Vue.use(ListViewPlugin);
+Vue.use(VModal, { dialog: true });
+
+function selectedItemsTo(option, dataIDs, route) {
+  let _this = this;
+
+  axios({
+    method: "GET",
+    url: route.set_many_route,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer {{ csrf_token() }}"
+    },
+    params: {
+      token: "{{ csrf_token() }}",
+      option: option,
+      dataIDs: dataIDs,
+    }
+  }).then(function (response) {
+    console.log(response);
+  }).catch(error => {
+    console.log(error);
+    alert("somthing went wrong");
+  });
+}
 
 export default Vue.extend({
   name: "HeaderTemplate",
@@ -122,8 +141,8 @@ export default Vue.extend({
       more_items_selected: [
         { id: 0, text: "Mark as read" },
         { id: 1, text: "Mark as unread" },
-        { id: 2, text: "Mark as Important" },
-        { id: 3, text: "Mark as not Important" },
+        { id: 2, text: "Mark as important" },
+        { id: 3, text: "Mark as not important" },
         { id: 4, text: "Add star" },
         { id: 5, text: "Remove star" },
         { id: 6, text: "Mute" },
@@ -136,7 +155,7 @@ export default Vue.extend({
         { id: 3, class: "data", text: "Next week", day_time: "Mon, 8:00 AM", category: "Snooze until..." },
         { id: 4, class: "data", text: "Pick date & time", category: "Snooze until..." }
       ],
-      snooze_fields: { text: 'text', groupBy: 'category' },
+      snooze_fields: { tooltip: 'text', text: 'text', groupBy: 'category' },
       snooze_template(){
         return{
           template: snooze_template
@@ -185,6 +204,13 @@ export default Vue.extend({
 
     btnToggleRead(){
       console.log(this.items_unread_selected ? "Mark selected emails as read" : "Mark selected emails as unread");
+      if(this.items_unread_selected){
+        selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes);
+      }else{
+        selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
+      }
+
+      this.refreshInbox();
     },
 
     btnSnooze(){
@@ -223,10 +249,71 @@ export default Vue.extend({
     },
 
     snoozeSelect(args){
-      if(args.data === 4){
-
+      this.$refs.snooze_listView.selectItem();
+      if(args.data.text === "Pick date & time"){
+        this.$eventHub.$emit("show_datepick_modal", {
+          data: "show_datepick_modal modal open"
+        });
       }
     },
+
+    moreOptions(args){
+      switch (args.item.id) {
+        case 0:
+          //Mark as read
+          console.log("Mark as read");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 1:
+          //Mark as unread
+          console.log("Mark as unread");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 2:
+          //Mark as important
+          console.log("Mark as important");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 3:
+          //Mark as not important
+          console.log("Mark as not important");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 4:
+          //Add star
+          console.log("Add star");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 5:
+          //Remove star
+          console.log("Remove star");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 6:
+          //Mute
+          console.log("Mute");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 7:
+          //Forward as attachment
+          console.log("Forward as attachment");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+      
+        default:
+          console.log("somthing went wrong!");
+        break;
+      }
+
+      this.refreshInbox();
+    }
   },
 
   computed:{

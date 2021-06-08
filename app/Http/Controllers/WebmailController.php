@@ -26,10 +26,12 @@ class WebmailController extends Controller
     {
       $data_route = route('get_dummy_data');
       $toggle_route = route('toggle_dummy_data');
+      $set_many_route = route('toggle_many_dummy_data');
 
       $routes= [
         'data_route' => $data_route,
-        'toggle_route' => $toggle_route
+        'toggle_route' => $toggle_route,
+        'set_many_route' => $set_many_route
       ];
       return view('test_component',)->with(['routes' => $routes]);
     }

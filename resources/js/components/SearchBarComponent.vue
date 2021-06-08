@@ -169,13 +169,6 @@ export default Vue.extend({
         filters.classList.add("hidden")
       }
       
-    },
-    getParentNode(element) {
-      let parentNode = element.parentNode;
-      if (parentNode.classList.contains('e-input-in-wrap')) {
-        return parentNode.parentNode;
-      }
-      return parentNode;
     }
   }
 });

@@ -333,8 +333,11 @@ export default({
     },
 
     rowSelected(args){
+      this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
+
       if(args.rowIndexes){
         this.selected_items_count = args.rowIndexes.length;
+        this.$store.dispatch("set_selected_items_count", this.selected_items_count);
       }
 
       if(args.data.length){
@@ -366,10 +369,14 @@ export default({
     },
 
     rowDeselected(args){
+      this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
+
       if(args.rowIndexes){
         this.selected_items_count = this.selected_items_count - args.rowIndexes.length;
+        this.$store.dispatch("set_selected_items_count", this.selected_items_count);
         
         if(args.data.length){
+          console.log(args.data.length);
           args.data.forEach(value => {
             if(!value.read){
               this.selected_item_unread--;

@@ -16,6 +16,14 @@
         </div>
       </div>
     </modal>
+
+    <!-- Date picker modal -->
+    <modal name="date_picker_modal" :adaptive="true">
+      <div class="p-4 h-auto relative">
+        <ejs-calendar id="calendar" ></ejs-calendar>
+      </div>
+    </modal>
+
     <!-- sample level element  -->
     <div id="wrapper">
       <div class="col-lg-12 col-sm-12 col-md-12">
@@ -131,7 +139,7 @@
 
   <!-- label drop down -->
   <div 
-    v-click-outside="dropdown_hide_label"
+    v-click-outside="dropdownHideLabel"
     class="custom-dropdown-menu bg-white p-3" 
     :class="[!dropdown_btn_lbl ? 'hidden' : 'block']" 
     :style="{
@@ -148,18 +156,18 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview id='listview' :dataSource="custom_labels" showCheckBox="true"></ejs-listview>
+          <ejs-listview :dataSource="custom_labels" showCheckBox="true" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
-        <ejs-listview id='listview2' :dataSource="labels_options"></ejs-listview>
+        <ejs-listview id="lbl_options" ref="lbl_options" :fields="fields" :select="selectLabelOps" :dataSource="labels_options"></ejs-listview>
       </div>
     </div>
   </div>
 
   <!-- move to drop down -->
   <div 
-    v-click-outside="dropdown_hide_moveTo"
+    v-click-outside="dropdownHideMoveTo"
     class="custom-dropdown-menu bg-white p-3" 
     :class="[!dropdown_btn_mv ? 'hidden' : 'block']" 
     :style="{
@@ -176,21 +184,21 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview id='listview' :dataSource="moveTo_locations"></ejs-listview>
+          <ejs-listview :dataSource="moveTo_locations" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
-        <ejs-listview id='listview2' :dataSource="moveTo_options"></ejs-listview>
+        <ejs-listview id="moveTo_options_1" ref="moveTo_options_1" :select="selectMoveToOps" :dataSource="moveTo_options" :fields="fields"></ejs-listview>
       </div>
       <div>
-        <ejs-listview id='listview2' :dataSource="labels_options"></ejs-listview>
+        <ejs-listview id="moveTo_options_2" ref="moveTo_options_2" :select="selectMoveToOps" :dataSource="labels_options" :fields="fields"></ejs-listview>
       </div>
     </div>
   </div>
 
   <!-- user drop down menu -->
   <div 
-    v-click-outside="dropdown_hide_user"
+    v-click-outside="dropdownHideUser"
     ref="user_dropdown"
     class="custom-dropdown-user bg-white p-3" 
     :class="[!dropdown_btn_user ? 'hidden' : 'block']" 
@@ -221,7 +229,7 @@
         </div>
       </div>
       <div>
-        <ejs-listview id='accounts_listView' :dataSource="email_accounts" :template="accounts_list_template"></ejs-listview>
+        <ejs-listview id='accounts_listView' :dataSource="email_accounts" :fields="fields" :template="accounts_list_template"></ejs-listview>
       </div>
       <div>
         <div class="m-3 flex justify-center">
@@ -252,12 +260,14 @@ import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
 import { ListViewPlugin } from '@syncfusion/ej2-vue-lists';
 import { enableRipple } from '@syncfusion/ej2-base';
+import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 
 enableRipple(true);
 
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
 Vue.use(ListViewPlugin);
+Vue.use(CalendarPlugin);
 
 const grid = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
@@ -306,6 +316,7 @@ export default Vue.extend({
       new_lbl_input_is_focused: false,
       category_toggle: false,
       new_lbl_txt: "Please enter new label name:",
+      fields: { tooltip: 'text'},
       custom_labels:[
         {id: 0, text: "test_label"},
         {id: 1, text: "test_label_2"}
@@ -339,7 +350,8 @@ export default Vue.extend({
         return{
           template: accounts_list_template
         }
-      }
+      },
+      
     }
   },
 
@@ -351,19 +363,19 @@ export default Vue.extend({
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
-
+    this.$store.dispatch("set_routes", this.routes);
   },
 
   methods: {
-    dropdown_hide_label(){
+    dropdownHideLabel(){
       this.$store.dispatch("dropdown_btn_lbl_toggle", false);
     },
 
-    dropdown_hide_moveTo(){
+    dropdownHideMoveTo(){
       this.$store.dispatch("dropdown_btn_mv_toggle", false);
     },
 
-    dropdown_hide_user(){
+    dropdownHideUser(){
       this.$store.dispatch("dropdown_btn_user_toggle", false);
     },
 
@@ -500,6 +512,28 @@ export default Vue.extend({
         alert("somthing went wrong");
       });
     },
+
+    selectMoveToOps(args){
+      console.log(args);
+      this.dropdownHideMoveTo();
+      this.$refs.moveTo_options_1.selectItem();
+      this.$refs.moveTo_options_2.selectItem();
+
+      if(args.data.text === "Create new"){
+        console.log("bruh");
+        this.modalShow();
+      }
+    },
+
+    selectLabelOps(args){
+      console.log(this.$refs.lbl_options);
+      this.dropdownHideLabel();
+      this.$refs.lbl_options.selectItem();
+      if(args.data.text === "Create new"){
+        console.log("bruh");
+        this.modalShow();
+      }
+    }
   },
 
   computed:{
@@ -546,6 +580,10 @@ export default Vue.extend({
         this.dropdown_label.left = parseInt(e.left - 298);
         console.log(this.$refs.user_dropdown.clientWidth);
       }
+    });
+
+    this.$eventHub.$on("show_datepick_modal", (e) => {
+      this.$modal.show('date_picker_modal');
     });
   }
 });

@@ -70,4 +70,68 @@ class DummyDataController extends Controller
       }
     }
   }
+
+  public function toggle_many_dummy_data(Request $request)
+  {
+    switch ($request['option']) {
+      case 0:
+        //Mark as read
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['read' => 1]);
+      break;
+
+      case 1:
+        //Mark as unread
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['read' => 0]);
+      break;
+
+      case 2:
+        //Mark as important
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['important' => 1]);
+      break;
+
+      case 3:
+        //Mark as not important
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['important' => 0]);
+      break;
+
+      case 4:
+        //Add star
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['starred' => 1]);
+      break;
+
+      case 5:
+        //Remove star
+
+        $data_update = DummyData::whereIn('id', $request['dataIDs'])
+        ->update(['starred' => 0]);
+      break;
+
+      case 6:
+        //Mute
+      break;
+
+      case 7:
+        //Forward as attachment
+
+      break;
+      
+      default:
+        return response()->json(['message' => "Somthing went wrong!", 400]);
+      break;
+    }
+
+    $data_update = DummyData::find($request['dataIDs']);
+    
+    return response()->json(['data_update' => $data_update, 200]);
+  }
 }
