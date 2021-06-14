@@ -23,6 +23,7 @@ Route::get('/login', [WebmailController::class, 'login'])->name('login');
 Route::post('/register', [AccountsController::class, 'register'])->name('register');
 Route::post('/logging_in', [AccountsController::class, 'logging_in'])->name('logging_in');
 Route::get('/logging_out', [AccountsController::class, 'logging_out'])->name('logging_out');
+Route::post('/upload_profile_pic', [AccountsController::class, 'upload_profile_pic'])->name('upload_profile_pic');
 Route::get('/webmail', [WebmailController::class, 'index'])->name('webmail');
 Route::get('/test', [WebmailController::class, 'test'])->name('test');
 Route::get('/get_dummy_data', [DummyDataController::class, 'get_dummy_data'])->name('get_dummy_data');

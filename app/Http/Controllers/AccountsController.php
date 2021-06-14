@@ -42,6 +42,10 @@ class AccountsController extends Controller
       }
     }
 
+    public function upload_profile_pic(Request $request){
+      return response()->json(['data' => $request, 'message' => 'bruh'], 200);
+    }
+
     public function logging_out(){
       session()->forget('user');
       Session::flush();

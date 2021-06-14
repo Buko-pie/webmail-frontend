@@ -24,6 +24,27 @@
       </div>
     </modal>
 
+    <!-- Upload Profile Picture modal  -->
+    <modal name="new_profile_modal">
+      <div class="p-5 h-full relative">
+        <h3 class="text-2xl font-semibold">Select Profile Photo</h3>
+        <br>
+        <button class="btn btn-primary btn-sm" id="pick-avatar">Select an new image</button>
+
+        <avatar-cropper
+          trigger="#pick-avatar"
+          :upload-headers="token_headers"
+          :labels="{submit: 'Set as profile photo', cancel: 'Cancel'}"
+          :upload-url="routes.upload_profile_pic"
+          withCredentials="true"
+          @uploading="handleUploading"
+          @uploaded="handleUploaded"
+          @completed="handleCompleted"
+          @error="handlerError">
+        </avatar-cropper>
+      </div>
+    </modal>
+
     <!-- sample level element  -->
     <div id="wrapper">
       <div class="col-lg-12 col-sm-12 col-md-12">
@@ -214,7 +235,7 @@
           <div class="relative">
             <img class="h-20 w-20 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
             <div class="absolute bottom-1.5 right-0.5">
-              <button class="bg-white rounded-full text-gray-400 hover:text-pink-500 focus:outline-none">
+              <button @click="openModalNewProfile" class="bg-white rounded-full text-gray-400 hover:text-pink-500 focus:outline-none">
                 <i class="w-6 p-0.5 fas fa-camera text-sm"></i>
               </button>
             </div>
@@ -255,6 +276,7 @@ import Vue from "vue";
 import moment from "moment";
 import VModal from 'vue-js-modal';
 import ClickOutside from 'vue-click-outside';
+import AvatarCropper from "vue-avatar-cropper";
 
 import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
 import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
@@ -264,6 +286,8 @@ import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 
 enableRipple(true);
 
+// Vue.use(AvatarCropper);
+Vue.component('avatar-cropper', AvatarCropper);
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
 Vue.use(ListViewPlugin);
@@ -312,6 +336,10 @@ export default Vue.extend({
       width : "16rem",
       position : "Left",
       toggled: true,
+      token_headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{ csrf_token() }}"
+      },
       new_lbl_name: null,
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
@@ -361,14 +389,39 @@ export default Vue.extend({
   },
 
   mounted(){
-    console.log(this.user);
+    console.log(this.routes);
+    console.log(this.token_headers);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
     this.$store.dispatch("set_routes", this.routes);
+    console.log(AvatarCropper);
   },
 
   methods: {
+    openModalNewProfile(){
+      this.$modal.show('new_profile_modal');
+      this.dropdownHideUser();
+    },
+
+    handleUploading(form, xhr){
+      console.log("handleUploading");
+      console.log(form);
+      console.log(xhr);
+    },
+
+    handleUploaded(response){
+      console.log("handleUploaded");
+    },
+
+    handleCompleted(response, form, xhr){
+      console.log("handleUploaded");
+    },
+
+    handlerError(message, type, xhr){
+      console.log("handlerError");
+    },
+
     dropdownHideLabel(){
       this.$store.dispatch("dropdown_btn_lbl_toggle", false);
     },
@@ -447,10 +500,7 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
-        },
+        headers: this.token_headers,
         params: {
           token: "{{ csrf_token() }}",
           option: "get_all"
@@ -472,10 +522,7 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
-        },
+        headers: this.token_headers,
         params: {
           token: "{{ csrf_token() }}",
           option: "starred_only"
@@ -496,10 +543,7 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
-        },
+        headers: this.token_headers,
         params: {
           token: "{{ csrf_token() }}",
           option: "important_only"
@@ -540,10 +584,7 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.logging_out,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
-        },
+        headers: this.token_headers,
         params: {
           token: "{{ csrf_token() }}",
           message: "loggout"
