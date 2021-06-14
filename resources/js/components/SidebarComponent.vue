@@ -220,8 +220,8 @@
             </div>
           </div>
           <div class="m-4 items-center">
-            <b>John Doe</b>
-            <p>john.doe@email.com</p>
+            <b>{{ user.first_name }} {{ user.last_name }}</b>
+            <p>{{ user.email }}</p>
           </div>
         </div>
         <div class="flex justify-center mb-3">
@@ -233,7 +233,7 @@
       </div>
       <div>
         <div class="m-3 flex justify-center">
-          <ejs-button iconCss="" cssClass='shadow-none p-3 bg-gray-200'>Sign Out</ejs-button>
+          <ejs-button @click.native="logout" iconCss="" cssClass='shadow-none p-3 bg-gray-200'>Sign Out</ejs-button>
         </div>
       </div>
       <div>
@@ -301,7 +301,8 @@ function isExistLabel(new_label, custom_labels){
 export default Vue.extend({
   name: "SidebarComponent",
   props:{
-    routes: { type: Object, required: true }
+    routes: { type: Object, required: true },
+    user: { type: Object, required: true }
   },
 
   data() {
@@ -360,6 +361,7 @@ export default Vue.extend({
   },
 
   mounted(){
+    console.log(this.user);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
@@ -533,6 +535,26 @@ export default Vue.extend({
         console.log("bruh");
         this.modalShow();
       }
+    },
+
+    logout(){
+      axios({
+        method: "GET",
+        url: this.routes.logging_out,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          token: "{{ csrf_token() }}",
+          message: "loggout"
+        }
+      }).then(function (response) {
+        window.location.href = response.data;
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     }
   },
 

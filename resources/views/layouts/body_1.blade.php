@@ -14,7 +14,7 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
-        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}"/>
+        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}" :user="{{ session('user') }}"/>
         <div class="flex">
             <main class="w-full">
                 @yield('content')

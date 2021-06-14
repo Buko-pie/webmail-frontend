@@ -24,20 +24,33 @@ class WebmailController extends Controller
      */
     public function index()
     {
-      $data_route = route('get_dummy_data');
-      $toggle_route = route('toggle_dummy_data');
-      $set_many_route = route('toggle_many_dummy_data');
+      $user = session()->get('user');
 
-      $routes= [
-        'data_route' => $data_route,
-        'toggle_route' => $toggle_route,
-        'set_many_route' => $set_many_route
-      ];
-      return view('test_component',)->with(['routes' => $routes]);
+      if(isset($user)){
+        $routes= [
+          'data_route' => route('get_dummy_data'),
+          'toggle_route' => route('toggle_dummy_data'),
+          'set_many_route' => route('toggle_many_dummy_data'),
+          'logging_out' => route('logging_out')
+        ];
+        return view('test_component')->with(['routes' => $routes]);
+      }else{
+        return redirect()->route('login');
+      }
     }
 
     public function test()
     {
+      
       return view('test_component');
+    }
+
+    public function login()
+    {
+      $routes= [
+        'register' => route('register'),
+        'logging_in' => route('logging_in'),
+      ];
+      return view('login')->with(['routes' => $routes]);
     }
 }

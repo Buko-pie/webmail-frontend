@@ -32,3 +32,33 @@
   font-size: 0.30rem !important;
   line-height: 1rem !important;
 }
+
+.login-box{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  width: 500px;
+}
+
+.register-box{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 450px;
+  width: 500px;
+}
+
+.absolute-hCenter {
+  left:0;
+  right:0;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  position: absolute;
+}
