@@ -489,7 +489,6 @@ export default Vue.extend({
         alert("somthing went wrong");
       });
     },
-
     importantOnly(event) {
       console.log("important Only");
       let _this = this;
