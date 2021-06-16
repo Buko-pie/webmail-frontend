@@ -29,3 +29,21 @@ Route::get('/test', [WebmailController::class, 'test'])->name('test');
 Route::get('/get_dummy_data', [DummyDataController::class, 'get_dummy_data'])->name('get_dummy_data');
 Route::get('/toggle_dummy_data', [DummyDataController::class, 'toggle_dummy_data'])->name('toggle_dummy_data');
 Route::get('/toggle_many_dummy_data', [DummyDataController::class, 'toggle_many_dummy_data'])->name('toggle_many_dummy_data');
+
+Route::get('/gmailAPItest', function () {
+  return view('gmailAPItest');
+});
+
+Route::get('/oauth/gmail', function (){
+  return LaravelGmail::redirect();
+});
+
+Route::get('/oauth/gmail/callback', function (){
+  LaravelGmail::makeToken();
+  return redirect()->to('/gmailAPItest');
+});
+
+Route::get('/oauth/gmail/logout', function (){
+  LaravelGmail::logout(); //It returns exception if fails
+  return redirect()->to('/gmailAPItest');
+});

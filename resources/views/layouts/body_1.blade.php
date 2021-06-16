@@ -2,6 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" id="csrf_token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title> 
     
@@ -14,7 +15,8 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
-        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}" :user="{{ session('user') }}"/>
+        <h1>LaravelGmail</h1>
+        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}" :user="{{ session('user') }}" :csrf_token="{{ json_encode(csrf_token()) }}"/>
         <div class="flex">
             <main class="w-full">
                 @yield('content')

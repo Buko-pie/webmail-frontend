@@ -33,10 +33,11 @@
 
         <avatar-cropper
           trigger="#pick-avatar"
-          :upload-headers="token_headers"
+          :upload-headers="profile_upload_headers"
           :labels="{submit: 'Set as profile photo', cancel: 'Cancel'}"
           :upload-url="routes.upload_profile_pic"
-          withCredentials="true"
+          :withCredentials="true"
+          :upload-form-data="{token: token}"
           @uploading="handleUploading"
           @uploaded="handleUploaded"
           @completed="handleCompleted"
@@ -44,6 +45,26 @@
         </avatar-cropper>
       </div>
     </modal>
+
+    <!--
+    <my-upload 
+      field="profile_photo"
+      @crop-success="cropSuccess"
+      @crop-upload-success="cropUploadSuccess"
+      @crop-upload-fail="cropUploadFail"
+      :langType="'en'"
+      :width="500"
+		  :height="500"
+      :url="routes.upload_profile_pic"
+      :params="upload_profile_params"
+      :headers="profile_upload_headers"
+      :withCredentials="true"
+      :noSquare="true"
+      :noRotate="false"
+      v-model="show_upload_profile_pic"
+      img-format="png">
+    </my-upload>
+    -->
 
     <!-- sample level element  -->
     <div id="wrapper">
@@ -165,7 +186,7 @@
     :class="[!dropdown_btn_lbl ? 'hidden' : 'block']" 
     :style="{
       top: dropdown_label.top + 'px', 
-      left: dropdown_label.left + 'px', 
+      left: dropdown_label.left + 'px',
       'z-index': dropdown_zIndex
     }"
   >
@@ -233,7 +254,7 @@
       <div>
         <div class="flex mb-5">
           <div class="relative">
-            <img class="h-20 w-20 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+            <img class="h-20 w-20 rounded-full" :src="user_profile_photo" alt="">
             <div class="absolute bottom-1.5 right-0.5">
               <button @click="openModalNewProfile" class="bg-white rounded-full text-gray-400 hover:text-pink-500 focus:outline-none">
                 <i class="w-6 p-0.5 fas fa-camera text-sm"></i>
@@ -274,28 +295,33 @@
 <script>
 import Vue from "vue";
 import moment from "moment";
-import VModal from 'vue-js-modal';
+import VModal from "vue-js-modal";
 import ClickOutside from 'vue-click-outside';
 import AvatarCropper from "vue-avatar-cropper";
+// import myUpload from "vue-image-crop-upload/upload-2.vue";
+import $ from "jquery";
 
-import { SidebarPlugin } from '@syncfusion/ej2-vue-navigations';
-import { ButtonPlugin , RadioButtonPlugin } from '@syncfusion/ej2-vue-buttons';
-import { ListViewPlugin } from '@syncfusion/ej2-vue-lists';
-import { enableRipple } from '@syncfusion/ej2-base';
+import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
+import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
+import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
+import { enableRipple } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 
 enableRipple(true);
 
 // Vue.use(AvatarCropper);
 Vue.component('avatar-cropper', AvatarCropper);
+// Vue.component('my-upload', myUpload);
 Vue.use(VModal, { dialog: true });
-Vue.use(SidebarPlugin, ButtonPlugin, RadioButtonPlugin);
+Vue.use(SidebarPlugin);
+Vue.use(ButtonPlugin);
+Vue.use(RadioButtonPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 
 const grid = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
-// const new_label_modal = Vue.component("new_label_modal", require("./modalcomponents/NewLabelComponent").default);
+const csrf_token = $('meta[name="csrf-token"]').attr('content');
 
 function formatDate(data) {
   data.forEach(function(value) {
@@ -336,10 +362,22 @@ export default Vue.extend({
       width : "16rem",
       position : "Left",
       toggled: true,
-      token_headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer {{ csrf_token() }}"
+      show_upload_profile_pic: false,
+      token: csrf_token,
+      profile_upload_headers: {
+        "Authorization": "Bearer " + csrf_token,
+        "X-CSRF-TOKEN": csrf_token
       },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + csrf_token,
+        "X-CSRF-TOKEN": csrf_token
+      },
+      upload_profile_params: {
+				user_id: this.user.id,
+				filename: 'profile_photo_' + this.user.id + ".png"
+			},
+      user_profile_photo: this.user.profile_photo ? this.routes.user_profile_path + "/" + this.user.profile_photo : this.routes.user_profile_path + "/default.jpg",
       new_lbl_name: null,
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
@@ -389,24 +427,33 @@ export default Vue.extend({
   },
 
   mounted(){
+    console.log(this.user);
     console.log(this.routes);
-    console.log(this.token_headers);
+    console.log("user_profile_photo: " + this.user_profile_photo);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
     this.$store.dispatch("set_routes", this.routes);
-    console.log(AvatarCropper);
+    this.$store.dispatch("set_csrf_token", this.token);
+    this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
+
+    console.log(this.$store.state.user_profile_photo);
   },
 
   methods: {
     openModalNewProfile(){
-      this.$modal.show('new_profile_modal');
+      // this.$modal.show('new_profile_modal');
+      this.show_upload_profile_pic = !this.show_upload_profile_pic;
       this.dropdownHideUser();
     },
 
+    //vue-avater event hander
     handleUploading(form, xhr){
       console.log("handleUploading");
-      console.log(form);
+      
+      form.forEach(element => {
+        console.log(element);
+      });
       console.log(xhr);
     },
 
@@ -421,6 +468,28 @@ export default Vue.extend({
     handlerError(message, type, xhr){
       console.log("handlerError");
     },
+    //vue-avater event hander end
+
+    //vue-image-crop
+    cropSuccess(imgDataUrl, field){
+      console.log('-------- crop success --------');
+      console.log('imgDataUrl: ' + imgDataUrl);
+      this.user_profile_photo = imgDataUrl;
+      console.log('field: ' + field);
+    },
+
+    cropUploadSuccess(jsonData, field){
+      console.log('-------- upload success --------');
+      console.log(jsonData);
+      console.log('field: ' + field);
+    },
+
+    cropUploadFail(status, field){
+      console.log('-------- upload fail --------');
+      console.log(status);
+      console.log('field: ' + field);
+    },
+    //vue-image-crop end
 
     dropdownHideLabel(){
       this.$store.dispatch("dropdown_btn_lbl_toggle", false);
@@ -500,9 +569,9 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: this.token_headers,
+        headers: this.headers,
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.token,
           option: "get_all"
         }
       }).then(function (response) {
@@ -522,9 +591,9 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: this.token_headers,
+        headers: this.headers,
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.token,
           option: "starred_only"
         }
       }).then(function (response) {
@@ -543,9 +612,9 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.data_route,
-        headers: this.token_headers,
+        headers: this.headers,
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.token,
           option: "important_only"
         }
       }).then(function (response) {
@@ -584,9 +653,9 @@ export default Vue.extend({
       axios({
         method: "GET",
         url: this.routes.logging_out,
-        headers: this.token_headers,
+        headers: this.headers,
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.token,
           message: "loggout"
         }
       }).then(function (response) {

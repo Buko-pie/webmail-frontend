@@ -33,10 +33,12 @@
         "@syncfusion/ej2-vue-popups": "^19.1.64",
         "@syncfusion/ej2-vue-splitbuttons": "^19.1.63",
         "core-js": "^3.13.1",
+        "jquery": "^3.6.0",
         "moment": "^2.29.1",
         "vue": "^2.6.12",
         "vue-avatar-cropper": "^2.0.0",
         "vue-click-outside": "^1.1.0",
+        "vue-image-crop-upload": "^3.0.3",
         "vue-js-modal": "^2.0.0-rc.6",
         "vue-template-compiler": "^2.6.12",
         "vuex": "^3.6.2"

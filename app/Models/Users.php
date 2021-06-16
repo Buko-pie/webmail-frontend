@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Users extends Model
 {
   protected $connection = "mysql";
-  protected $collection = "dummy_data";
+  protected $collection = "users";
 
   protected $primaryKey = 'id';
 
   protected $fillable = [
     'id',
+    'profile_photo',
     'last_name',
     'first_name',
     'email',

@@ -42,8 +42,27 @@ class AccountsController extends Controller
       }
     }
 
-    public function upload_profile_pic(Request $request){
-      return response()->json(['data' => $request, 'message' => 'bruh'], 200);
+    public function upload_profile_pic(Request $request)
+    {
+      $user = session()->get('user');
+
+      if(isset($user)){
+        $request['profile_photo']->move(public_path('img/users_profile_photo'), $request['filename']);
+        $data_update = Users::find($request['user_id']);
+
+        $data_update->update(['profile_photo' => $request['filename']]);
+
+        if(isset($data_update)){
+          $request->session()->put('user', $data_update);
+        }else{
+          return response()->json(['message' => 'No account found'], 400);
+        }
+
+        return response()->json(['data' => $data_update], 200);
+      }else{
+        return redirect()->route('login');
+      }
+      
     }
 
     public function logging_out(){

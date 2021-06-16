@@ -9,6 +9,8 @@ export const store = new Vuex.Store({
     message: "Vuex Active",
     counter: 0,
     routes: {},
+    csrf_token: null,
+    user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
     dropdown_btn_user: false,
@@ -20,6 +22,14 @@ export const store = new Vuex.Store({
   mutations:{
     set_routes(state, payload){
       state.routes = payload;
+    },
+
+    set_csrf_token(state, payload){
+      state.csrf_token = payload;
+    },
+
+    set_user_profile_photo(state, payload){
+      state.user_profile_photo = payload;
     },
 
     set_selected_items_count(state, payload){
@@ -46,6 +56,14 @@ export const store = new Vuex.Store({
   actions:{
     set_routes(state, payload){
       state.commit('set_routes', payload);
+    },
+
+    set_csrf_token(state, payload){
+      state.commit('set_csrf_token', payload);
+    },
+
+    set_user_profile_photo(state, payload){
+      state.commit('set_user_profile_photo', payload);
     },
 
     set_selected_items_count(state, payload){
