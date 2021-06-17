@@ -4,13 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\DummyData;
+use Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use Dacastro4\LaravelGmail\Services\Message\Mail;
 
 class DummyDataController extends Controller
 {
   public function get_dummy_data(Request $request)
   {
     if(isset($request['option'])){
+      $user = LaravelGmail::user();
       if($request['option'] == 'get_all'){
+        $repackaged_data = [];
+        $gmail_data = LaravelGmail::message()->take(10)->in('inbox')->preload()->all( $pageToken = null );
+        
+        foreach($gmail_data as $data){
+          array_push($repackaged_data,[
+            'id' => $data->id,
+            'sender' => $data->getFromName(),
+            'receiver' => $user,
+            'message' => $data->getSubject(),
+            'plain_text' => $data->getPlainTextBody(),
+            'starred' => in_array('STARRED', $data->getLabels()),
+            'important' => in_array('IMPORTANT', $data->getLabels()),
+            'read' => !in_array('UNREAD', $data->getLabels()),
+            'labels' => $data->getLabels(),
+            'has_attachment' => $data->hasAttachments(),
+            'attachment_link' => null,
+            'created_at' => $data->getDate()
+          ]);
+        }
+
+        $data_1 = $gmail_data[0]->hasAttachments();
         $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'starred_only'){
         $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
@@ -19,9 +43,9 @@ class DummyDataController extends Controller
       }
 
       if(isset($dummy_data)){
-        return response()->json(['dummy_data' => $dummy_data, 200]);
+        return response()->json(['dummy_data' => $dummy_data, 'gmail_data' => $gmail_data, 'data_1' => $data_1, 'repackaged_data' => $repackaged_data], 200);
       }else{
-        return response()->json(['error_msg' => 'dummy_data empty', 400]);
+        return response()->json(['error_msg' => 'dummy_data empty'], 400);
       }
     }
   }

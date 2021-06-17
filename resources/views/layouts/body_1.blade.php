@@ -16,7 +16,11 @@
     <div id="app">
         @include('navbars.navbar_1')
         <h1>LaravelGmail</h1>
-        <sidebar-component ref="sidebarComponent" :routes="{{ json_encode($routes) }}" :user="{{ session('user') }}" :csrf_token="{{ json_encode(csrf_token()) }}"/>
+        <sidebar-component ref="sidebarComponent" 
+          :routes="{{ json_encode($routes) }}" 
+          :gmail_user="{{ json_encode(LaravelGmail::user())}}"
+          {{-- :csrf_token="{{ json_encode(csrf_token()) }}" --}}
+        />
         <div class="flex">
             <main class="w-full">
                 @yield('content')

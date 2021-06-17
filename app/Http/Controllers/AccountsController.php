@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use Illuminate\Support\Facades\Session;
+use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 class AccountsController extends Controller
 {
@@ -66,8 +67,9 @@ class AccountsController extends Controller
     }
 
     public function logging_out(){
+      LaravelGmail::logout();
       session()->forget('user');
       Session::flush();
-      return route('login');
+      return route('webmail');
     }
 }

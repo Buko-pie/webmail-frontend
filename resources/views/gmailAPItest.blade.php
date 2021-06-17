@@ -8,6 +8,10 @@
 <body>
   <h1>{{ LaravelGmail::user() }}</h1>
   <h1>{{ LaravelGmail::check() }}</h1>
+  @foreach (LaravelGmail::message()->take(2)->all( $pageToken = null ) as $item)
+    {{-- <h3>{{ [$item] }}</h3> --}}
+  @endforeach
+  
   @if(LaravelGmail::check())
       <a href="{{ url('oauth/gmail/logout') }}">logout</a>
   @else

@@ -254,7 +254,7 @@
       <div>
         <div class="flex mb-5">
           <div class="relative">
-            <img class="h-20 w-20 rounded-full" :src="user_profile_photo" alt="">
+            <img class="h-20 w-20 rounded-full" src="" alt="">
             <div class="absolute bottom-1.5 right-0.5">
               <button @click="openModalNewProfile" class="bg-white rounded-full text-gray-400 hover:text-pink-500 focus:outline-none">
                 <i class="w-6 p-0.5 fas fa-camera text-sm"></i>
@@ -262,8 +262,8 @@
             </div>
           </div>
           <div class="m-4 items-center">
-            <b>{{ user.first_name }} {{ user.last_name }}</b>
-            <p>{{ user.email }}</p>
+            <!-- <b>{{ user.first_name }} {{ user.last_name }}</b>-->
+            <p>{{ gmail_user }}</p> 
           </div>
         </div>
         <div class="flex justify-center mb-3">
@@ -352,7 +352,8 @@ export default Vue.extend({
   name: "SidebarComponent",
   props:{
     routes: { type: Object, required: true },
-    user: { type: Object, required: true }
+    gmail_user: { type: String, required: true }
+    // user: { type: Object, required: true }
   },
 
   data() {
@@ -373,11 +374,12 @@ export default Vue.extend({
         "Authorization": "Bearer " + csrf_token,
         "X-CSRF-TOKEN": csrf_token
       },
+
       upload_profile_params: {
-				user_id: this.user.id,
-				filename: 'profile_photo_' + this.user.id + ".png"
+				// user_id: this.user.id,
+				// filename: 'profile_photo_' + this.user.id + ".png"
 			},
-      user_profile_photo: this.user.profile_photo ? this.routes.user_profile_path + "/" + this.user.profile_photo : this.routes.user_profile_path + "/default.jpg",
+      // user_profile_photo: this.user.profile_photo ? this.routes.user_profile_path + "/" + this.user.profile_photo : this.routes.user_profile_path + "/default.jpg",
       new_lbl_name: null,
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
@@ -427,17 +429,17 @@ export default Vue.extend({
   },
 
   mounted(){
-    console.log(this.user);
+    console.log(this.gmail_user);
     console.log(this.routes);
-    console.log("user_profile_photo: " + this.user_profile_photo);
+    // console.log("user_profile_photo: " + this.user_profile_photo);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
     this.$store.dispatch("set_routes", this.routes);
     this.$store.dispatch("set_csrf_token", this.token);
-    this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
+    // this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
 
-    console.log(this.$store.state.user_profile_photo);
+    // console.log(this.$store.state.user_profile_photo);
   },
 
   methods: {
@@ -474,7 +476,7 @@ export default Vue.extend({
     cropSuccess(imgDataUrl, field){
       console.log('-------- crop success --------');
       console.log('imgDataUrl: ' + imgDataUrl);
-      this.user_profile_photo = imgDataUrl;
+      // this.user_profile_photo = imgDataUrl;
       console.log('field: ' + field);
     },
 

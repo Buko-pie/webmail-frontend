@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 class WebmailController extends Controller
 {
@@ -24,7 +25,7 @@ class WebmailController extends Controller
      */
     public function index()
     {
-      $user = session()->get('user');
+      $user = LaravelGmail::user();
 
       if(isset($user)){
         $routes= [
@@ -37,7 +38,8 @@ class WebmailController extends Controller
         ];
         return view('test_component')->with(['routes' => $routes]);
       }else{
-        return redirect()->route('login');
+        // return redirect()->to('oauth/gmail');
+        return LaravelGmail::redirect();
       }
     }
 
