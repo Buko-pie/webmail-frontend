@@ -35,15 +35,15 @@ class DummyDataController extends Controller
         }
 
         $data_1 = $gmail_data[0]->hasAttachments();
-        $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
+        // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'starred_only'){
-        $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
+        // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'important_only'){
-        $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
+        // $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
       }
 
-      if(isset($dummy_data)){
-        return response()->json(['dummy_data' => $dummy_data, 'gmail_data' => $gmail_data, 'data_1' => $data_1, 'repackaged_data' => $repackaged_data], 200);
+      if(isset($repackaged_data)){
+        return response()->json(['gmail_data' => $gmail_data, 'data_1' => $data_1, 'repackaged_data' => $repackaged_data], 200);
       }else{
         return response()->json(['error_msg' => 'dummy_data empty'], 400);
       }
@@ -73,18 +73,9 @@ class DummyDataController extends Controller
           return response()->json(['error_msg' => 'data not found', 404]);
         }
       }else if($request['column'] == 'read'){
-        $data_update = DummyData::find($request['id']);
-        if(isset($data_update)){
-          if($value == 1){
-            $data_update->read = 1;
-            $data_update->save();
-          }else{
-            $data_update->read = 0;
-            $data_update->save();
-          }
-        }else{
-          return response()->json(['error_msg' => 'data not found', 404]);
-        }
+        $email = LaravelGmail::message()->get($request['id'])->getHtmlBody();
+        // $bodyhtml = $email->getHtmlBody();
+        return response()->json(['bodyHtml' => $email], 200);
       }
 
       if(isset($data_update)){

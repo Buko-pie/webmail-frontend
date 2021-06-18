@@ -17,6 +17,7 @@ export const store = new Vuex.Store({
     selected_items_count: 0,
     selected_items_dataID: [],
     selected_item_unread: 0,
+    selected_email_html_body: null,
   },
 
   mutations:{
@@ -38,6 +39,10 @@ export const store = new Vuex.Store({
 
     set_selected_items_dataID(state, payload){
       state.selected_items_dataID = payload;
+    },
+
+    set_email_html_body(state, payload){
+      state.selected_email_html_body = payload;
     },
 
     dropdown_btn_lbl_toggle(state, payload){
@@ -72,6 +77,10 @@ export const store = new Vuex.Store({
 
     set_selected_items_dataID(state, payload){
       state.commit("set_selected_items_dataID", payload);
+    },
+
+    set_email_html_body(state, payload){
+      state.commit("set_email_html_body", payload);
     },
 
     dropdown_btn_lbl_toggle(state, payload){

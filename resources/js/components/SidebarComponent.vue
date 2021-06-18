@@ -1,180 +1,198 @@
 <template>
 <div class="control-section sidebar-default">
-    <!-- New label modal  -->
-    <modal name="new_label_modal" @before-open="modalOpened" @before-close="modalClosed">
-      <div class="p-5 h-full relative">
-        <h3 class="text-2xl font-semibold">New Label</h3>
-        <br>
-        <p class="text-gray-400">{{ new_lbl_txt }}</p>
-        <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
-          <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
-        </div>
-
-        <div class="absolute bottom-5 right-5">
-          <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
-          <ejs-button v-on:click.native="createNewLabel" :isPrimary="true">Create</ejs-button>
-        </div>
+  <!-- run start computed -->
+  <div :start="start"></div>
+  <!-- New label modal  -->
+  <modal name="new_label_modal" @before-open="modalOpened" @before-close="modalClosed">
+    <div class="p-5 h-full relative">
+      <h3 class="text-2xl font-semibold">New Label</h3>
+      <br>
+      <p class="text-gray-400">{{ new_lbl_txt }}</p>
+      <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
+        <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
       </div>
-    </modal>
 
-    <!-- Date picker modal -->
-    <modal name="date_picker_modal" :adaptive="true">
-      <div class="p-4 h-auto relative">
-        <ejs-calendar id="calendar" ></ejs-calendar>
+      <div class="absolute bottom-5 right-5">
+        <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
+        <ejs-button v-on:click.native="createNewLabel" :isPrimary="true">Create</ejs-button>
       </div>
-    </modal>
+    </div>
+  </modal>
 
-    <!-- Upload Profile Picture modal  -->
-    <modal name="new_profile_modal">
-      <div class="p-5 h-full relative">
-        <h3 class="text-2xl font-semibold">Select Profile Photo</h3>
-        <br>
-        <button class="btn btn-primary btn-sm" id="pick-avatar">Select an new image</button>
+  <!-- Date picker modal -->
+  <modal name="date_picker_modal" :adaptive="true">
+    <div class="p-4 h-auto relative">
+      <ejs-calendar id="calendar" ></ejs-calendar>
+    </div>
+  </modal>
 
-        <avatar-cropper
-          trigger="#pick-avatar"
-          :upload-headers="profile_upload_headers"
-          :labels="{submit: 'Set as profile photo', cancel: 'Cancel'}"
-          :upload-url="routes.upload_profile_pic"
-          :withCredentials="true"
-          :upload-form-data="{token: token}"
-          @uploading="handleUploading"
-          @uploaded="handleUploaded"
-          @completed="handleCompleted"
-          @error="handlerError">
-        </avatar-cropper>
-      </div>
-    </modal>
+  <!-- Upload Profile Picture modal  -->
+  <modal name="new_profile_modal">
+    <div class="p-5 h-full relative">
+      <h3 class="text-2xl font-semibold">Select Profile Photo</h3>
+      <br>
+      <button class="btn btn-primary btn-sm" id="pick-avatar">Select an new image</button>
 
-    <!--
-    <my-upload 
-      field="profile_photo"
-      @crop-success="cropSuccess"
-      @crop-upload-success="cropUploadSuccess"
-      @crop-upload-fail="cropUploadFail"
-      :langType="'en'"
-      :width="500"
-		  :height="500"
-      :url="routes.upload_profile_pic"
-      :params="upload_profile_params"
-      :headers="profile_upload_headers"
-      :withCredentials="true"
-      :noSquare="true"
-      :noRotate="false"
-      v-model="show_upload_profile_pic"
-      img-format="png">
-    </my-upload>
+      <avatar-cropper
+        trigger="#pick-avatar"
+        :upload-headers="profile_upload_headers"
+        :labels="{submit: 'Set as profile photo', cancel: 'Cancel'}"
+        :upload-url="routes.upload_profile_pic"
+        :withCredentials="true"
+        :upload-form-data="{token: token}"
+        @uploading="handleUploading"
+        @uploaded="handleUploaded"
+        @completed="handleCompleted"
+        @error="handlerError">
+      </avatar-cropper>
+    </div>
+  </modal>
+
+  <!--
+  <my-upload 
+    field="profile_photo"
+    @crop-success="cropSuccess"
+    @crop-upload-success="cropUploadSuccess"
+    @crop-upload-fail="cropUploadFail"
+    :langType="'en'"
+    :width="500"
+    :height="500"
+    :url="routes.upload_profile_pic"
+    :params="upload_profile_params"
+    :headers="profile_upload_headers"
+    :withCredentials="true"
+    :noSquare="true"
+    :noRotate="false"
+    v-model="show_upload_profile_pic"
+    img-format="png">
+  </my-upload>
     -->
 
     <!-- sample level element  -->
-    <div id="wrapper">
-      <div class="col-lg-12 col-sm-12 col-md-12">
-        <!-- Sidebar element declaration -->
-        <ejs-sidebar id="dockSidebar" ref="dockSidebar" class="mt-16 bg-white text-gray-700" :enableDock='enableDock' :position="position" :width='width' :dockSize='dockSize' :close="sidebarClose" :open="sidebarOpen">
-          <div class="compose_btn_container">
-            <button class="compose_btn shadow-black pill">
-              <i class="fas fa-plus-circle text-lg"></i>
-              <span class="compose_text" v-show="toggled">Compose</span>
-            </button>
-          </div>
-          <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-            <a @click="getInbox" class="sidebar_items_selected" href="#">
-              <div class="sidebar_icons">
-                <i class="fas fa-inbox text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">Inbox</p>
-            </a>
+  <div id="wrapper">
+    <div class="col-lg-12 col-sm-12 col-md-12">
+      <!-- Sidebar element declaration -->
+      <ejs-sidebar id="dockSidebar" ref="dockSidebar" class="mt-16 bg-white text-gray-700" :enableDock='enableDock' :position="position" :width='width' :dockSize='dockSize' :close="sidebarClose" :open="sidebarOpen">
+        <div class="compose_btn_container">
+          <button class="compose_btn shadow-black pill">
+            <i class="fas fa-plus-circle text-lg"></i>
+            <span class="compose_text" v-show="toggled">Compose</span>
+          </button>
+        </div>
+        <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
+          <a @click="getInbox" class="sidebar_items_selected" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-inbox text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Inbox</p>
+          </a>
 
-            <a @click="starredOnly" class="sidebar_items" href="#">
-              <div class="sidebar_icons">
-                <i class="far fa-star text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">Starred</p>
-            </a>
+          <a @click="starredOnly" class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="far fa-star text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Starred</p>
+          </a>
 
-            <a @click="importantOnly" class="sidebar_items" href="#">
-              <div class="sidebar_icons">
-                <i class="fas fa-thumbtack text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">Important</p>
-            </a>
+          <a @click="importantOnly" class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-thumbtack text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Important</p>
+          </a>
 
-            <a class="sidebar_items" href="#">
-              <div class="sidebar_icons">
-                <i class="far fa-paper-plane text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">Sent</p>
-            </a>
+          <a class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="far fa-paper-plane text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Sent</p>
+          </a>
 
-            <a class="sidebar_items" href="#">
-              <div class="sidebar_icons">
-                <i class="far fa-file text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">Drafts</p>
-            </a>
+          <a class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="far fa-file text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Drafts</p>
+          </a>
 
-            <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
+          <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-mail-bulk text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Categories</p>
+            <div class="sidebar_icons_rightmost">
+              <i v-show="toggled"  :class="category_toggles"></i>
+            </div>
+          </a>
+          
+          <div v-show="category_toggle">
+            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
-                <i class="fas fa-mail-bulk text-lg"></i>
+                <i class="fas fa-users text-lg"></i>
               </div>
-              <p class="sidebar_text" v-show="toggled">Categories</p>
-              <div class="sidebar_icons_rightmost">
-                <i v-show="toggled"  :class="category_toggles"></i>
-              </div>
+              <p class="sidebar_text" v-show="toggled">Social</p>
             </a>
             
-            <div v-show="category_toggle">
-              <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
-                <div class="sidebar_icons">
-                  <i class="fas fa-users text-lg"></i>
-                </div>
-                <p class="sidebar_text" v-show="toggled">Social</p>
-              </a>
-              
-              <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
-                <div class="sidebar_icons">
-                  <i class="fas fa-exclamation text-lg"></i>
-                </div>
-                <p class="sidebar_text" v-show="toggled">Updates</p>
-              </a>
-              
-              <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
-                <div class="sidebar_icons">
-                  <i class="fas fa-comments text-lg"></i>
-                </div>
-                <p class="sidebar_text" v-show="toggled">Forums</p>
-              </a>
-              
-              <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
-                <div class="sidebar_icons">
-                  <i class="fas fa-bullhorn text-lg"></i>
-                </div>
-                <p class="sidebar_text" v-show="toggled">Promotions</p>
-              </a>
-            </div>
- 
-            <!-- Custom labels -->
-            <div ref="sidebar_custom_labels">
-              <a v-for="labels in custom_labels" :key="labels.id" class="sidebar_items" href="#">
-                <div class="sidebar_icons">
-                  <i class="fas fa-tag rotate-135 text-lg"></i>
-                </div>
-                <p class="sidebar_text" v-show="toggled">{{ labels.text }}</p>
-              </a>
-            </div>
-
-            <a @click="modalShow" class="sidebar_items" href="#">
+            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
-                <i class="fas fa-plus text-lg"></i>
+                <i class="fas fa-exclamation text-lg"></i>
               </div>
-              <p class="sidebar_text" v-show="toggled">Add new label</p>
+              <p class="sidebar_text" v-show="toggled">Updates</p>
+            </a>
+            
+            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+              <div class="sidebar_icons">
+                <i class="fas fa-comments text-lg"></i>
+              </div>
+              <p class="sidebar_text" v-show="toggled">Forums</p>
+            </a>
+            
+            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+              <div class="sidebar_icons">
+                <i class="fas fa-bullhorn text-lg"></i>
+              </div>
+              <p class="sidebar_text" v-show="toggled">Promotions</p>
             </a>
           </div>
+
+          <!-- Custom labels -->
+          <div ref="sidebar_custom_labels">
+            <a v-for="labels in custom_labels" :key="labels.id" class="sidebar_items" href="#">
+              <div class="sidebar_icons">
+                <i class="fas fa-tag rotate-135 text-lg"></i>
+              </div>
+              <p class="sidebar_text" v-show="toggled">{{ labels.text }}</p>
+            </a>
+          </div>
+
+          <a @click="modalShow" class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-plus text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Add new label</p>
+          </a>
+        </div>
       </ejs-sidebar>
       <!-- end of sidebar element -->
+
       <!-- main content declaration -->
       <div>
-        <inbox-component ref="data_grid" :custom_labels="custom_labels" :routes="routes"/>
+        <!-- <inbox-component ref="data_grid" :custom_labels="custom_labels" :routes="routes"/> :resizing='onSplitterResize' -->
+        
+        <ejs-splitter id='splitter' ref="splitterObj" orientation='Vertical' width="100%" height="92%">
+          <e-panes>
+            <e-pane size="50%" min="20%" :content="inbox_template"></e-pane>
+            <e-pane size="50%" min ="20%" :content="email_view_template"></e-pane>
+          </e-panes>
+        </ejs-splitter>
+      
+        <!-- 
+        <splitpanes horizontal >
+          <pane min-size="20"><inbox-component ref="data_grid" :custom_labels="custom_labels"/></pane>
+        
+          <pane>5</pane>
+        </splitpanes>
+        -->
       </div>
     </div> 
   </div>
@@ -306,10 +324,10 @@ import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
 import { enableRipple } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
+import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
 
 enableRipple(true);
 
-// Vue.use(AvatarCropper);
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
 Vue.use(VModal, { dialog: true });
@@ -318,8 +336,10 @@ Vue.use(ButtonPlugin);
 Vue.use(RadioButtonPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
+Vue.use(SplitterPlugin);
 
-const grid = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
+const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
+const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
 
@@ -379,6 +399,7 @@ export default Vue.extend({
 				// user_id: this.user.id,
 				// filename: 'profile_photo_' + this.user.id + ".png"
 			},
+
       // user_profile_photo: this.user.profile_photo ? this.routes.user_profile_path + "/" + this.user.profile_photo : this.routes.user_profile_path + "/default.jpg",
       new_lbl_name: null,
       toggled_sidebar_before_modal_open: false,
@@ -390,20 +411,24 @@ export default Vue.extend({
         {id: 0, text: "test_label"},
         {id: 1, text: "test_label_2"}
       ],
+
       labels_options:[
         {id: 0, text: "Create new"}, 
         {id: 1, text: "Manage labels"}
       ],
+
       moveTo_options:[
         {id: 0, text: "Spam"}, 
         {id: 1, text: "Trash"}
       ],
+
       categories:[
         { id: 0, text: "Social" },
         { id: 0, text: "Updates" },
         { id: 0, text: "Forums" },
         { id: 0, text: "Promotions" }
       ],
+
       moveTo_locations:[],
       searchbar_label: false,
       dropdown_btn_tgl: false,
@@ -412,31 +437,73 @@ export default Vue.extend({
         top: 0,
         left: 0
       },
+
       email_accounts:[
         {id: 0, text: "Add another account"}
       ],
+      
       accounts_list_template(){
         return{
           template: accounts_list_template
         }
       },
+
+      inbox_template(){
+        return{ template: inbox_component }
+      },
       
+      email_view_template(){
+        return{ template: email_view_component}
+      }
+
+    }
+  },
+
+  computed:{
+    start(){
+      console.log("Sidebar component computed");
+      this.$store.dispatch("set_routes", this.routes);
+      this.$store.dispatch("set_csrf_token", this.token);
+    },
+    
+    category_toggles(){
+      
+      return this.category_toggle ? "fas fa-chevron-up text-base" : "fas fa-chevron-down text-base";
+    },
+
+    message(){
+      return this.$store.state.message;
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
+    },
+
+    dropdown_btn_user(){
+      return this.$store.state.dropdown_btn_user;
     }
   },
 
   components:{
-    grid
+  },
+
+  created(){
+    console.log("Sidebar component created");
   },
 
   mounted(){
+    console.log("Sidebar component mounted");
     console.log(this.gmail_user);
     console.log(this.routes);
     // console.log("user_profile_photo: " + this.user_profile_photo);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
     }
-    this.$store.dispatch("set_routes", this.routes);
-    this.$store.dispatch("set_csrf_token", this.token);
+    
     // this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
 
     // console.log(this.$store.state.user_profile_photo);
@@ -666,29 +733,6 @@ export default Vue.extend({
         console.log(error);
         alert("somthing went wrong");
       });
-    }
-  },
-
-  computed:{
-    category_toggles(){
-      console.log(this.category_toggle);
-      return this.category_toggle ? "fas fa-chevron-up text-base" : "fas fa-chevron-down text-base";
-    },
-
-    message(){
-      return this.$store.state.message;
-    },
-
-    dropdown_btn_lbl(){
-      return this.$store.state.dropdown_btn_lbl;
-    },
-
-    dropdown_btn_mv(){
-      return this.$store.state.dropdown_btn_mv;
-    },
-
-    dropdown_btn_user(){
-      return this.$store.state.dropdown_btn_user;
     }
   },
 
