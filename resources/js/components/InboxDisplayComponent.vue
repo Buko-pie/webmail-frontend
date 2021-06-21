@@ -1,7 +1,8 @@
 <template>
   <div :start="start">
+    <div :get_splitter_pane_0_height="get_splitter_pane_0_height" :splitter_height="splitter_height"></div>
     <ejs-grid
-      height=auto
+      :height="inbox_height - 150"
       ref="grid"
       id="gridcomp"
       :dataSource="viewData" 
@@ -66,6 +67,7 @@ export default({
       routes: null,
       selected_item_unread: 0,
       selected_items_count: 0,
+      inbox_height: null,
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
@@ -181,6 +183,14 @@ export default({
       this.routes = this.$store.state.routes;
       console.log(this.routes)
     },
+
+    splitter_height(){
+      this.inbox_height = (this.$store.state.splitter_height / 2);
+    },
+
+    get_splitter_pane_0_height(){
+      this.inbox_height = this.$store.state.splitter_pane_0_height;
+    }
   },
 
   mounted(){
@@ -201,11 +211,8 @@ export default({
         option: "get_all"
       }
     }).then(function (response) {
-      let data = response.data.repackaged_data;
-      _this.viewData = response.data.repackaged_data;
-      console.log(response.data.gmail_data);
-      console.log(response.data.data_1);
-      console.log(response.data.repackaged_data);
+      _this.viewData = formatDate(response.data.repackaged_data);
+
     }).catch(error => {
       console.log(error);
       alert("somthing went wrong");
@@ -244,7 +251,8 @@ export default({
             value: false
           }
         }).then(function (response) {
-          _this.viewData[args.rowInfo.rowIndex].read = 0;
+          console.log(response.data);
+          _this.viewData[args.rowInfo.rowIndex].read = false;
           args.rowInfo.row.classList.add("font-black");
 
         }).catch(error => {
@@ -267,7 +275,8 @@ export default({
             value: true
           }
         }).then(function (response) {
-          _this.viewData[args.rowInfo.rowIndex].read = 1;
+          console.log(response.data);
+          _this.viewData[args.rowInfo.rowIndex].read = true;
           args.rowInfo.row.classList.remove("font-black");
 
         }).catch(error => {
@@ -325,11 +334,13 @@ export default({
           params: {
             token: "{{ csrf_token() }}",
             column: "read",
+            with: "bodyHtml",
             id: args.rowData.id,
             value: true
           }
         }).then(function (response) {
-          _this.viewData[args.rowIndex].read = 1;
+          console.log(response.data);
+          _this.viewData[args.rowIndex].read = true;
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
 
@@ -471,7 +482,7 @@ export default({
         _this.get_table_index_by_id(e.id);
         _this.viewData[_this.index].starred = e.starred;
         
-        console.log(response.data.data_update);
+        console.log(response.data);
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");
@@ -547,8 +558,8 @@ export default({
           option: "get_all"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.viewData = formatDate(data);
+        _this.viewData = formatDate(response.data.repackaged_data);
+
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"
         });

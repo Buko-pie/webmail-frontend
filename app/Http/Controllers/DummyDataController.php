@@ -53,35 +53,44 @@ class DummyDataController extends Controller
   public function toggle_dummy_data(Request $request)
   {
     if(isset($request['id'])){
+  
       $value = ($request['value'] == 'true') ? 1 : 0;
+      $email = LaravelGmail::message()->get($request['id']);
 
-      if($request['column'] == 'starred'){
-        $data_update = DummyData::find($request['id']);
-        if(isset($data_update)){
-          $data_update->starred = $value;
-          $data_update->save();
-        }else{
-          return response()->json(['error_msg' => 'data not found', 404]);
-        }
-        
-      }else if($request['column'] == 'important'){
-        $data_update = DummyData::find($request['id']);
-        if(isset($data_update)){
-          $data_update->important = $value;
-          $data_update->save();
-        }else{
-          return response()->json(['error_msg' => 'data not found', 404]);
-        }
-      }else if($request['column'] == 'read'){
-        $email = LaravelGmail::message()->get($request['id'])->getHtmlBody();
-        // $bodyhtml = $email->getHtmlBody();
-        return response()->json(['bodyHtml' => $email], 200);
-      }
+      if(isset($email)){
+        if($request['column'] == 'starred'){
+          if($value){
+            $email->addStar();
+          }else{
+            $email->removeStar();
+          }
+          return response()->json(['email' => $email], 200);
+        }else if($request['column'] == 'important'){
+          if($value){
+            $email->markAsImportant();
+          }else{
+            $email->markAsNotImportant();
+          }
+          return response()->json(['email' => $email], 200);
+        }else if($request['column'] == 'read'){
 
-      if(isset($data_update)){
-        return response()->json(['data_update' => $data_update, 200]);
+          if($value){
+            $email->markAsRead();
+          }else{
+            $email->markAsUnread();
+          }
+
+          if(isset($request['with']) && $request['with'] == 'bodyHtml'){
+            $bodyHtml = $email->getHtmlBody();
+            return response()->json(['bodyHtml' => $bodyHtml], 200);
+          }else{
+            return response()->json(['email' => $email], 200);
+          }
+          
+          
+        }
       }else{
-        return response()->json(['error_msg' => 'dummy_data empty', 400]);
+        return response()->json(['message' => 'email not found'], 404);
       }
     }
   }
@@ -92,15 +101,17 @@ class DummyDataController extends Controller
       case 0:
         //Mark as read
 
-        $data_update = DummyData::whereIn('id', $request['dataIDs'])
-        ->update(['read' => 1]);
+        foreach ($request['dataIDs'] as $id) {
+          $email = LaravelGmail::message()->get($id)->markAsRead();
+        }
       break;
 
       case 1:
         //Mark as unread
 
-        $data_update = DummyData::whereIn('id', $request['dataIDs'])
-        ->update(['read' => 0]);
+        foreach ($request['dataIDs'] as $id) {
+          $email = LaravelGmail::message()->get($id)->markAsUnread();
+        }
       break;
 
       case 2:
@@ -144,9 +155,5 @@ class DummyDataController extends Controller
         return response()->json(['message' => "Somthing went wrong!", 400]);
       break;
     }
-
-    $data_update = DummyData::find($request['dataIDs']);
-    
-    return response()->json(['data_update' => $data_update, 200]);
   }
 }

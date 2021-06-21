@@ -179,9 +179,9 @@
       <div>
         <!-- <inbox-component ref="data_grid" :custom_labels="custom_labels" :routes="routes"/> :resizing='onSplitterResize' -->
         
-        <ejs-splitter id='splitter' ref="splitterObj" orientation='Vertical' width="100%" height="92%">
+        <ejs-splitter id="splitter" ref="splitterObj" orientation="Vertical" :resizing="splitterResizing" width="100%" height="92%">
           <e-panes>
-            <e-pane size="50%" min="20%" :content="inbox_template"></e-pane>
+            <e-pane size="50%" min="20%" :content="inbox_template" cssClass="overflow-y-hidden"></e-pane>
             <e-pane size="50%" min ="20%" :content="email_view_template"></e-pane>
           </e-panes>
         </ejs-splitter>
@@ -498,7 +498,8 @@ export default Vue.extend({
   mounted(){
     console.log("Sidebar component mounted");
     console.log(this.gmail_user);
-    console.log(this.routes);
+    console.log(this.$refs.splitterObj.$el.clientHeight);
+    this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
     if(this.custom_labels.length > 0){
       this.moveTo_locations = this.custom_labels.concat(this.categories);
@@ -559,6 +560,11 @@ export default Vue.extend({
       console.log('field: ' + field);
     },
     //vue-image-crop end
+
+    splitterResizing(args){
+      // console.log(args.paneSize[0]);
+      this.$store.dispatch("set_splitter_pane_0_height", args.paneSize[0]);
+    },
 
     dropdownHideLabel(){
       this.$store.dispatch("dropdown_btn_lbl_toggle", false);

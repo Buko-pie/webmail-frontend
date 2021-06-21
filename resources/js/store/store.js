@@ -18,6 +18,8 @@ export const store = new Vuex.Store({
     selected_items_dataID: [],
     selected_item_unread: 0,
     selected_email_html_body: null,
+    splitter_height: null,
+    splitter_pane_0_height: null,
   },
 
   mutations:{
@@ -55,6 +57,14 @@ export const store = new Vuex.Store({
 
     dropdown_btn_user_toggle(state, payload){
       state.dropdown_btn_user = payload;
+    },
+
+    set_splitter_height(state, payload){
+      state.splitter_height = payload;
+    },
+
+    set_splitter_pane_0_height(state, payload){
+      state.splitter_pane_0_height = payload;
     }
   },
 
@@ -93,6 +103,14 @@ export const store = new Vuex.Store({
 
     dropdown_btn_user_toggle(state, payload){
       state.commit('dropdown_btn_user_toggle', payload);
+    },
+
+    set_splitter_height(state, payload){
+      state.commit("set_splitter_height", payload);
+    },
+
+    set_splitter_pane_0_height(state, payload){
+      state.commit("set_splitter_pane_0_height", payload);
     }
   },
 
