@@ -2,10 +2,10 @@
   <div :start="start">
     <div :get_splitter_pane_0_height="get_splitter_pane_0_height" :splitter_height="splitter_height"></div>
     <ejs-grid
-      :height="inbox_height - 150"
+      :height="inbox_height - 155.5"
       ref="grid"
       id="gridcomp"
-      :dataSource="viewData" 
+      :dataSource="gmail_data" 
       :selectionSettings="selectionSettings" 
       :allowPaging="true"
       :allowSorting="true"
@@ -17,6 +17,8 @@
       :recordClick="recordClick"
       :rowSelected="rowSelected"
       :rowDeselected="rowDeselected"
+      :pagerTemplate="pagination_template"
+      :pageSettings="pageSettings"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
@@ -36,6 +38,7 @@ let starred_template = Vue.component("starred-template", require("./subcomponent
 let important_template = Vue.component("important-template", require("./subcomponents/ImportantTemplate.vue").default);
 let message_template = Vue.component("message-template", require("./subcomponents/MessageTemplate.vue").default);
 let attachment_template = Vue.component("important-template", require("./subcomponents/AttachmentTemplate.vue").default);
+let pagination_template = Vue.component("pagination-template", require("./subcomponents/PaginationTemplate.vue").default);
 
 Vue.use(GridPlugin);
 Vue.prototype.$eventHub = new Vue();
@@ -68,6 +71,7 @@ export default({
       selected_item_unread: 0,
       selected_items_count: 0,
       inbox_height: null,
+      pageSettings: { pageSize: 50, pageCount: 3 },
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
@@ -156,7 +160,7 @@ export default({
           //Column - Created At
           field: "created_at",
           headerText: "",
-          width: "80",
+          width: "100",
           "text-align": "Right",
           allowSorting: false
         },{
@@ -167,7 +171,12 @@ export default({
           visible: false
         }
       ],
-      header_template: function(){
+      pagination_template(){
+        return{
+          template: pagination_template
+        }
+      },
+      header_template(){
         return{
           template: header_template
         }
@@ -190,6 +199,10 @@ export default({
 
     get_splitter_pane_0_height(){
       this.inbox_height = this.$store.state.splitter_pane_0_height;
+    },
+
+    gmail_data(){
+      return this.$store.state.email_batch;
     }
   },
 
@@ -211,8 +224,8 @@ export default({
         option: "get_all"
       }
     }).then(function (response) {
-      _this.viewData = formatDate(response.data.repackaged_data);
-
+      // _this.viewData = formatDate(response.data.repackaged_data);
+      _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
     }).catch(error => {
       console.log(error);
       alert("somthing went wrong");
@@ -252,7 +265,14 @@ export default({
           }
         }).then(function (response) {
           console.log(response.data);
-          _this.viewData[args.rowInfo.rowIndex].read = false;
+          // _this.viewData[args.rowInfo.rowIndex].read = false;
+
+          _this.$store.dispatch("modify_email_batch", {
+            index: args.rowInfo.rowIndex,
+            property: "read",
+            value: false
+          });
+
           args.rowInfo.row.classList.add("font-black");
 
         }).catch(error => {
@@ -276,7 +296,14 @@ export default({
           }
         }).then(function (response) {
           console.log(response.data);
-          _this.viewData[args.rowInfo.rowIndex].read = true;
+          // _this.viewData[args.rowInfo.rowIndex].read = true;
+
+          _this.$store.dispatch("modify_email_batch", {
+            index: args.rowInfo.rowIndex,
+            property: "read",
+            value: true
+          });
+
           args.rowInfo.row.classList.remove("font-black");
 
         }).catch(error => {
@@ -340,7 +367,14 @@ export default({
           }
         }).then(function (response) {
           console.log(response.data);
-          _this.viewData[args.rowIndex].read = true;
+          // _this.viewData[args.rowIndex].read = true;
+
+          _this.$store.dispatch("modify_email_batch", {
+            index: args.rowIndex,
+            property: "read",
+            value: true
+          });
+
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
 
@@ -480,7 +514,13 @@ export default({
         }
       }).then(function (response) {
         _this.get_table_index_by_id(e.id);
-        _this.viewData[_this.index].starred = e.starred;
+        // _this.viewData[_this.index].starred = e.starred;
+
+        _this.$store.dispatch("modify_email_batch", {
+          index: _this.index,
+          property: "starred",
+          value: e.starred
+        });
         
         console.log(response.data);
       }).catch(error => {
@@ -508,7 +548,13 @@ export default({
         }
       }).then(function (response) {
         _this.get_table_index_by_id(e.id);
-        _this.viewData[_this.index].important = e.important;
+        // _this.viewData[_this.index].important = e.important;
+
+        _this.$store.dispatch("modify_email_batch", {
+          index: _this.index,
+          property: "important",
+          value: e.important
+        });
 
         console.log(response.data.data_update);
       }).catch(error => {
@@ -529,7 +575,11 @@ export default({
     this.$eventHub.$on("select_by", (e)=>{
       if(e.text == "All"){
         let indexes = []
-        for (let i = 0; i < this.viewData.length; i++) {
+        // for (let i = 0; i < this.viewData.length; i++) {
+        //   indexes.push(i)
+        // }
+
+        for (let i = 0; i < this.$store.state.email_batch.length; i++) {
           indexes.push(i)
         }
 
@@ -558,7 +608,9 @@ export default({
           option: "get_all"
         }
       }).then(function (response) {
-        _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"

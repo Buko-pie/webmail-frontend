@@ -10,6 +10,7 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
+    email_batch: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
@@ -29,6 +30,15 @@ export const store = new Vuex.Store({
 
     set_csrf_token(state, payload){
       state.csrf_token = payload;
+    },
+
+    set_email_batch(state, payload){
+      state.email_batch = payload;
+    },
+
+    modify_email_batch(state, payload){
+      // console.log(payload)
+      state.email_batch[payload.index][payload.property] = payload.value;
     },
 
     set_user_profile_photo(state, payload){
@@ -70,19 +80,27 @@ export const store = new Vuex.Store({
 
   actions:{
     set_routes(state, payload){
-      state.commit('set_routes', payload);
+      state.commit("set_routes", payload);
     },
 
     set_csrf_token(state, payload){
-      state.commit('set_csrf_token', payload);
+      state.commit("set_csrf_token", payload);
+    },
+
+    set_email_batch(state, payload){
+      state.commit("set_email_batch", payload);
+    },
+
+    modify_email_batch(state, payload){
+      state.commit("modify_email_batch", payload);
     },
 
     set_user_profile_photo(state, payload){
-      state.commit('set_user_profile_photo', payload);
+      state.commit("set_user_profile_photo", payload);
     },
 
     set_selected_items_count(state, payload){
-      state.commit('set_selected_items_count', payload);
+      state.commit("set_selected_items_count", payload);
     },
 
     set_selected_items_dataID(state, payload){
@@ -94,15 +112,15 @@ export const store = new Vuex.Store({
     },
 
     dropdown_btn_lbl_toggle(state, payload){
-      state.commit('dropdown_btn_lbl_toggle', payload);
+      state.commit("dropdown_btn_lbl_toggle", payload);
     },
 
     dropdown_btn_mv_toggle(state, payload){
-      state.commit('dropdown_btn_mv_toggle', payload);
+      state.commit("dropdown_btn_mv_toggle", payload);
     },
 
     dropdown_btn_user_toggle(state, payload){
-      state.commit('dropdown_btn_user_toggle', payload);
+      state.commit("dropdown_btn_user_toggle", payload);
     },
 
     set_splitter_height(state, payload){

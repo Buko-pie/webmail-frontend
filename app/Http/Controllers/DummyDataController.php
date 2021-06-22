@@ -13,10 +13,24 @@ class DummyDataController extends Controller
   {
     if(isset($request['option'])){
       $user = LaravelGmail::user();
+     
+
       if($request['option'] == 'get_all'){
         $repackaged_data = [];
-        $gmail_data = LaravelGmail::message()->take(10)->in('inbox')->preload()->all( $pageToken = null );
-        
+        $gmail_data = LaravelGmail::message()->in('inbox')->preload()->all();
+        // $gmail_data = $gmail_data->next();
+
+        $data_1 = $gmail_data[0]->hasAttachments();
+        // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
+      }else if($request['option'] == 'get_next_page'){
+        $gmail_data = $gmail_data->next();
+      }else if($request['option'] == 'starred_only'){
+        // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
+      }else if($request['option'] == 'important_only'){
+        // $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
+      }
+    
+      if(isset($gmail_data)){
         foreach($gmail_data as $data){
           array_push($repackaged_data,[
             'id' => $data->id,
@@ -34,18 +48,9 @@ class DummyDataController extends Controller
           ]);
         }
 
-        $data_1 = $gmail_data[0]->hasAttachments();
-        // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
-      }else if($request['option'] == 'starred_only'){
-        // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
-      }else if($request['option'] == 'important_only'){
-        // $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
-      }
-
-      if(isset($repackaged_data)){
         return response()->json(['gmail_data' => $gmail_data, 'data_1' => $data_1, 'repackaged_data' => $repackaged_data], 200);
       }else{
-        return response()->json(['error_msg' => 'dummy_data empty'], 400);
+        return response()->json(['error_msg' => 'Nothing Found'], 400);
       }
     }
   }
