@@ -32,6 +32,7 @@
         "@syncfusion/ej2-vue-lists": "^19.1.65",
         "@syncfusion/ej2-vue-navigations": "^19.1.63",
         "@syncfusion/ej2-vue-popups": "^19.1.64",
+        "@syncfusion/ej2-vue-richtexteditor": "^19.1.69",
         "@syncfusion/ej2-vue-splitbuttons": "^19.1.63",
         "core-js": "^3.13.1",
         "jquery": "^3.6.0",

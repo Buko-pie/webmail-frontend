@@ -23,16 +23,14 @@ export default({
   name: "PaginationTemplate",
   data(){
     return{
-      data:{},
-      false: "false",
-      true: "true"
+      grid: null,
     };
   },
-  
-  computed:{
-    
-  },
 
+  mounted(){
+    console.log("pagination mounted");
+  },
+  
   methods:{
     btnNewest(){
       console.log("btnNewest");
@@ -44,11 +42,21 @@ export default({
 
     btnNext(){
       console.log("btnNext");
+      let grid = this.$el.closest(".e-inbox-display").ej2_instances;
+      /////////////////////////////////
+      console.log(grid);
+      // this.$eventHub.$emit("page_next");
     },
 
     btnOldest(){
       console.log("btnOldest");
     }
+  },
+
+  created(){
+    this.$eventHub.$on("pagination_test", (e)=>{
+      console.log("at max page");
+    });
   }
 });
 </script>

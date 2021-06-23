@@ -19,6 +19,7 @@
       :rowDeselected="rowDeselected"
       :pagerTemplate="pagination_template"
       :pageSettings="pageSettings"
+      :data="routes"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
@@ -38,7 +39,7 @@ let starred_template = Vue.component("starred-template", require("./subcomponent
 let important_template = Vue.component("important-template", require("./subcomponents/ImportantTemplate.vue").default);
 let message_template = Vue.component("message-template", require("./subcomponents/MessageTemplate.vue").default);
 let attachment_template = Vue.component("important-template", require("./subcomponents/AttachmentTemplate.vue").default);
-let pagination_template = Vue.component("pagination-template", require("./subcomponents/PaginationTemplate.vue").default);
+let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
 
 Vue.use(GridPlugin);
 Vue.prototype.$eventHub = new Vue();
@@ -66,7 +67,11 @@ export default({
 
   data(){
     return{
+      csrf_token: null,
       index: 0,
+      current_page: 1,
+      max_pages: null,
+      email_count: null,
       routes: null,
       selected_item_unread: 0,
       selected_items_count: 0,
@@ -90,10 +95,8 @@ export default({
           type: "checkbox",
           allowFiltering: false,
           allowSorting: false,
-          headerTemplate: function(){
-            return{
-              template: subheader_template
-            }
+          headerTemplate(){
+            return{ template: subheader_template }
           },
           width: "45",
           customAttributes:{class: "overflow-visible"}
@@ -108,10 +111,8 @@ export default({
           headerText: "",
           width: "38",
           allowSorting: false,
-          template: function(){
-            return{
-              template: starred_template
-            }
+          template(){
+            return{ template: starred_template }
           },
           allowSorting: false
         },{
@@ -120,10 +121,8 @@ export default({
           headerText: "",
           width: "40",
           allowSorting: false,
-          template: function(){
-            return{
-              template: important_template
-            }
+          template(){
+            return{ template: important_template }
           },
           allowSorting: false
         },{
@@ -139,10 +138,8 @@ export default({
           field: "message",
           headerText: "",
           allowSorting: false,
-          template: function(){
-            return{
-              template: message_template
-            }
+          template(){
+            return{ template: message_template }
           }
         },{
           //Column - Has attachment
@@ -150,10 +147,8 @@ export default({
           headerText: "",
           width: "60",
           "text-align": "Right",
-          template: function(){
-            return{
-              template: attachment_template
-            }
+          template(){
+            return{ template: attachment_template }
           },
           allowSorting: false
         },{
@@ -172,14 +167,10 @@ export default({
         }
       ],
       pagination_template(){
-        return{
-          template: pagination_template
-        }
+        return{ template: pagination_template }
       },
       header_template(){
-        return{
-          template: header_template
-        }
+        return{ template: header_template }
       },
       selectionSettings: { checkboxOnly: true }
     }
@@ -190,6 +181,7 @@ export default({
     start(){
       console.log("vue-grids computed")
       this.routes = this.$store.state.routes;
+      this.csrf_token = this.$store.state.csrf_token;
       console.log(this.routes)
     },
 
@@ -217,14 +209,17 @@ export default({
       url: this.routes.data_route,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {{ csrf_token() }}"
+        "Authorization": "Bearer " + this.csrf_token,
+        "X-CSRF-TOKEN": this.csrf_token
       },
       params: {
-        token: "{{ csrf_token() }}",
+        token: this.csrf_token,
         option: "get_all"
       }
     }).then(function (response) {
       // _this.viewData = formatDate(response.data.repackaged_data);
+      _this.email_count = response.data.inbox_items_length;
+      _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
       _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
     }).catch(error => {
       console.log(error);
@@ -255,10 +250,11 @@ export default({
           url: _this.routes.toggle_route,
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer {{ csrf_token() }}"
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: "{{ csrf_token() }}",
+            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: false
@@ -286,10 +282,11 @@ export default({
           url: _this.routes.toggle_route,
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer {{ csrf_token() }}"
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: "{{ csrf_token() }}",
+            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: true
@@ -356,10 +353,11 @@ export default({
           url: _this.routes.toggle_route,
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer {{ csrf_token() }}"
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: "{{ csrf_token() }}",
+            token: this.csrf_token,
             column: "read",
             with: "bodyHtml",
             id: args.rowData.id,
@@ -504,10 +502,11 @@ export default({
         url: _this.routes.toggle_route,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.csrf_token,
           column: "starred",
           id: e.id,
           value: e.starred
@@ -529,19 +528,19 @@ export default({
       });
 
     });
+
     //Mark email as important
     this.$eventHub.$on("toggled_important", (e)=>{
-      // console.log(e);
-
       axios({
         method: "GET",
         url: _this.routes.toggle_route,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.csrf_token,
           column: "important",
           id: e.id,
           value: e.important
@@ -601,10 +600,11 @@ export default({
         url: this.routes.data_route,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer {{ csrf_token() }}"
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: "{{ csrf_token() }}",
+          token: this.csrf_token,
           option: "get_all"
         }
       }).then(function (response) {
@@ -615,6 +615,32 @@ export default({
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"
         });
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
+    });
+
+    this.$eventHub.$on("page_next", (e) =>{
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          token: this.csrf_token,
+          option: "get_next_page",
+          page: this.current_page
+        }
+      }).then(function (response) {
+        _this.current_page++;
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        if(_this.current_page === _this.max_pages){
+          this.$eventHub.$emit("pagination_test");
+        }
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");

@@ -13,17 +13,26 @@ class DummyDataController extends Controller
   {
     if(isset($request['option'])){
       $user = LaravelGmail::user();
-     
+      $repackaged_data = [];
+      $inbox_items_length = null;
 
       if($request['option'] == 'get_all'){
-        $repackaged_data = [];
-        $gmail_data = LaravelGmail::message()->in('inbox')->preload()->all();
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('inbox')->take(10)->preload()->all();
         // $gmail_data = $gmail_data->next();
 
-        $data_1 = $gmail_data[0]->hasAttachments();
+        // $data_1 = $gmail_data[0]->hasAttachments();
         // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'get_next_page'){
-        $gmail_data = $gmail_data->next();
+        $gmail_data = LaravelGmail::message()->in('inbox')->take(10)->preload()->all();
+
+        for ($i = 1; $i <= $request['page']; $i++) { 
+          $gmail_data = $gmail_data->next();
+        }
+
+        // return response()->json(['gmail_data' => $gmail_data], 200);
+        // $gmail_data = $gmail_data->next();
       }else if($request['option'] == 'starred_only'){
         // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
       }else if($request['option'] == 'important_only'){
@@ -48,7 +57,7 @@ class DummyDataController extends Controller
           ]);
         }
 
-        return response()->json(['gmail_data' => $gmail_data, 'data_1' => $data_1, 'repackaged_data' => $repackaged_data], 200);
+        return response()->json(['gmail_data' => $gmail_data, 'repackaged_data' => $repackaged_data, 'inbox_items_length' => $inbox_items_length], 200);
       }else{
         return response()->json(['error_msg' => 'Nothing Found'], 400);
       }

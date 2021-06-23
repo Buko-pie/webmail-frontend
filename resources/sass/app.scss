@@ -82,3 +82,42 @@ em.specs {
   text-align: center;
 }
 
+.e-code-mirror::before {
+  content: '\e345';
+}
+
+.e-html-preview::before {
+  content: '\e350';
+}
+
+.CodeMirror-linenumber,
+.CodeMirror-gutters {
+  display: none;
+}
+.sb-header {
+  z-index: 100;
+}
+
+.sb-content.e-view.hide-header {
+  top: 0 !important;
+}
+
+.sb-header.e-view.hide-header {
+  display: none;
+}
+
+.highcontrast .cm-s-default .cm-tag {color: #00ff00;}
+.highcontrast .cm-s-default .cm-string {color: #ffd939;}
+.highcontrast .cm-s-default .cm-attribute {color: #f00;}
+.highcontrast .CodeMirror {
+  background: black;
+  color: white;
+}
+.e-richtexteditor .e-rte-content .e-content pre {
+  padding: 10px;
+  background: #F4F5F7;
+}
+.highcontrast .e-richtexteditor .e-rte-content .e-content pre {
+  padding: 10px;
+  background: #303030;
+}

@@ -2,6 +2,35 @@
 <div class="control-section sidebar-default">
   <!-- run start computed -->
   <div :start="start"></div>
+  <div class="control-section">
+    <div class="sample-container">
+      <div class="default-section">
+        <ejs-richtexteditor 
+          ref="rteObj"
+
+          :toolbarSettings="toolbarSettings"
+          :actionBegin="handleFullScreen"
+          :actionComplete="actionCompleteHandler"
+          :showCharCount="true"
+          :maxLength="maxLength"
+          :fileManagerSettings="fileManagerSettings"
+          :quickToolbarSettings='quickToolbarSettings'
+        >
+        </ejs-richtexteditor>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Compose Modal  -->
+  <modal name="compose_new_modal">
+    <div class="p-2 h-full relative">
+      <ejs-textbox ref="to" id="to" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="To"></ejs-textbox>
+      <ejs-textbox ref="subject" id="subject" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="Subject"></ejs-textbox>
+
+      
+    </div>
+  </modal>
+  
   <!-- New label modal  -->
   <modal name="new_label_modal" @before-open="modalOpened" @before-close="modalClosed">
     <div class="p-5 h-full relative">
@@ -48,6 +77,8 @@
     </div>
   </modal>
 
+
+
   <!--
   <my-upload 
     field="profile_photo"
@@ -74,7 +105,7 @@
       <!-- Sidebar element declaration -->
       <ejs-sidebar id="dockSidebar" ref="dockSidebar" class="mt-16 bg-white text-gray-700" :enableDock='enableDock' :position="position" :width='width' :dockSize='dockSize' :close="sidebarClose" :open="sidebarOpen">
         <div class="compose_btn_container">
-          <button class="compose_btn shadow-black pill">
+          <button @click="composeNew" class="compose_btn shadow-black pill">
             <i class="fas fa-plus-circle text-lg"></i>
             <span class="compose_text" v-show="toggled">Compose</span>
           </button>
@@ -181,7 +212,7 @@
         
         <ejs-splitter id="splitter" ref="splitterObj" orientation="Vertical" :resizing="splitterResizing" width="100%" height="92%">
           <e-panes>
-            <e-pane size="50%" min="20%" :content="inbox_template" cssClass="overflow-y-hidden"></e-pane>
+            <e-pane size="50%" min="20%" :content="inbox_template" cssClass="overflow-y-hidden e-inbox-display"></e-pane>
             <e-pane size="50%" min ="20%" :content="email_view_template"></e-pane>
           </e-panes>
         </ejs-splitter>
@@ -319,17 +350,18 @@ import AvatarCropper from "vue-avatar-cropper";
 // import myUpload from "vue-image-crop-upload/upload-2.vue";
 import $ from "jquery";
 
+import { RichTextEditorPlugin, Toolbar, Link, Image, Count, HtmlEditor, QuickToolbar, Table, FileManager } from "@syncfusion/ej2-vue-richtexteditor";
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
 import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
-import { enableRipple } from "@syncfusion/ej2-base";
+import { enableRipple, Browser, addClass, removeClass } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
 
-enableRipple(true);
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
+Vue.use(RichTextEditorPlugin);
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin);
 Vue.use(ButtonPlugin);
@@ -338,10 +370,14 @@ Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 
+enableRipple(true);
+
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+let hostUrl = 'https://ej2-aspcore-service.azurewebsites.net/';
 
 function formatDate(data) {
   data.forEach(function(value) {
@@ -405,6 +441,31 @@ export default Vue.extend({
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
       category_toggle: false,
+      
+      myCodeMirror: '',
+      quickToolbarSettings: {
+        table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-', 'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+      },
+      maxLength: 2000,
+      toolbarSettings: {
+        items: ['Bold', 'Italic', 'Underline', 'StrikeThrough',
+        'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+        'LowerCase', 'UpperCase', 'SuperScript', 'SubScript' , '|',
+        'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+        'Outdent', 'Indent', '|',
+        'CreateTable', 'CreateLink', 'Image', 'FileManager', '|', 'ClearFormat', 'Print', 'SourceCode', 'FullScreen', '|', 'Undo', 'Redo']
+      },
+      fileManagerSettings: {
+        enable: true,
+        path: '/Pictures/Food',
+        ajaxSettings: {
+          url: hostUrl + 'api/FileManager/FileOperations',
+          getImageUrl: hostUrl + 'api/FileManager/GetImage',
+          uploadUrl: hostUrl + 'api/FileManager/Upload',
+          downloadUrl: hostUrl + 'api/FileManager/Download'
+        }
+      },
+
       new_lbl_txt: "Please enter new label name:",
       fields: { tooltip: 'text'},
       custom_labels:[
@@ -463,7 +524,7 @@ export default Vue.extend({
     start(){
       console.log("Sidebar component computed");
       this.$store.dispatch("set_routes", this.routes);
-      this.$store.dispatch("set_csrf_token", this.token);
+      this.$store.dispatch("set_csrf_token", csrf_token);
     },
     
     category_toggles(){
@@ -630,13 +691,101 @@ export default Vue.extend({
           this.moveTo_locations = this.custom_labels.concat(this.categories);
 
           this.new_lbl_name = null;
-          this.$modal.hide('new_label_modal');
+          this.$modal.hide("new_label_modal");
         }
       }else{
         this.new_lbl_txt = "No name specified. Please try another name:"
       }
       
     },
+
+    //Compose new email
+    composeNew(args){
+      this.$modal.show("compose_new_modal");
+    },
+     mirrorConversion: function(e) {
+        var textArea = this.$refs.rteObj.ej2Instances.contentModule.getEditPanel();
+        var id = this.$refs.rteObj.ej2Instances.getID() +  'mirror-view';
+        var mirrorView = this.$refs.rteObj.$el.parentNode.querySelector('#' + id);
+        var charCount = this.$refs.rteObj.$el.parentNode.querySelector('.e-rte-character-count');
+        if (e.targetItem === 'Preview') {
+          textArea.style.display = 'block';
+          mirrorView.style.display = 'none';
+          textArea.innerHTML = this.myCodeMirror.getValue();
+          charCount.style.display = 'block';
+        }
+        else {
+          if (!mirrorView) {
+            mirrorView = document.createElement('div', { className: 'e-content' });
+            mirrorView.id = id;
+            textArea.parentNode.appendChild(mirrorView);
+          }
+          else {
+            mirrorView.innerHTML = '';
+          }
+          textArea.style.display = 'none';
+          mirrorView.style.display = 'block';
+          this.renderCodeMirror(mirrorView, this.$refs.rteObj.ej2Instances.value);
+          charCount.style.display = 'none';
+        }
+      },
+      renderCodeMirror: function(mirrorView, content) {
+      this.myCodeMirror = CodeMirror(mirrorView, {
+        value: content,
+        lineNumbers: true,
+        mode: 'text/html',
+        lineWrapping: true,
+
+      });
+    },
+    handleFullScreen: function(e){
+      var sbCntEle = document.querySelector('.sb-content.e-view');
+      var sbHdrEle = document.querySelector('.sb-header.e-view');
+      var leftBar;
+      var transformElement;
+      if (Browser.isDevice) {
+        leftBar = document.querySelector('#right-sidebar');
+        transformElement = document.querySelector('.sample-browser.e-view.e-content-animation');
+      }
+      else {
+        leftBar = document.querySelector('#left-sidebar');
+        transformElement = document.querySelector('#right-pane');
+      }
+      if (e.targetItem === 'Maximize') {
+        if (Browser.isDevice && Browser.isIos) {
+          addClass([sbCntEle, sbHdrEle], ['hide-header']);
+        }
+        addClass([leftBar], ['e-close']);
+        removeClass([leftBar], ['e-open']);
+        if (!Browser.isDevice) {
+          transformElement.style.marginLeft = '0px';
+        }
+        transformElement.style.transform = 'inherit';
+      }
+      else if (e.targetItem === 'Minimize') {
+        if (Browser.isDevice && Browser.isIos) {
+          removeClass([sbCntEle, sbHdrEle], ['hide-header']);
+        }
+        removeClass([leftBar], ['e-close']);
+        if (!Browser.isDevice) {
+          addClass([leftBar], ['e-open']);
+          transformElement.style.marginLeft = leftBar.offsetWidth + 'px';
+        }
+        transformElement.style.transform = 'translateX(0px)';
+      }
+    },
+
+    actionCompleteHandler: function(e) {
+      if (e.targetItem && (e.targetItem === 'SourceCode' || e.targetItem === 'Preview')) {
+        this.$refs.rteObj.ej2Instances.sourceCodeModule.getPanel().style.display = 'none';
+        this.mirrorConversion(e);
+      }
+      else {
+        var proxy = this;
+        setTimeout(function () { proxy.$refs.rteObj.ej2Instances.toolbarModule.refreshToolbarOverflow(); }, 400);
+      }
+    },
+
 
     getInbox(event){
       console.log("get all");
