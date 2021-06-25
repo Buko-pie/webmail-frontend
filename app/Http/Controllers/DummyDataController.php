@@ -64,6 +64,28 @@ class DummyDataController extends Controller
     }
   }
 
+  public function send_mail(Request $request)
+  {
+    $user = LaravelGmail::user();
+    if(isset($user) && isset($request['message'])){
+      
+      $mail = new Mail;
+
+      $mail->to($request['addresses']);
+      $mail->from($user);
+      $mail->subject($request['subject']);
+      $mail->message($request['message']);
+      
+      if(isset($request['cc'])){
+        $mail->cc($request['cc']);
+      }
+
+      $mail->send();
+
+      return response()->json('message Sent!', 200);
+    }
+  }
+
   public function toggle_dummy_data(Request $request)
   {
     if(isset($request['id'])){

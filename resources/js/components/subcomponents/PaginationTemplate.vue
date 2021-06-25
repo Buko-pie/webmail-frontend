@@ -42,9 +42,9 @@ export default({
 
     btnNext(){
       console.log("btnNext");
-      let grid = this.$el.closest(".e-inbox-display").ej2_instances;
+      // let grid = this.$el.closest(".e-inbox-display").ej2_instances;
       /////////////////////////////////
-      console.log(grid);
+      // console.log(grid);
       // this.$eventHub.$emit("page_next");
     },
 

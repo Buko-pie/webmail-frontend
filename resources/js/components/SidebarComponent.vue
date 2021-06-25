@@ -2,32 +2,49 @@
 <div class="control-section sidebar-default">
   <!-- run start computed -->
   <div :start="start"></div>
-  <div class="control-section">
-    <div class="sample-container">
-      <div class="default-section">
-        <ejs-richtexteditor 
-          ref="rteObj"
-
-          :toolbarSettings="toolbarSettings"
-          :actionBegin="handleFullScreen"
-          :actionComplete="actionCompleteHandler"
-          :showCharCount="true"
-          :maxLength="maxLength"
-          :fileManagerSettings="fileManagerSettings"
-          :quickToolbarSettings='quickToolbarSettings'
-        >
-        </ejs-richtexteditor>
-      </div>
-    </div>
-  </div>
+  
   
   <!-- Compose Modal  -->
-  <modal name="compose_new_modal">
-    <div class="p-2 h-full relative">
-      <ejs-textbox ref="to" id="to" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="To"></ejs-textbox>
-      <ejs-textbox ref="subject" id="subject" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="Subject"></ejs-textbox>
-
-      
+  <modal name="compose_new_modal" :adaptive="true" width="70%" height="70%" @before-open="modalOpened" @before-close="modalClosed">
+    <div class="p-2 h-full relative flex ">
+      <div class="grid grid-cols-3">
+        <div class="flex flex-col">
+          <!-- <ejs-textbox ref="to" id="to" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="To"></ejs-textbox> -->
+          <vue-tags-input
+            v-model="email_address_tag"
+            ref="vue_tags_address"
+            :tags="email_address_tags"
+            :add-on-key="[13, 32]"
+            :save-on-key="[13, 32]"
+            :validation="email_address_tag_validation"
+            :allowEditTags="true"
+            placeholder="To:"
+            @before-adding-tag="email_address_tags_add_class"
+            @tags-changed="email_address_tags_new"
+            
+          />
+          <ejs-textbox ref="email_subject" id="email_subject" v-model="email_subject" type="text" floatLabelType="Auto" :enabled="true" :readonly="false"  placeholder="Subject"></ejs-textbox>
+          <vue-tags-input
+            v-model="cc_address_tag"
+            ref="cc_tags_address"
+            :tags="cc_address_tags"
+            :add-on-key="[13, 32]"
+            :save-on-key="[13, 32]"
+            :validation="email_address_tag_validation"
+            :allowEditTags="true"
+            placeholder="Cc:"
+            @before-adding-tag="email_address_tags_add_class"
+            @tags-changed="cc_address_tags_new"
+            
+          />
+          <div class="flex justify-end mt-auto pr-2">
+            <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
+          </div>
+        </div>
+        <div class="col-span-2">
+          <Vueditor ref="vueditor"></Vueditor>
+        </div>
+      </div>
     </div>
   </modal>
   
@@ -350,18 +367,18 @@ import AvatarCropper from "vue-avatar-cropper";
 // import myUpload from "vue-image-crop-upload/upload-2.vue";
 import $ from "jquery";
 
-import { RichTextEditorPlugin, Toolbar, Link, Image, Count, HtmlEditor, QuickToolbar, Table, FileManager } from "@syncfusion/ej2-vue-richtexteditor";
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
 import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
-import { enableRipple, Browser, addClass, removeClass } from "@syncfusion/ej2-base";
+import { enableRipple } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
+import { VueTagsInput } from '@johmun/vue-tags-input';
 
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
-Vue.use(RichTextEditorPlugin);
+
 Vue.use(VModal, { dialog: true });
 Vue.use(SidebarPlugin);
 Vue.use(ButtonPlugin);
@@ -369,6 +386,7 @@ Vue.use(RadioButtonPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
+Vue.use(VueTagsInput);
 
 enableRipple(true);
 
@@ -376,8 +394,8 @@ const inbox_component = Vue.component("inbox-component", require("./InboxDisplay
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
+const email_regex = /^(([^<>()[]\\.,;:\s@\"]+(\.[^<>()[]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-let hostUrl = 'https://ej2-aspcore-service.azurewebsites.net/';
 
 function formatDate(data) {
   data.forEach(function(value) {
@@ -441,31 +459,14 @@ export default Vue.extend({
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
       category_toggle: false,
-      
-      myCodeMirror: '',
-      quickToolbarSettings: {
-        table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-', 'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
-      },
-      maxLength: 2000,
-      toolbarSettings: {
-        items: ['Bold', 'Italic', 'Underline', 'StrikeThrough',
-        'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
-        'LowerCase', 'UpperCase', 'SuperScript', 'SubScript' , '|',
-        'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
-        'Outdent', 'Indent', '|',
-        'CreateTable', 'CreateLink', 'Image', 'FileManager', '|', 'ClearFormat', 'Print', 'SourceCode', 'FullScreen', '|', 'Undo', 'Redo']
-      },
-      fileManagerSettings: {
-        enable: true,
-        path: '/Pictures/Food',
-        ajaxSettings: {
-          url: hostUrl + 'api/FileManager/FileOperations',
-          getImageUrl: hostUrl + 'api/FileManager/GetImage',
-          uploadUrl: hostUrl + 'api/FileManager/Upload',
-          downloadUrl: hostUrl + 'api/FileManager/Download'
-        }
-      },
-
+      email_address_tag: "",
+      email_address_tags: [],
+      email_addresses: null,
+      cc_address_tag: "",
+      cc_address_tags: [],
+      cc_addresses: null,
+      email_subject: "",
+      email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
       fields: { tooltip: 'text'},
       custom_labels:[
@@ -559,7 +560,8 @@ export default Vue.extend({
   mounted(){
     console.log("Sidebar component mounted");
     console.log(this.gmail_user);
-    console.log(this.$refs.splitterObj.$el.clientHeight);
+    console.log("bruh");
+    
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
     if(this.custom_labels.length > 0){
@@ -678,6 +680,55 @@ export default Vue.extend({
 
     openClick() {
       this.$refs.dockSidebar.show();
+    },
+
+    email_address_tags_add_class(args){
+      // console.log(args);
+      args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      args.addTag();
+    },
+
+    email_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
+      });
+
+      this.email_addresses = tags_text;
+    },
+
+    cc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
+      });
+
+      this.cc_addresses = tags_text;
+    },
+
+    sendMail(){
+      console.log("sending Mail ...");
+      let _this = this;
+      
+      axios({
+        method: "POST",
+        url: this.routes.send_mail,
+        headers: this.headers,
+        params: {
+          token: this.token,
+          addresses: this.email_addresses,
+          cc: this.cc_addresses,
+          subject: this.email_subject,
+          message: this.$refs.vueditor.getContent()
+        }
+      }).then(function (response) {
+        console.log(response.data);
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     },
 
     createNewLabel(){
