@@ -16,10 +16,10 @@
             :tags="email_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="To:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
             
           />
@@ -30,11 +30,24 @@
             :tags="cc_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="Cc:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="cc_address_tags_new"
+            
+          />
+          <vue-tags-input
+            v-model="bcc_address_tag"
+            ref="bcc_tags_address"
+            :tags="bcc_address_tags"
+            :add-on-key="[13, 32]"
+            :save-on-key="[13, 32]"
+            :allowEditTags="true"
+            placeholder="Bcc:"
+            @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
+            @tags-changed="bcc_address_tags_new"
             
           />
           <div class="flex justify-end mt-auto pr-2">
@@ -411,6 +424,21 @@ function formatDate(data) {
   return data;
 }
 
+function validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validateEmails(emailArray){
+  let results = emailArray.some(function(email, index){
+    if(!validateEmail(email)){
+      return true;
+    }
+  });
+
+  return results;
+}
+
 function isExistLabel(new_label, custom_labels){
   for (let i = 0; i < custom_labels.length; i++) {
     console.log(custom_labels)
@@ -465,6 +493,9 @@ export default Vue.extend({
       cc_address_tag: "",
       cc_address_tags: [],
       cc_addresses: null,
+      bcc_address_tag: "",
+      bcc_address_tags: [],
+      bcc_addresses: null,
       email_subject: "",
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
@@ -683,9 +714,23 @@ export default Vue.extend({
     },
 
     email_address_tags_add_class(args){
-      // console.log(args);
-      args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
       args.addTag();
+    },
+
+    email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
+      args.saveTag();
     },
 
     email_address_tags_new(tags){
@@ -708,27 +753,55 @@ export default Vue.extend({
       this.cc_addresses = tags_text;
     },
 
-    sendMail(){
-      console.log("sending Mail ...");
-      let _this = this;
-      
-      axios({
-        method: "POST",
-        url: this.routes.send_mail,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          addresses: this.email_addresses,
-          cc: this.cc_addresses,
-          subject: this.email_subject,
-          message: this.$refs.vueditor.getContent()
-        }
-      }).then(function (response) {
-        console.log(response.data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
+    bcc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
       });
+
+      this.bcc_addresses = tags_text;
+    },
+
+    sendMail(){
+      // console.log("sending Mail ...");
+      // let _this = this;
+      let invalid_emails = validateEmails(this.email_addresses);
+      let invalid_ccs = false;
+      let invalid_bccs = false;
+
+      if(this.cc_addresses !== null){
+        invalid_ccs = validateEmails(this.cc_addresses);
+      }
+
+       if(this.bcc_addresses !== null){
+        invalid_bccs = validateEmails(this.bcc_addresses);
+      }
+      
+      
+      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
+        console.log("sending Email...");
+        axios({
+          method: "POST",
+          url: this.routes.send_mail,
+          headers: this.headers,
+          params: {
+            token: this.token,
+            addresses: this.email_addresses,
+            cc: this.cc_addresses,
+            bcc: this.bcc_addresses,
+            subject: this.email_subject,
+            message: this.$refs.vueditor.getContent()
+          }
+        }).then(function (response) {
+          console.log(response.data);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }else{
+        alert("invalid email exists!");
+      }
     },
 
     createNewLabel(){

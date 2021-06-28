@@ -80,6 +80,10 @@ class DummyDataController extends Controller
         $mail->cc($request['cc']);
       }
 
+      if(isset($request['bcc'])){
+        $mail->bcc($request['bcc']);
+      }
+
       $mail->send();
 
       return response()->json('message Sent!', 200);
