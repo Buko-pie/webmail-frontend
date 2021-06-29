@@ -1,5 +1,11 @@
 {
     "private": true,
+    "name": "webmail",
+    "description": "vue webmail app",
+    "version": "1.0.0",
+    "engines": {
+      "node": "12.20.0"
+    },
     "scripts": {
         "dev": "npm run development",
         "development": "mix",
