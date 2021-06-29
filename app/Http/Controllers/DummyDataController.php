@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\DummyData;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use Dacastro4\LaravelGmail\Services\Message\Mail;
+use Dacastro4\LaravelGmail\Services\Message\Attachment;
 
 class DummyDataController extends Controller
 {
@@ -82,6 +83,12 @@ class DummyDataController extends Controller
 
       if(isset($request['bcc'])){
         $mail->bcc($request['bcc']);
+      }
+
+      if(isset($request['attachments'])){
+        $attachment = new Attachment;
+        //stopped here
+       
       }
 
       $mail->send();
