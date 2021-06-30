@@ -13,7 +13,7 @@
         <ejs-tooltip content="Refresh" position="BottomCenter">
           <ejs-progressbutton id="refresh_progress" ref="refresh_progress"
           :enableProgress="true"
-          :begin="refreshInbox" 
+          :begin="refreshInbox"
           :progress="onProgress"
           :spinSettings="{position: 'Center'}" 
           :duration="loading_duration"
@@ -24,7 +24,7 @@
         </ejs-tooltip>
         
         <ejs-tooltip content="More" position="BottomCenter">
-          <ejs-button @click.native="btnMore" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" ></ejs-button>
+          <ejs-dropdownbutton :items="more_items" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
         </ejs-tooltip>
       </div>
       <div :class="{'hidden': !items_selected}" class="grid grid-cols-3 divide-x">
@@ -50,44 +50,74 @@
           </ejs-tooltip>
           <!-- Button Snooze  -->
           <ejs-tooltip content="Snooze" position="BottomCenter">
-            <ejs-button @click.native="btnSnooze" iconCss="fas fa-clock" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-dropdownbutton target="#snooze_listView" :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-listview id="snooze_listView" ref="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
           </ejs-tooltip>
           <!-- Button Move to  -->
           <ejs-tooltip content="Move to" position="BottomCenter">
-            <ejs-button @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
         </div>
 
         <div class="px-2 flex">
           <!-- Button Labels  -->
           <ejs-tooltip content="Labels" position="BottomCenter">
-            <ejs-button @click.native="btnLabels" iconCss="fas fa-tag fa-rotate-135" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-button ref="btn_labels" @click.native="btnLabels" iconCss="fas fa-tag rotate-135" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
-            <ejs-button @click.native="btnMore" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" ></ejs-button>
+            <ejs-dropdownbutton :items="more_items_selected" :select="moreOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
           </ejs-tooltip>
         </div>
       </div>
-      
     </div>
-    
-    
   </div>
 </template>
 
 <script>
 import Vue from "vue";
+import moment from "moment";
+import VModal from 'vue-js-modal';
+
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { TooltipPlugin } from "@syncfusion/ej2-vue-popups";
+import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
+
+const snooze_template = Vue.component("snooze_template", require("./SnoozeListViewTemplate").default);
 
 Vue.use(DropDownButtonPlugin);
 Vue.use(ProgressButtonPlugin);
 Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
+Vue.use(ListViewPlugin);
+Vue.use(VModal, { dialog: true });
+
+function selectedItemsTo(option, dataIDs, route) {
+  let _this = this;
+
+  axios({
+    method: "GET",
+    url: route.set_many_route,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer {{ csrf_token() }}"
+    },
+    params: {
+      token: "{{ csrf_token() }}",
+      option: option,
+      dataIDs: dataIDs,
+    }
+  }).then(function (response) {
+    console.log(response);
+  }).catch(error => {
+    console.log(error);
+    alert("somthing went wrong");
+  });
+}
 
 export default Vue.extend({
+  name: "HeaderTemplate",
   data(){
     return{
       data:{},
@@ -98,27 +128,40 @@ export default Vue.extend({
       read_tgl_button_icon: "",
       loading_duration: 15000,
       drop_down_items:[
-        {
-          id: 0,
-          text: 'All'
-        },{
-          id: 1,
-          text: 'None'
-        },{
-          id: 2,
-          text: 'Read'
-        },{
-          id: 3,
-          text: 'Unread'
-        },{
-          id: 4,
-          text: 'Starred'
-        },{
-          id: 5,
-          text: 'Unstarred'
+        { id: 0, text: 'All' },
+        { id: 1, text: 'None' },
+        { id: 2, text: 'Read' },
+        { id: 3, text: 'Unread' },
+        { id: 4, text: 'Starred' },
+        { id: 5, text: 'Unstarred' }
+      ],
+      more_items:[  
+        { id: 0, text: "Mark all as read" }
+      ],
+      more_items_selected: [
+        { id: 0, text: "Mark as read" },
+        { id: 1, text: "Mark as unread" },
+        { id: 2, text: "Mark as important" },
+        { id: 3, text: "Mark as not important" },
+        { id: 4, text: "Add star" },
+        { id: 5, text: "Remove star" },
+        { id: 6, text: "Mute" },
+        { id: 7, text: "Forward as attachment" }
+      ],
+      snooze_opitons :[
+        { id: 0, class: "data", text: "Later today", day_time: "6:00 PM", category: "Snooze until..." },
+        { id: 1, class: "data", text: "Tommorow", day_time: moment().add(1,'days').format("ddd") + ", 8:00 AM", category: "Snooze until..." },
+        { id: 2, class: "data", text: "This weekend", day_time: "Sat, 8:00 AM", category: "Snooze until..." },
+        { id: 3, class: "data", text: "Next week", day_time: "Mon, 8:00 AM", category: "Snooze until..." },
+        { id: 4, class: "data", text: "Pick date & time", category: "Snooze until..." }
+      ],
+      snooze_fields: { tooltip: 'text', text: 'text', groupBy: 'category' },
+      snooze_template(){
+        return{
+          template: snooze_template
         }
-      ]
-    };
+      },
+    }
   },
 
   methods:{
@@ -161,6 +204,13 @@ export default Vue.extend({
 
     btnToggleRead(){
       console.log(this.items_unread_selected ? "Mark selected emails as read" : "Mark selected emails as unread");
+      if(this.items_unread_selected){
+        selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes);
+      }else{
+        selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
+      }
+
+      this.refreshInbox();
     },
 
     btnSnooze(){
@@ -168,16 +218,122 @@ export default Vue.extend({
     },
 
     btnMove(){
-      console.log("Move emails to other inbox");
+      let _this = this;
+      this.$eventHub.$emit("show_custom_dropdown", {
+        button: "btn_move",
+        top: this.$refs.btn_move.$el.getBoundingClientRect().top,
+        left: this.$refs.btn_move.$el.getBoundingClientRect().left
+      });
+
+      setTimeout(function() {
+        _this.$store.dispatch("dropdown_btn_mv_toggle", !this.dropdown_btn_mv);
+      }, 0);
     },
 
     btnLabels(){
-      console.log("Label selected emails");
+      let _this = this;
+      this.$eventHub.$emit("show_custom_dropdown", {
+        button: "btn_labels",
+        top: this.$refs.btn_labels.$el.getBoundingClientRect().top,
+        left: this.$refs.btn_labels.$el.getBoundingClientRect().left
+      });
+
+      setTimeout(function() {
+        _this.$store.dispatch("dropdown_btn_lbl_toggle", !this.dropdown_btn_lbl);
+      }, 0);
+      
     },
 
     btnMore(){
       console.log("Show more options on selected emails");
+    },
+
+    snoozeSelect(args){
+      this.$refs.snooze_listView.selectItem();
+      if(args.data.text === "Pick date & time"){
+        this.$eventHub.$emit("show_datepick_modal", {
+          data: "show_datepick_modal modal open"
+        });
+      }
+    },
+
+    moreOptions(args){
+      switch (args.item.id) {
+        case 0:
+          //Mark as read
+          console.log("Mark as read");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 1:
+          //Mark as unread
+          console.log("Mark as unread");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 2:
+          //Mark as important
+          console.log("Mark as important");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 3:
+          //Mark as not important
+          console.log("Mark as not important");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 4:
+          //Add star
+          console.log("Add star");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 5:
+          //Remove star
+          console.log("Remove star");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 6:
+          //Mute
+          console.log("Mute");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+        
+        case 7:
+          //Forward as attachment
+          console.log("Forward as attachment");
+          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        break;
+      
+        default:
+          console.log("somthing went wrong!");
+        break;
+      }
+
+      this.refreshInbox();
     }
+  },
+
+  computed:{
+    message(){
+      return this.$store.state.message;
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
+    }
+  },
+
+  mounted(){
+    console.log(moment().add(1,'days').format("ddd") + ", 8:00 AM");
+    // this.snooze_opitons[1].day_time = ;
+    // console.log(this.snooze_opitons[1].day_time);
   },
 
   created(){

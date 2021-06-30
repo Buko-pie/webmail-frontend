@@ -1,5 +1,5 @@
 <template>
-  <div class="px-2 relative" style="white-space:nowrap">
+  <div class="px-2 relative no-wrap">
     <div class="absolute z-40 flex">
       <div class="py-2">
         <div class="text-sm font-semibold cursor-pointer" @click="readSort">
@@ -12,6 +12,7 @@
 
 <script>
 export default({
+  name: "SubheaderTemplate",
   data(){
     return{
       data:{},

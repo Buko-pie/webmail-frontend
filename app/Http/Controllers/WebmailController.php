@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 class WebmailController extends Controller
 {
@@ -24,18 +25,39 @@ class WebmailController extends Controller
      */
     public function index()
     {
-      $data_route = route('get_dummy_data');
-      $toggle_route = route('toggle_dummy_data');
+      $user = LaravelGmail::user();
 
-      $routes= [
-        'data_route' => $data_route,
-        'toggle_route' => $toggle_route
-      ];
-      return view('test_component')->with(['routes' => $routes]);
+      if(isset($user)){
+        $routes= [
+          'data_route' => route('get_dummy_data'),
+          'send_mail' => route('send_mail'),
+          'upload_attachment' => route('upload_attachment'),
+          'remove_attachment' => route('remove_attachment'),
+          'toggle_route' => route('toggle_dummy_data'),
+          'set_many_route' => route('toggle_many_dummy_data'),
+          'logging_out' => route('logging_out'),
+          'upload_profile_pic' => route('upload_profile_pic'),
+          'user_profile_path' => url('/img/users_profile_photo/')
+        ];
+        return view('test_component')->with(['routes' => $routes]);
+      }else{
+        // return redirect()->to('oauth/gmail');
+        return LaravelGmail::redirect();
+      }
     }
 
     public function test()
     {
+      
       return view('test_component');
+    }
+
+    public function login()
+    {
+      $routes= [
+        'register' => route('register'),
+        'logging_in' => route('logging_in'),
+      ];
+      return view('login')->with(['routes' => $routes]);
     }
 }

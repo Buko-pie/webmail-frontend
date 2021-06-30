@@ -14,7 +14,8 @@
 </template>
 
 <script>
-export default {
+export default({
+  name: "ImportantTemplate",
   data(){
     return{
       data:{},
@@ -29,5 +30,5 @@ export default {
     }
   }
 
-};
+});
 </script>

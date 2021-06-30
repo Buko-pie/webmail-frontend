@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,9 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if(App::isProduction()){
-            Url::forceScheme('https');
-        }
+        //
     }
 
     /**
