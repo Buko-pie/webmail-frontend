@@ -87,13 +87,39 @@ class DummyDataController extends Controller
 
       if(isset($request['attachments'])){
         $attachment = new Attachment;
-        //stopped here
+        //Attchments maybe set here
        
       }
 
       $mail->send();
 
       return response()->json('message Sent!', 200);
+    }
+  }
+
+  public function upload_attachment(Request $request)
+  {
+    $user = LaravelGmail::user();
+    if(isset($user)){
+      if(isset($request['UploadFiles'])){
+        $request['UploadFiles']->move(public_path('storage/attachments'), $request['filename']);
+
+        return response()->json($request['id'], 200);
+      }else{
+        return response()->json("Empty UploadFiles", 400);
+      }
+    }else{
+      return LaravelGmail::redirect();
+    }
+    
+  }
+
+  public function remove_attachment(Request $request)
+  {
+    if(isset($request['UploadFiles'])){
+      return response()->json($request['UploadFiles'], 200);
+    }else{
+      return response()->json("Empty UploadFiles", 400);
     }
   }
 

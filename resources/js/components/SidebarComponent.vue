@@ -50,6 +50,19 @@
             @tags-changed="bcc_address_tags_new"
             
           />
+          <div class="flex mt-auto">
+            <ejs-uploader 
+              ref="uploadObj"
+              id='defaultfileupload'
+              name="UploadFiles"
+              :asyncSettings="attachment_path"
+              :uploading="attachmentUpload"
+              :dropArea="dropElement"
+              :removing="removingAttachment"
+              :sequentialUpload='false'
+              :autoUpload='true' >
+            </ejs-uploader> 
+          </div>
           <div class="flex justify-end mt-auto pr-2">
             <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
           </div>
@@ -386,8 +399,8 @@ import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
 import { enableRipple } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
-import { VueTagsInput } from '@johmun/vue-tags-input';
-
+import { VueTagsInput } from "@johmun/vue-tags-input";
+import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -400,6 +413,7 @@ Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
+Vue.use(UploaderPlugin);
 
 enableRipple(true);
 
@@ -547,7 +561,14 @@ export default Vue.extend({
       
       email_view_template(){
         return{ template: email_view_component}
-      }
+      },
+
+      attachment_path:{
+        saveUrl: this.routes.upload_attachment,
+        removeUrl: this.routes.remove_attachment
+      },
+
+      dropElement: '.control-fluid',
 
     }
   },
@@ -827,89 +848,31 @@ export default Vue.extend({
     composeNew(args){
       this.$modal.show("compose_new_modal");
     },
-     mirrorConversion: function(e) {
-        var textArea = this.$refs.rteObj.ej2Instances.contentModule.getEditPanel();
-        var id = this.$refs.rteObj.ej2Instances.getID() +  'mirror-view';
-        var mirrorView = this.$refs.rteObj.$el.parentNode.querySelector('#' + id);
-        var charCount = this.$refs.rteObj.$el.parentNode.querySelector('.e-rte-character-count');
-        if (e.targetItem === 'Preview') {
-          textArea.style.display = 'block';
-          mirrorView.style.display = 'none';
-          textArea.innerHTML = this.myCodeMirror.getValue();
-          charCount.style.display = 'block';
-        }
-        else {
-          if (!mirrorView) {
-            mirrorView = document.createElement('div', { className: 'e-content' });
-            mirrorView.id = id;
-            textArea.parentNode.appendChild(mirrorView);
-          }
-          else {
-            mirrorView.innerHTML = '';
-          }
-          textArea.style.display = 'none';
-          mirrorView.style.display = 'block';
-          this.renderCodeMirror(mirrorView, this.$refs.rteObj.ej2Instances.value);
-          charCount.style.display = 'none';
-        }
-      },
-      renderCodeMirror: function(mirrorView, content) {
-      this.myCodeMirror = CodeMirror(mirrorView, {
-        value: content,
-        lineNumbers: true,
-        mode: 'text/html',
-        lineWrapping: true,
 
-      });
-    },
-    handleFullScreen: function(e){
-      var sbCntEle = document.querySelector('.sb-content.e-view');
-      var sbHdrEle = document.querySelector('.sb-header.e-view');
-      var leftBar;
-      var transformElement;
-      if (Browser.isDevice) {
-        leftBar = document.querySelector('#right-sidebar');
-        transformElement = document.querySelector('.sample-browser.e-view.e-content-animation');
-      }
-      else {
-        leftBar = document.querySelector('#left-sidebar');
-        transformElement = document.querySelector('#right-pane');
-      }
-      if (e.targetItem === 'Maximize') {
-        if (Browser.isDevice && Browser.isIos) {
-          addClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        addClass([leftBar], ['e-close']);
-        removeClass([leftBar], ['e-open']);
-        if (!Browser.isDevice) {
-          transformElement.style.marginLeft = '0px';
-        }
-        transformElement.style.transform = 'inherit';
-      }
-      else if (e.targetItem === 'Minimize') {
-        if (Browser.isDevice && Browser.isIos) {
-          removeClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        removeClass([leftBar], ['e-close']);
-        if (!Browser.isDevice) {
-          addClass([leftBar], ['e-open']);
-          transformElement.style.marginLeft = leftBar.offsetWidth + 'px';
-        }
-        transformElement.style.transform = 'translateX(0px)';
-      }
+    attachmentUpload(args){
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
+      
+      let fileData = {
+        id: args.fileData.id,
+        name: args.fileData.name,
+        size: args.fileData.size,
+        type: args.fileData.type
+      };
+      args.customFormData = [
+        {id: args.fileData.id},
+        {name: args.fileData.name},
+        {size: args.fileData.size},
+        {type: args.fileData.type}
+      ];
+      console.log(args);
     },
 
-    actionCompleteHandler: function(e) {
-      if (e.targetItem && (e.targetItem === 'SourceCode' || e.targetItem === 'Preview')) {
-        this.$refs.rteObj.ej2Instances.sourceCodeModule.getPanel().style.display = 'none';
-        this.mirrorConversion(e);
-      }
-      else {
-        var proxy = this;
-        setTimeout(function () { proxy.$refs.rteObj.ej2Instances.toolbarModule.refreshToolbarOverflow(); }, 400);
-      }
+    removingAttachment(args){
+      args.postRawFile = false;
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
     },
-
 
     getInbox(event){
       console.log("get all");
@@ -953,6 +916,7 @@ export default Vue.extend({
         alert("somthing went wrong");
       });
     },
+
     importantOnly(event) {
       console.log("important Only");
       let _this = this;
