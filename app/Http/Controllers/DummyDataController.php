@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Filesystem\Filesystem;
+
 use App\DummyData;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use Dacastro4\LaravelGmail\Services\Message\Mail;
@@ -35,9 +39,17 @@ class DummyDataController extends Controller
         // return response()->json(['gmail_data' => $gmail_data], 200);
         // $gmail_data = $gmail_data->next();
       }else if($request['option'] == 'starred_only'){
-        // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('starred')->take(10)->preload()->all();
       }else if($request['option'] == 'important_only'){
-        // $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('important')->take(10)->preload()->all();
+      }else if($request['option'] == 'sent_emails'){
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('sent')->take(10)->preload()->all();
       }
     
       if(isset($gmail_data)){
@@ -70,6 +82,8 @@ class DummyDataController extends Controller
     $user = LaravelGmail::user();
     if(isset($user) && isset($request['message'])){
       
+      
+      
       $mail = new Mail;
 
       $mail->to($request['addresses']);
@@ -86,9 +100,12 @@ class DummyDataController extends Controller
       }
 
       if(isset($request['attachments'])){
-        $attachment = new Attachment;
-        //Attchments maybe set here
-       
+        foreach ($request['attachments'] as $index => $file) {
+          $attachment = json_decode($file);
+          
+          $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+          $mail->attach($path);
+        }
       }
 
       $mail->send();
@@ -98,13 +115,18 @@ class DummyDataController extends Controller
   }
 
   public function upload_attachment(Request $request)
-  {
+  { 
+    // return response()->json("error", 400);
     $user = LaravelGmail::user();
     if(isset($user)){
       if(isset($request['UploadFiles'])){
-        $request['UploadFiles']->move(public_path('storage/attachments'), $request['filename']);
+        // $request['UploadFiles']->move(public_path('storage/attachments'), $request['filename']);
+        // $request['UploadFiles']->move(storage_path('app/public/attachments'), $request['filename']);
+        // $request->file('UploadFiles')->storeAs('uploads', $request['filename'], 'storage');
+        $store_path = Storage::disk('storage_attachment')->putFileAs($user, $request['UploadFiles'], $request['filename']);
+        $url = Storage::disk('storage_attachment')->path($store_path);
 
-        return response()->json($request['id'], 200);
+        return response()->json([$store_path, $request['filename'], $url], 200);
       }else{
         return response()->json("Empty UploadFiles", 400);
       }
@@ -125,6 +147,8 @@ class DummyDataController extends Controller
 
   public function toggle_dummy_data(Request $request)
   {
+    $user = LaravelGmail::user();
+
     if(isset($request['id'])){
   
       $value = ($request['value'] == 'true') ? 1 : 0;
@@ -155,7 +179,25 @@ class DummyDataController extends Controller
 
           if(isset($request['with']) && $request['with'] == 'bodyHtml'){
             $bodyHtml = $email->getHtmlBody();
-            return response()->json(['bodyHtml' => $bodyHtml], 200);
+            $attachments = null;
+            $status = "bruh";
+
+            $files = Storage::disk('storage_attachment')->files($user.'/opened');
+            
+            if(isset($files)){
+              $file = new Filesystem;
+              $file->cleanDirectory(storage_path('app/public/attachments/'.$user.'/opened'));
+              $status = "deleted";
+            }
+            
+            if($email->hasAttachments()){
+              $attachments = $email->getAttachments();
+
+              foreach ($attachments as $attachment) {
+                $attachment->saveAttachmentTo($path = $user.'/opened', $filename = null, $disk = 'storage_attachment');
+              }
+            }
+            return response()->json(['bodyHtml' => $bodyHtml, 'attachments' => $attachments, 'currentFiles' => $files, 'status' => $status], 200);
           }else{
             return response()->json(['email' => $email], 200);
           }

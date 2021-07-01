@@ -121,3 +121,12 @@ em.specs {
   padding: 10px;
   background: #303030;
 }
+
+.e-upload .e-upload-files .e-upload-file-list, .e-bigger.e-small .e-upload .e-upload-files .e-upload-file-list {
+  font-family: inherit;
+  font-size: 14px;
+  height: 5rem;
+  line-height: normal;
+  min-height: 5rem;
+  position: relative;
+}

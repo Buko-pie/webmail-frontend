@@ -200,10 +200,8 @@ export default({
 
   mounted(){
     console.log("vue-grids mounted");
-    // this.viewData = this.localData;
     let _this = this;
-    // this.routes = this.$store.state.routes;
-    console.log(this.routes)
+
     axios({
       method: "GET",
       url: this.routes.data_route,
