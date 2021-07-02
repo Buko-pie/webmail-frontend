@@ -1,7 +1,13 @@
 <template>
-<div id="email_html_body">
-  <div class="p-5" v-html="email_body_html">
+<div id="email_html_body" class="p-5 divide-y divide-gray-500" :start="start">
+  <div v-html="email_body_html">
     {{ email_body_html }}
+  </div>
+  <div v-if="email_attachments !== null" class="mt-10 pt-3">
+
+    <div v-for="(file, index) in email_attachments" :key="index" @click="attachmentClicked($event, file.name)" class="flex bg-white mb-4 border rounded-lg w-48 h-10 items-center truncate cursor-pointer">
+      <p class="font-bold px-3 py-5 w-40">{{ file.name }}</p>
+    </div>
   </div>
 </div>
 </template>
@@ -11,14 +17,55 @@ export default({
   name: "EmailViewTemplate",
   data(){
     return{
-      data:{},
-      false: "false",
-      true: "true"
+      routes: null,
+      csrf_token: null,
     };
   },
   computed:{
+    start(){
+      console.log("email view computed")
+      this.routes = this.$store.state.routes;
+      this.csrf_token = this.$store.state.csrf_token;
+    },
+
     email_body_html(){
       return this.$store.state.selected_email_html_body;
+    },
+
+    email_attachments(){
+      return this.$store.state.selected_email_attachments;
+    }
+  },
+  methods:{
+    attachmentClicked(event, file){
+      console.log(file);
+
+      axios({
+        method: "GET",
+        url: this.routes.download_attachment,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          token: this.csrf_token,
+          file: file
+        }
+      }).then(function (response) {
+        console.log(response);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', file);
+        document.body.appendChild(link);
+        link.click();
+
+
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
     }
   }
 });

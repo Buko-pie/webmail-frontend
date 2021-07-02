@@ -19,6 +19,7 @@ export const store = new Vuex.Store({
     selected_items_dataID: [],
     selected_item_unread: 0,
     selected_email_html_body: null,
+    selected_email_attachments: null,
     splitter_height: null,
     splitter_pane_0_height: null,
   },
@@ -55,6 +56,10 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.selected_email_html_body = payload;
+    },
+
+    set_email_attachments(state, payload){
+      state.selected_email_attachments = payload;
     },
 
     dropdown_btn_lbl_toggle(state, payload){
@@ -109,6 +114,10 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.commit("set_email_html_body", payload);
+    },
+
+    set_email_attachments(state, payload){
+      state.commit("set_email_attachments", payload);
     },
 
     dropdown_btn_lbl_toggle(state, payload){

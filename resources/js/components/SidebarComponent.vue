@@ -415,12 +415,10 @@ Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
 
 enableRipple(true);
-
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
-const email_regex = /^(([^<>()[]\\.,;:\s@\"]+(\.[^<>()[]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 
 function formatDate(data) {

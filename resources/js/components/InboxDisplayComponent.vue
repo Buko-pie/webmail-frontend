@@ -33,6 +33,7 @@ import Vue from "vue";
 import moment from "moment";
 import { GridPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
 
+const fileIcons = require("file-icons-js");
 let header_template = Vue.component("header-template", require("./subcomponents/HeaderTemplate.vue").default);
 let subheader_template = Vue.component("subheader-template", require("./subcomponents/SubheaderTemplate.vue").default);
 let starred_template = Vue.component("starred-template", require("./subcomponents/StarredTemplate.vue").default);
@@ -373,6 +374,21 @@ export default({
 
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
+
+          if(response.data.attachments_files.length > 0){
+            let files = [];
+
+            response.data.attachments_files.forEach(file => {
+              files.push({
+                name: file,
+                icon: fileIcons.getClassWithColor(file)
+              })
+            });
+
+            _this.$store.dispatch("set_email_attachments", files);
+          }else{
+            _this.$store.dispatch("set_email_attachments", null);
+          }
 
         }).catch(error => {
           console.log(error);

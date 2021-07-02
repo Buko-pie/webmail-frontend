@@ -145,6 +145,28 @@ class DummyDataController extends Controller
     }
   }
 
+  public function download_attachment(Request $request)
+  {
+    $user = LaravelGmail::user();
+
+    if(isset($user)){
+      if(isset($request['file'])){
+        $path = storage_path('app/public/attachments/'.$user.'/opened/'.$request['file']);
+        // $headers = [
+        //   'Content-Disposition' => 'attachment;filename='.$request['file'],
+        //   'Content-Type' => 'application/octet-stream'
+        // ];
+        
+
+        return response()->download($path);
+      }else{
+        return response()->json("Empty filename query", 400);
+      }
+    }else{
+      return LaravelGmail::redirect();
+    }
+  }
+
   public function toggle_dummy_data(Request $request)
   {
     $user = LaravelGmail::user();
@@ -179,15 +201,13 @@ class DummyDataController extends Controller
 
           if(isset($request['with']) && $request['with'] == 'bodyHtml'){
             $bodyHtml = $email->getHtmlBody();
-            $attachments = null;
-            $status = "bruh";
+            $attachments_files = [];
 
             $files = Storage::disk('storage_attachment')->files($user.'/opened');
-            
+
             if(isset($files)){
               $file = new Filesystem;
               $file->cleanDirectory(storage_path('app/public/attachments/'.$user.'/opened'));
-              $status = "deleted";
             }
             
             if($email->hasAttachments()){
@@ -195,9 +215,20 @@ class DummyDataController extends Controller
 
               foreach ($attachments as $attachment) {
                 $attachment->saveAttachmentTo($path = $user.'/opened', $filename = null, $disk = 'storage_attachment');
+                array_push($attachments_files, $attachment->filename);
               }
+
+              $files = Storage::disk('storage_attachment')->files($user.'/opened');
+              // Storage::download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+
             }
-            return response()->json(['bodyHtml' => $bodyHtml, 'attachments' => $attachments, 'currentFiles' => $files, 'status' => $status], 200);
+            // return response()->download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+            return response()->json([
+              'bodyHtml' => $bodyHtml,
+              'attachments_files' => $attachments_files
+            ], 
+              200
+            );
           }else{
             return response()->json(['email' => $email], 200);
           }
