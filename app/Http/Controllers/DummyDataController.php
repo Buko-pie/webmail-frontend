@@ -82,8 +82,6 @@ class DummyDataController extends Controller
     $user = LaravelGmail::user();
     if(isset($user) && isset($request['message'])){
       
-      
-      
       $mail = new Mail;
 
       $mail->to($request['addresses']);
@@ -145,22 +143,51 @@ class DummyDataController extends Controller
     }
   }
 
-  public function download_attachment(Request $request)
+  public function check_attachment(Request $request)
   {
     $user = LaravelGmail::user();
 
     if(isset($user)){
       if(isset($request['file'])){
-        $path = storage_path('app/public/attachments/'.$user.'/opened/'.$request['file']);
-        // $headers = [
-        //   'Content-Disposition' => 'attachment;filename='.$request['file'],
-        //   'Content-Type' => 'application/octet-stream'
-        // ];
-        
+        $subpath = 'app/public/attachments/'.$user.'/opened/'.$request['file'];
+        $path = storage_path($subpath);
 
-        return response()->download($path);
+        if(file_exists($path)){
+          $download_link = route('download_attachment', $subpath);
+
+          return response()->json([$path, $request['file'], $download_link], 200);
+        }else{
+          return response()->json("File does not exist", 405);
+        }
       }else{
         return response()->json("Empty filename query", 400);
+      }
+    }else{
+      return LaravelGmail::redirect();
+    }
+  }
+
+  public function download_attachment(Request $request)
+  {
+    $user = LaravelGmail::user();
+
+    if(isset($user)){
+      if(isset($user)){
+        if(isset($request['file'])){
+          $subpath = 'app/public/attachments/'.$user.'/opened/'.$request['file'];
+          $path = storage_path($subpath);
+  
+          if(file_exists($path)){
+            
+            return response()->download($path);
+          }else{
+            return response()->json("File does not exist", 405);
+          }
+        }else{
+          return response()->json("Empty filename query", 400);
+        }
+      }else{
+        return LaravelGmail::redirect();
       }
     }else{
       return LaravelGmail::redirect();
@@ -198,6 +225,13 @@ class DummyDataController extends Controller
           }else{
             $email->markAsUnread();
           }
+          $email_data = [
+            'from' => $email->getFrom(),
+            'subject' => $email->getSubject(),
+            'date' => $email->getDate(),
+            'recipients' => $email->getTo(),
+            'headers' => $email->getHeaders()
+          ];
 
           if(isset($request['with']) && $request['with'] == 'bodyHtml'){
             $bodyHtml = $email->getHtmlBody();
@@ -218,14 +252,15 @@ class DummyDataController extends Controller
                 array_push($attachments_files, $attachment->filename);
               }
 
-              $files = Storage::disk('storage_attachment')->files($user.'/opened');
+              // $files = Storage::disk('storage_attachment')->files($user.'/opened');
               // Storage::download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
 
             }
             // return response()->download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
             return response()->json([
               'bodyHtml' => $bodyHtml,
-              'attachments_files' => $attachments_files
+              'attachments_files' => $attachments_files,
+              'email_data' => $email_data
             ], 
               200
             );
