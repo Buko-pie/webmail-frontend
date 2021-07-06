@@ -19,6 +19,7 @@ export const store = new Vuex.Store({
     selected_items_dataID: [],
     selected_item_unread: 0,
     selected_email_html_body: null,
+    selected_email_data: null,
     selected_email_attachments: null,
     splitter_height: null,
     splitter_pane_0_height: null,
@@ -38,7 +39,6 @@ export const store = new Vuex.Store({
     },
 
     modify_email_batch(state, payload){
-      // console.log(payload)
       state.email_batch[payload.index][payload.property] = payload.value;
     },
 
@@ -56,6 +56,10 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.selected_email_html_body = payload;
+    },
+
+    set_email_data(state, payload){
+      state.selected_email_data = payload;
     },
 
     set_email_attachments(state, payload){
@@ -114,6 +118,10 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.commit("set_email_html_body", payload);
+    },
+
+    set_email_data(state, payload){
+      state.commit("set_email_data", payload);
     },
 
     set_email_attachments(state, payload){

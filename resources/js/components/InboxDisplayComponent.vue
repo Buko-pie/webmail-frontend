@@ -374,6 +374,7 @@ export default({
 
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
+          _this.$store.dispatch("set_email_data", response.data.email_data);
 
           if(response.data.attachments_files.length > 0){
             let files = [];
