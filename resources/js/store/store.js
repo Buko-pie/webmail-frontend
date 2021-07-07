@@ -10,6 +10,7 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
+    current_inbox: 'inbox',
     email_batch: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
@@ -32,6 +33,10 @@ export const store = new Vuex.Store({
 
     set_csrf_token(state, payload){
       state.csrf_token = payload;
+    },
+
+    set_current_inbox(state, payload){
+      state.current_inbox = payload;
     },
 
     set_email_batch(state, payload){
@@ -94,6 +99,10 @@ export const store = new Vuex.Store({
 
     set_csrf_token(state, payload){
       state.commit("set_csrf_token", payload);
+    },
+
+    set_current_inbox(state, payload){
+      state.commit("set_current_inbox", payload);
     },
 
     set_email_batch(state, payload){

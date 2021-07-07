@@ -82,33 +82,63 @@ class DummyDataController extends Controller
     $user = LaravelGmail::user();
     if(isset($user) && isset($request['message'])){
       
-      $mail = new Mail;
-
-      $mail->to($request['addresses']);
-      $mail->from($user);
-      $mail->subject($request['subject']);
-      $mail->message($request['message']);
       
-      if(isset($request['cc'])){
-        $mail->cc($request['cc']);
-      }
+      if($request['option'] == 'new_email'){
+        $mail = new Mail;
 
-      if(isset($request['bcc'])){
-        $mail->bcc($request['bcc']);
-      }
-
-      if(isset($request['attachments'])){
-        foreach ($request['attachments'] as $index => $file) {
-          $attachment = json_decode($file);
-          
-          $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
-          $mail->attach($path);
+        $mail->to($request['addresses']);
+        $mail->from($user);
+        $mail->subject($request['subject']);
+        $mail->message($request['message']);
+        
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
         }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
+
+        $mail->send();
+      }else if($request['option'] == 'reply_email'){
+        $mail = LaravelGmail::message()->get($request['email_id']);
+        $mail_reference = $mail->getHeader('References');
+        $mail_in_reply_to = $mail->getHeader('In-Reply-To');
+        $mail_subject = $mail->getHeader('Subject');
+        $mail_messege_id = $mail->getHeader('Message-ID');
+        // $mail->to($request['addresses']);
+        // $mail->from($user);
+        $mail->message($request['message']);
+        $mail->setHeader('In-Reply-to', $mail_messege_id);
+        
+        $mail->reply();
+        return response()->json([
+          'reply_email',
+          $request['addresses'],
+          $request['email_id'],
+          $mail_reference,
+          $mail_in_reply_to,
+          $mail_subject,
+          $mail_messege_id
+        ], 200);
       }
 
-      $mail->send();
+      
+
+      
 
       return response()->json('message Sent!', 200);
+    }else{
+      return response()->json('Empty email content!', 404);
     }
   }
 
@@ -226,7 +256,9 @@ class DummyDataController extends Controller
             $email->markAsUnread();
           }
           $email_data = [
+            'email_id' => $email->getId(),
             'from' => $email->getFrom(),
+            'to' => $email->getTo()[0],
             'subject' => $email->getSubject(),
             'date' => $email->getDate(),
             'recipients' => $email->getTo(),

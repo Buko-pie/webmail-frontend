@@ -58,12 +58,12 @@
             :asyncSettings="attachment_path"
             :uploading="attachmentUpload"
             :removing="removingAttachment"
-            :sequentialUpload='false'
+            :sequentialUpload='true'
             :autoUpload='true' >
           </ejs-uploader> 
 
           <div class="flex justify-end mt-auto pr-2">
-            <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
+            <ejs-button @click.native="sendMail" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           </div>
         </div>
         <div class="col-span-2">
@@ -820,7 +820,7 @@ export default Vue.extend({
           url: this.routes.send_mail,
           headers: this.headers,
           params: {
-            token: this.token,
+            option: "new_email",
             addresses: this.email_addresses,
             cc: this.cc_addresses,
             bcc: this.bcc_addresses,
@@ -867,12 +867,6 @@ export default Vue.extend({
       args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
       
-      let fileData = {
-        id: args.fileData.id,
-        name: args.fileData.name,
-        size: args.fileData.size,
-        type: args.fileData.type
-      };
       args.customFormData = [
         {id: args.fileData.id},
         {filename: args.fileData.name},
@@ -900,9 +894,8 @@ export default Vue.extend({
           option: "get_all"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        _this.$store.dispatch("set_current_inbox", "inbox");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");
@@ -926,6 +919,7 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "starred");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
@@ -950,6 +944,7 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "important");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
@@ -974,6 +969,7 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "sent");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
