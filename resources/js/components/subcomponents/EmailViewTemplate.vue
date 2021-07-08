@@ -35,11 +35,76 @@
     </div>
   </div>
 
-  <div v-if="show_reply" id="email_actions" class="grid grid-cols-4 gap-3 mt-10 pt-3">
+  <div v-if="show_reply" id="email_actions" class="grid grid-cols-4 gap-3 mt-6 pt-3">
     <div :class="[ show_attachment ? 'col-span-3' : 'col-span-4']">
       <div class="w-full">
-        <a class="text-sm text-gray-500 mb-5">To: {{ reply_address }}</a>
+        <div class="flex w-full">
+          <div>
+            <div class="flex items-center">
+              <a class="text-sm text-gray-500">To:</a>
+              <vue-tags-input
+                class="tags-no-broders"
+                v-model="email_address_tag"
+                ref="vue_tags_address"
+                :tags="email_address_tags"
+                :add-on-key="[13, 32]"
+                :save-on-key="[13, 32]"
+                :allowEditTags="true"
+                placeholder=""
+                @before-adding-tag="email_address_tags_add_class"
+                @before-saving-tag="email_address_tags_edit"
+                @tags-changed="email_address_tags_new"
+              />
+            </div>
+
+            <div v-if="add_cc" class="flex items-center">
+              <a class="text-sm text-gray-500">Cc:</a>
+              <vue-tags-input
+                class="tags-no-broders"
+                v-model="cc_address_tag"
+                ref="cc_tags_address"
+                :tags="cc_address_tags"
+                :add-on-key="[13, 32]"
+                :save-on-key="[13, 32]"
+                :allowEditTags="true"
+                placeholder=""
+                @before-adding-tag="email_address_tags_add_class"
+                @before-saving-tag="email_address_tags_edit"
+                @tags-changed="cc_address_tags_new"
+              />
+            </div>
+
+            <div v-if="add_bcc" class="flex items-center">
+              <a class="text-sm text-gray-500">Bcc:</a>
+              <vue-tags-input
+                class="tags-no-broders"
+                v-model="bcc_address_tag"
+                ref="bcc_tags_address"
+                :tags="bcc_address_tags"
+                :add-on-key="[13, 32]"
+                :save-on-key="[13, 32]"
+                :allowEditTags="true"
+                placeholder=""
+                @before-adding-tag="email_address_tags_add_class"
+                @before-saving-tag="email_address_tags_edit"
+                @tags-changed="bcc_address_tags_new"
+              />
+            </div>
+          </div>
+          
+          <div class="ml-auto flex text-gray-500 font-bold">
+            <p v-if="!add_cc" @click="add_cc = !add_cc" class="mr-3 cursor-pointer">Cc</p>
+            <p v-if="!add_bcc" @click="add_bcc = !add_bcc" class="cursor-pointer">Bcc</p>
+          </div>
+        </div>
+        
         <Vueditor ref="reply_content" class="w-full"></Vueditor>
+
+        <div class="flex w-full mt-3">
+          <ejs-button @click.native="sendReply" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
+          <ejs-button @click.native="show_attachment = !show_attachment"><i class="fas fa-paperclip"></i></ejs-button>
+          <ejs-button @click.native="replyEmail" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
+        </div>
       </div>
     </div>
     <div v-if="show_attachment" class="col-span-1">
@@ -48,19 +113,15 @@
       </div>
       <ejs-uploader 
         ref="ejs_uploader_reply"
-        id='ejs_uploader_reply'
+        id="ejs_uploader_reply"
         name="UploadFiles"
+        maxFileSize=26214400
         :asyncSettings="attachment_path"
         :uploading="attachmentUpload"
         :removing="removingAttachment"
         :sequentialUpload='true'
         :autoUpload='true' >
       </ejs-uploader>
-    </div>
-    <div class="border flex mt-3" :class="[ show_attachment ? 'col-span-3' : 'col-span-4']">
-      <ejs-button @click.native="sendReply" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
-      <ejs-button @click.native="show_attachment = !show_attachment"><i class="fas fa-paperclip"></i></ejs-button>
-      <ejs-button @click.native="replyEmail" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
     </div>
   </div>
 </div>
@@ -71,17 +132,22 @@ import moment from "moment";
 
 function formatDate(date) {
   let new_date = moment(date).format("LLL");
-
-
-  // if(moment(date).isSame(new Date(), "day")){
-  //   new_date = moment(value.created_at).format("LT");
-  // }else if(moment(value.created_at).isSame(new Date(), "year")){
-  //   new_date = moment(value.created_at).format("MMM DD");
-  // }else{
-  //   new_date = moment(value.created_at).format("YYYY/MM/DD");
-  // }
-
   return new_date;
+}
+
+function validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validateEmails(emailArray){
+  let results = emailArray.some(function(email, index){
+    if(!validateEmail(email)){
+      return true;
+    }
+  });
+
+  return results;
 }
 
 export default({
@@ -94,6 +160,17 @@ export default({
       show_reply: false,
       show_attachment: false,
       reply_address: null,
+      email_address_tag: "",
+      email_address_tags: [],
+      email_addresses: null,
+      add_cc: false,
+      cc_address_tag: "",
+      cc_address_tags: [],
+      cc_addresses: null,
+      add_bcc: false,
+      bcc_address_tag: "",
+      bcc_address_tags: [],
+      bcc_addresses: null,
       attachment_path:{
         saveUrl: null,
         removeUrl: null
@@ -126,14 +203,32 @@ export default({
 
     email_data(){
       this.show_reply = false;
+      this.add_cc = false;
+      this.add_bcc = false;
       let data = this.$store.state.selected_email_data;
-
+      
       if(data !== null){
         data.date = formatDate(data.date);
         if(this.current_inbox === "sent"){
           this.reply_address = data.to.email ? data.to.email : data.to.name;
+
+          let reply_add = data.to.email ? data.to.email : data.to.name;
+          this.email_addresses = [reply_add];
+
+          this.email_address_tags = [{
+            text: data.to.email ? data.to.email : data.to.name,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
         }else{
           this.reply_address = data.from.email ? data.from.email : data.from.name;
+
+          let reply_add = data.from.email ? data.from.email : data.from.name;
+          this.email_addresses = [reply_add];
+
+          this.email_address_tags = [{
+            text: data.from.email ? data.from.email : data.from.name,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
         }
         
       }
@@ -162,26 +257,116 @@ export default({
       this.show_reply = !this.show_reply;
     },
 
+    email_address_tags_add_class(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
+      args.addTag();
+    },
+
+    email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
+      args.saveTag();
+    },
+
+    email_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
+      });
+
+      this.email_addresses = tags_text;
+    },
+
+    cc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
+      });
+
+      this.cc_addresses = tags_text;
+    },
+
+    bcc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
+      });
+
+      this.bcc_addresses = tags_text;
+    },
+
     sendReply(){
       console.log('send reply...');
+      console.log(this.$refs.vue_tags_address.tags);
 
-      axios({
-        method: "POST",
-        url: this.routes.send_mail,
-        headers: this.headers,
-        params: {
-          option: "reply_email",
-          email_id: this.email_data.email_id,
-          addresses: this.reply_address,
-          message: this.$refs.reply_content.getContent()
-        }
-      }).then(function (response) {
-        console.log(response.data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
-      
+      let _this = this;
+      let invalid_emails = validateEmails(this.email_addresses);
+      let invalid_ccs = false;
+      let invalid_bccs = false;
+      let files = [];
+      if(this.$refs.ejs_uploader_reply !== undefined){
+        files = this.$refs.ejs_uploader_reply.getFilesData();
+      }
+      let attachments = [];
+
+      if(this.cc_addresses !== null){
+        invalid_ccs = validateEmails(this.cc_addresses);
+      }
+
+       if(this.bcc_addresses !== null){
+        invalid_bccs = validateEmails(this.bcc_addresses);
+      }
+
+      if(files.length !== 0){
+        files.forEach(file => {
+          if(file.statusCode === "2"){
+            attachments.push({
+              id: file.id,
+              filename: file.name,
+              size: file.size,
+              status: "uploaded",
+              type: file.type,
+            });
+          }
+        });
+        console.log(attachments);
+      }
+
+      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
+        axios({
+          method: "POST",
+          url: this.routes.send_mail,
+          headers: this.headers,
+          params: {
+            option: "reply_email",
+            email_id: this.email_data.email_id,
+            addresses: this.email_addresses,
+            cc: this.cc_addresses,
+            bcc: this.bcc_addresses,
+            message: this.$refs.reply_content.getContent(),
+            attachments: attachments,
+          }
+        }).then(function (response) {
+          console.log(response.data);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }else{
+        alert("invalid email exists!");
+      }
     },
 
     attachmentUpload(args){

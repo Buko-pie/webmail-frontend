@@ -115,10 +115,27 @@ class DummyDataController extends Controller
         $mail_in_reply_to = $mail->getHeader('In-Reply-To');
         $mail_subject = $mail->getHeader('Subject');
         $mail_messege_id = $mail->getHeader('Message-ID');
-        // $mail->to($request['addresses']);
-        // $mail->from($user);
+        
+        $mail->to($request['addresses']);
         $mail->message($request['message']);
         $mail->setHeader('In-Reply-to', $mail_messege_id);
+
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
+        }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
         
         $mail->reply();
         return response()->json([

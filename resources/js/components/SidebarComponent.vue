@@ -55,6 +55,7 @@
             ref="ejs_uploader"
             id='ejs_uploader'
             name="UploadFiles"
+            maxFileSize=26214400
             :asyncSettings="attachment_path"
             :uploading="attachmentUpload"
             :removing="removingAttachment"
