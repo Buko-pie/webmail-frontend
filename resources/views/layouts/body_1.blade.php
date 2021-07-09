@@ -4,8 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" id="csrf_token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Webmail</title> 
-    
+    <title>Webmail</title>
+
     <link href="{{ asset('css/syncfusion_material.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sidebarTemplate.css') }}" rel="stylesheet">
     <link href="{{ asset('css/inboxTemplate.css') }}" rel="stylesheet">
@@ -16,8 +16,8 @@
 <body>
     <div id="app">
         @include('navbars.navbar_1')
-        <sidebar-component ref="sidebarComponent" 
-          :routes="{{ json_encode($routes) }}" 
+        <sidebar-component ref="sidebarComponent"
+          :routes="{{ json_encode($routes) }}"
           :gmail_user="{{ json_encode(LaravelGmail::user())}}"
           {{-- :csrf_token="{{ json_encode(csrf_token()) }}" --}}
         />
@@ -27,6 +27,5 @@
             </main>
         </div>
     </div>
-    <link href="{{ asset('css/tablecell_override.css') }}" rel="stylesheet">
 </body>
 </html>
