@@ -50,21 +50,21 @@
             @tags-changed="bcc_address_tags_new"
             
           />
-          <div class="flex mt-auto">
-            <ejs-uploader 
-              ref="uploadObj"
-              id='defaultfileupload'
-              name="UploadFiles"
-              :asyncSettings="attachment_path"
-              :uploading="attachmentUpload"
-              :dropArea="dropElement"
-              :removing="removingAttachment"
-              :sequentialUpload='false'
-              :autoUpload='true' >
-            </ejs-uploader> 
-          </div>
+
+          <ejs-uploader 
+            ref="ejs_uploader"
+            id='ejs_uploader'
+            name="UploadFiles"
+            maxFileSize=26214400
+            :asyncSettings="attachment_path"
+            :uploading="attachmentUpload"
+            :removing="removingAttachment"
+            :sequentialUpload='true'
+            :autoUpload='true' >
+          </ejs-uploader> 
+
           <div class="flex justify-end mt-auto pr-2">
-            <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
+            <ejs-button @click.native="sendMail" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           </div>
         </div>
         <div class="col-span-2">
@@ -175,7 +175,7 @@
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="sentEMails" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
@@ -416,12 +416,10 @@ Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
 
 enableRipple(true);
-
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
-const email_regex = /^(([^<>()[]\\.,;:\s@\"]+(\.[^<>()[]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 
 function formatDate(data) {
@@ -578,6 +576,7 @@ export default Vue.extend({
       console.log("Sidebar component computed");
       this.$store.dispatch("set_routes", this.routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
+      this.$store.dispatch("set_user_email", this.gmail_user);
     },
     
     category_toggles(){
@@ -612,7 +611,6 @@ export default Vue.extend({
   mounted(){
     console.log("Sidebar component mounted");
     console.log(this.gmail_user);
-    console.log("bruh");
     
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
@@ -785,11 +783,14 @@ export default Vue.extend({
     },
 
     sendMail(){
-      // console.log("sending Mail ...");
-      // let _this = this;
+      console.log("sending Mail ...");
+
+      let _this = this;
       let invalid_emails = validateEmails(this.email_addresses);
       let invalid_ccs = false;
       let invalid_bccs = false;
+      let files = this.$refs.ejs_uploader.getFilesData();
+      let attachments = [];
 
       if(this.cc_addresses !== null){
         invalid_ccs = validateEmails(this.cc_addresses);
@@ -797,6 +798,20 @@ export default Vue.extend({
 
        if(this.bcc_addresses !== null){
         invalid_bccs = validateEmails(this.bcc_addresses);
+      }
+
+      if(files.length !== 0){
+        files.forEach(file => {
+          if(file.statusCode === "2"){
+            attachments.push({
+              id: file.id,
+              filename: file.name,
+              size: file.size,
+              status: "uploaded",
+              type: file.type,
+            });
+          }
+        });
       }
       
       
@@ -807,12 +822,13 @@ export default Vue.extend({
           url: this.routes.send_mail,
           headers: this.headers,
           params: {
-            token: this.token,
+            option: "new_email",
             addresses: this.email_addresses,
             cc: this.cc_addresses,
             bcc: this.bcc_addresses,
             subject: this.email_subject,
-            message: this.$refs.vueditor.getContent()
+            message: this.$refs.vueditor.getContent(),
+            attachments: attachments,
           }
         }).then(function (response) {
           console.log(response.data);
@@ -853,15 +869,9 @@ export default Vue.extend({
       args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
       
-      let fileData = {
-        id: args.fileData.id,
-        name: args.fileData.name,
-        size: args.fileData.size,
-        type: args.fileData.type
-      };
       args.customFormData = [
         {id: args.fileData.id},
-        {name: args.fileData.name},
+        {filename: args.fileData.name},
         {size: args.fileData.size},
         {type: args.fileData.type}
       ];
@@ -886,9 +896,8 @@ export default Vue.extend({
           option: "get_all"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        _this.$store.dispatch("set_current_inbox", "inbox");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");
@@ -908,9 +917,12 @@ export default Vue.extend({
           option: "starred_only"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "starred");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");
@@ -930,9 +942,37 @@ export default Vue.extend({
           option: "important_only"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "important");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+      }).catch(error => {
+        console.log(error);
+        alert("somthing went wrong");
+      });
+    },
+
+    sentEMails(event) {
+      console.log("sentEMails");
+      let _this = this;
+
+      axios({
+        method: "GET",
+        url: this.routes.data_route,
+        headers: this.headers,
+        params: {
+          token: this.token,
+          option: "sent_emails"
+        }
+      }).then(function (response) {
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "sent");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
         alert("somthing went wrong");

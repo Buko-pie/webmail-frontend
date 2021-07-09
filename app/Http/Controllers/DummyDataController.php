@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Filesystem\Filesystem;
+
 use App\DummyData;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use Dacastro4\LaravelGmail\Services\Message\Mail;
@@ -35,9 +39,17 @@ class DummyDataController extends Controller
         // return response()->json(['gmail_data' => $gmail_data], 200);
         // $gmail_data = $gmail_data->next();
       }else if($request['option'] == 'starred_only'){
-        // $dummy_data = DummyData::where('starred', true)->orderBy('created_at', 'DESC')->get();
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('starred')->take(10)->preload()->all();
       }else if($request['option'] == 'important_only'){
-        // $dummy_data = DummyData::where('important', true)->orderBy('created_at', 'DESC')->get();
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('important')->take(10)->preload()->all();
+      }else if($request['option'] == 'sent_emails'){
+        $emails = LaravelGmail::message()->in('inbox')->all();
+        $inbox_items_length = count($emails);
+        $gmail_data = LaravelGmail::message()->in('sent')->take(10)->preload()->all();
       }
     
       if(isset($gmail_data)){
@@ -68,43 +80,141 @@ class DummyDataController extends Controller
   public function send_mail(Request $request)
   {
     $user = LaravelGmail::user();
+
+    // $content = $request->getContent();
+
+    // return response()->json($content, 200);
     if(isset($user) && isset($request['message'])){
       
-      $mail = new Mail;
-
-      $mail->to($request['addresses']);
-      $mail->from($user);
-      $mail->subject($request['subject']);
-      $mail->message($request['message']);
       
-      if(isset($request['cc'])){
-        $mail->cc($request['cc']);
+      if($request['option'] == 'new_email'){
+        $mail = new Mail;
+
+        $mail->to($request['addresses']);
+        $mail->from($user);
+        $mail->subject($request['subject']);
+        $mail->message($request['message']);
+        
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
+        }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
+
+        $mail->send();
+      }else if($request['option'] == 'reply_email'){
+        $mail = LaravelGmail::message()->get($request['email_id']);
+        $mail_reference = $mail->getHeader('References');
+        $mail_in_reply_to = $mail->getHeader('In-Reply-To');
+        $mail_subject = $mail->getHeader('Subject');
+        $mail_messege_id = $mail->getHeader('Message-ID');
+        
+        $mail->to($request['addresses']);
+        $mail->message($request['message']);
+        $mail->setHeader('In-Reply-to', $mail_messege_id);
+
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
+        }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
+        
+        $mail->reply();
+        // return response()->json([
+        //   'reply_email',
+        //   $request['addresses'],
+        //   $request['email_id'],
+        //   $mail_reference,
+        //   $mail_in_reply_to,
+        //   $mail_subject,
+        //   $mail_messege_id
+        // ], 200);
+      }else if($request['option'] == 'forward_email'){
+        $mail = LaravelGmail::message()->get($request['email_id']);
+        $mail_reference = $mail->getHeader('References');
+        $mail_in_reply_to = $mail->getHeader('In-Reply-To');
+        $mail_subject = $mail->getHeader('Subject');
+        $mail_messege_id = $mail->getHeader('Message-ID');
+        
+        $mail->subject($mail_subject);
+        $mail->to($request['addresses']);
+        $mail->message($request['message']);
+        // $mail->setHeader('In-Reply-to', $mail_messege_id);
+
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
+        }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
+        
+        $mail->send();
+        // return response()->json([
+        //   'reply_email',
+        //   $request['addresses'],
+        //   $request['email_id'],
+        //   $mail_reference,
+        //   $mail_in_reply_to,
+        //   $mail_subject,
+        //   $mail_messege_id
+        // ], 200);
       }
 
-      if(isset($request['bcc'])){
-        $mail->bcc($request['bcc']);
-      }
+      
 
-      if(isset($request['attachments'])){
-        $attachment = new Attachment;
-        //Attchments maybe set here
-       
-      }
-
-      $mail->send();
+      
 
       return response()->json('message Sent!', 200);
+    }else{
+      return response()->json('Empty email content!', 404);
     }
   }
 
   public function upload_attachment(Request $request)
-  {
+  { 
+    // return response()->json("error", 400);
     $user = LaravelGmail::user();
     if(isset($user)){
       if(isset($request['UploadFiles'])){
-        $request['UploadFiles']->move(public_path('storage/attachments'), $request['filename']);
+        // $request['UploadFiles']->move(public_path('storage/attachments'), $request['filename']);
+        // $request['UploadFiles']->move(storage_path('app/public/attachments'), $request['filename']);
+        // $request->file('UploadFiles')->storeAs('uploads', $request['filename'], 'storage');
+        $store_path = Storage::disk('storage_attachment')->putFileAs($user, $request['UploadFiles'], $request['filename']);
+        $url = Storage::disk('storage_attachment')->path($store_path);
 
-        return response()->json($request['id'], 200);
+        return response()->json([$store_path, $request['filename'], $url], 200);
       }else{
         return response()->json("Empty UploadFiles", 400);
       }
@@ -123,8 +233,61 @@ class DummyDataController extends Controller
     }
   }
 
+  public function check_attachment(Request $request)
+  {
+    $user = LaravelGmail::user();
+
+    if(isset($user)){
+      if(isset($request['file'])){
+        $subpath = 'app/public/attachments/'.$user.'/opened/'.$request['file'];
+        $path = storage_path($subpath);
+
+        if(file_exists($path)){
+          $download_link = route('download_attachment', $subpath);
+
+          return response()->json([$path, $request['file'], $download_link], 200);
+        }else{
+          return response()->json("File does not exist", 405);
+        }
+      }else{
+        return response()->json("Empty filename query", 400);
+      }
+    }else{
+      return LaravelGmail::redirect();
+    }
+  }
+
+  public function download_attachment(Request $request)
+  {
+    $user = LaravelGmail::user();
+
+    if(isset($user)){
+      if(isset($user)){
+        if(isset($request['file'])){
+          $subpath = 'app/public/attachments/'.$user.'/opened/'.$request['file'];
+          $path = storage_path($subpath);
+  
+          if(file_exists($path)){
+            
+            return response()->download($path);
+          }else{
+            return response()->json("File does not exist", 405);
+          }
+        }else{
+          return response()->json("Empty filename query", 400);
+        }
+      }else{
+        return LaravelGmail::redirect();
+      }
+    }else{
+      return LaravelGmail::redirect();
+    }
+  }
+
   public function toggle_dummy_data(Request $request)
   {
+    $user = LaravelGmail::user();
+
     if(isset($request['id'])){
   
       $value = ($request['value'] == 'true') ? 1 : 0;
@@ -152,10 +315,48 @@ class DummyDataController extends Controller
           }else{
             $email->markAsUnread();
           }
+          $email_data = [
+            'email_id' => $email->getId(),
+            'from' => $email->getFrom(),
+            'to' => $email->getTo()[0],
+            'cc' => $email->getHeader("Cc"),
+            'subject' => $email->getSubject(),
+            'date' => $email->getDate(),
+            'recipients' => $email->getTo(),
+            'headers' => $email->getHeaders()
+          ];
 
           if(isset($request['with']) && $request['with'] == 'bodyHtml'){
             $bodyHtml = $email->getHtmlBody();
-            return response()->json(['bodyHtml' => $bodyHtml], 200);
+            $attachments_files = [];
+
+            $files = Storage::disk('storage_attachment')->files($user.'/opened');
+
+            if(isset($files)){
+              $file = new Filesystem;
+              $file->cleanDirectory(storage_path('app/public/attachments/'.$user.'/opened'));
+            }
+            
+            if($email->hasAttachments()){
+              $attachments = $email->getAttachments();
+
+              foreach ($attachments as $attachment) {
+                $attachment->saveAttachmentTo($path = $user.'/opened', $filename = null, $disk = 'storage_attachment');
+                array_push($attachments_files, $attachment->filename);
+              }
+
+              // $files = Storage::disk('storage_attachment')->files($user.'/opened');
+              // Storage::download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+
+            }
+            // return response()->download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+            return response()->json([
+              'bodyHtml' => $bodyHtml,
+              'attachments_files' => $attachments_files,
+              'email_data' => $email_data
+            ], 
+              200
+            );
           }else{
             return response()->json(['email' => $email], 200);
           }

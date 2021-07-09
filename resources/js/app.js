@@ -8,6 +8,7 @@ import 'vueditor/dist/style/vueditor.min.css'
 // app.component("webmail-component", require("./components/WebmailComponent.vue").default);
 // app.component("example-component", require("./components/ExampleComponent.vue").default);
 
+
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);

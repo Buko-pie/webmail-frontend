@@ -32,6 +32,8 @@ class WebmailController extends Controller
           'data_route' => route('get_dummy_data'),
           'send_mail' => route('send_mail'),
           'upload_attachment' => route('upload_attachment'),
+          'check_attachment' => route('check_attachment'),
+          'download_attachment' => route('download_attachment'),
           'remove_attachment' => route('remove_attachment'),
           'toggle_route' => route('toggle_dummy_data'),
           'set_many_route' => route('toggle_many_dummy_data'),
@@ -39,6 +41,7 @@ class WebmailController extends Controller
           'upload_profile_pic' => route('upload_profile_pic'),
           'user_profile_path' => url('/img/users_profile_photo/')
         ];
+
         return view('test_component')->with(['routes' => $routes]);
       }else{
         // return redirect()->to('oauth/gmail');

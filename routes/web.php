@@ -29,6 +29,8 @@ Route::get('/test', [WebmailController::class, 'test'])->name('test');
 Route::get('/get_dummy_data', [DummyDataController::class, 'get_dummy_data'])->name('get_dummy_data');
 Route::post('/send_mail', [DummyDataController::class, 'send_mail'])->name('send_mail');
 Route::post('/upload_attachment', [DummyDataController::class, 'upload_attachment'])->name('upload_attachment');
+Route::get('/check_attachment', [DummyDataController::class, 'check_attachment'])->name('check_attachment');
+Route::get('/download_attachment', [DummyDataController::class, 'download_attachment'])->name('download_attachment');
 Route::post('/remove_attachment', [DummyDataController::class, 'remove_attachment'])->name('remove_attachment');
 Route::get('/toggle_dummy_data', [DummyDataController::class, 'toggle_dummy_data'])->name('toggle_dummy_data');
 Route::get('/toggle_many_dummy_data', [DummyDataController::class, 'toggle_many_dummy_data'])->name('toggle_many_dummy_data');
