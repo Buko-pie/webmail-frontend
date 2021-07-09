@@ -7,7 +7,7 @@
     </div>
 
     <div class="ml-auto">
-      {{ email_data.date }}
+      {{ email_date_display }}
     </div>
   </div>
   <div class="divide-y divide-gray-500 mt-5 pt-3">
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="m-2">
-      <div class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
+      <div @click="forwardEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
         <p class="flex font-bold px-3 py-5 w-40 items-center justify-center"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
       </div>
     </div>
@@ -156,10 +156,12 @@ export default({
     return{
       routes: null,
       csrf_token: null,
+      user_email: null,
       headers: null,
+      email_action: null,
       show_reply: false,
       show_attachment: false,
-      reply_address: null,
+      email_date_display: null,
       email_address_tag: "",
       email_address_tags: [],
       email_addresses: null,
@@ -183,8 +185,9 @@ export default({
       console.log("email view computed")
       this.routes = this.$store.state.routes;
       this.csrf_token = this.$store.state.csrf_token;
+      this.user_email = this.$store.state.user_email;
       this.headers = {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/mixed",
         "Authorization": "Bearer " + this.csrf_token,
         "X-CSRF-TOKEN": this.csrf_token
       }
@@ -203,35 +206,13 @@ export default({
 
     email_data(){
       this.show_reply = false;
-      this.add_cc = false;
-      this.add_bcc = false;
-      let data = this.$store.state.selected_email_data;
-      
+      this.email_action = null;
+      let data = this.$store.state.selected_email_data
+
       if(data !== null){
-        data.date = formatDate(data.date);
-        if(this.current_inbox === "sent"){
-          this.reply_address = data.to.email ? data.to.email : data.to.name;
-
-          let reply_add = data.to.email ? data.to.email : data.to.name;
-          this.email_addresses = [reply_add];
-
-          this.email_address_tags = [{
-            text: data.to.email ? data.to.email : data.to.name,
-            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
-          }];
-        }else{
-          this.reply_address = data.from.email ? data.from.email : data.from.name;
-
-          let reply_add = data.from.email ? data.from.email : data.from.name;
-          this.email_addresses = [reply_add];
-
-          this.email_address_tags = [{
-            text: data.from.email ? data.from.email : data.from.name,
-            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
-          }];
-        }
-        
+        this.email_date_display = formatDate(data.date);
       }
+      
       return data;
     },
 
@@ -255,6 +236,68 @@ export default({
     replyEmail(){
       console.log("replyEmail");
       this.show_reply = !this.show_reply;
+      this.email_action = "reply_email";
+      this.add_cc = false;
+      this.add_bcc = false;
+      let data = this.email_data;
+
+      if(data !== null){
+        
+        if(this.current_inbox === "sent"){
+          let reply_address = data.to.email ? data.to.email : data.to.name;
+          this.email_addresses = [reply_address];
+
+          this.email_address_tags = [{
+            text: reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+        }else{
+          let reply_address = data.from.email ? data.from.email : data.from.name;
+          this.email_addresses = [reply_address];
+
+          this.email_address_tags = [{
+            text: reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+        }
+        
+      }
+    },
+
+    forwardEmail(){
+      this.show_reply = !this.show_reply;
+      this.email_action = "forward_email";
+      this.add_cc = false;
+      this.add_bcc = false;
+      this.email_address_tags = [];
+      this.email_addresses = null;
+      let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
+      let to_email = this.email_data.to.email ? this.email_data.to.email : this.email_data.to.name;
+
+      console.log(this.email_data.from.name);
+      console.log(from_email);
+
+      let forward_msg_template = "<div><br></div><div><br></div>" +
+        "<div>On " + moment().format("LLLL") + " < " + this.user_email + " > wrote:</div>" +
+        "<div>---------- Forwarded message ---------</div>" +
+        "<div>From: &lt;" + from_email + "&gt;</div>" +
+        "<div>Date: " + moment(this.email_data.date).format("llll") + "</div>" +
+        "<div>To: &lt;" + to_email + "&gt;</div>"
+      
+      console.log( forward_msg_template);
+
+      if(this.email_data.cc !== null){
+        let cc_email = this.email_data.cc;
+        cc_email = cc_email.replace(/"/g, "");
+        cc_email = cc_email.replace(/</g, "&lt;");
+        cc_email = cc_email.replace(/>/g, "&gt;");
+        
+        forward_msg_template = forward_msg_template + "<div>Cc: " + cc_email + "</div>"
+      }
+
+      forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html;
+      setTimeout(() => this.$refs.reply_content.setContent(forward_msg_template), 200);
+      
     },
 
     email_address_tags_add_class(args){
@@ -312,7 +355,7 @@ export default({
       console.log(this.$refs.vue_tags_address.tags);
 
       let _this = this;
-      let invalid_emails = validateEmails(this.email_addresses);
+      let invalid_emails = true;
       let invalid_ccs = false;
       let invalid_bccs = false;
       let files = [];
@@ -320,6 +363,12 @@ export default({
         files = this.$refs.ejs_uploader_reply.getFilesData();
       }
       let attachments = [];
+
+      if(this.email_addresses !== null){
+        invalid_emails = validateEmails(this.email_addresses);
+      }else{
+        alert("No email addresses added");
+      }
 
       if(this.cc_addresses !== null){
         invalid_ccs = validateEmails(this.cc_addresses);
@@ -350,7 +399,7 @@ export default({
           url: this.routes.send_mail,
           headers: this.headers,
           params: {
-            option: "reply_email",
+            option: this.email_action,
             email_id: this.email_data.email_id,
             addresses: this.email_addresses,
             cc: this.cc_addresses,

@@ -12,6 +12,8 @@ export const store = new Vuex.Store({
     csrf_token: null,
     current_inbox: 'inbox',
     email_batch: null,
+    username: null,
+    user_email: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
@@ -45,6 +47,10 @@ export const store = new Vuex.Store({
 
     modify_email_batch(state, payload){
       state.email_batch[payload.index][payload.property] = payload.value;
+    },
+
+    set_user_email(state, payload){
+      state.user_email = payload
     },
 
     set_user_profile_photo(state, payload){
@@ -111,6 +117,10 @@ export const store = new Vuex.Store({
 
     modify_email_batch(state, payload){
       state.commit("modify_email_batch", payload);
+    },
+
+    set_user_email(state, payload){
+      state.commit("set_user_email", payload);
     },
 
     set_user_profile_photo(state, payload){

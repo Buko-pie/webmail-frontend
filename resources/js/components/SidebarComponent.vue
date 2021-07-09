@@ -576,6 +576,7 @@ export default Vue.extend({
       console.log("Sidebar component computed");
       this.$store.dispatch("set_routes", this.routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
+      this.$store.dispatch("set_user_email", this.gmail_user);
     },
     
     category_toggles(){

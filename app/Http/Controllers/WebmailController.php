@@ -41,6 +41,7 @@ class WebmailController extends Controller
           'upload_profile_pic' => route('upload_profile_pic'),
           'user_profile_path' => url('/img/users_profile_photo/')
         ];
+
         return view('test_component')->with(['routes' => $routes]);
       }else{
         // return redirect()->to('oauth/gmail');

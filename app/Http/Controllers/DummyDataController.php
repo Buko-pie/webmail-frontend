@@ -80,6 +80,10 @@ class DummyDataController extends Controller
   public function send_mail(Request $request)
   {
     $user = LaravelGmail::user();
+
+    // $content = $request->getContent();
+
+    // return response()->json($content, 200);
     if(isset($user) && isset($request['message'])){
       
       
@@ -138,15 +142,54 @@ class DummyDataController extends Controller
         }
         
         $mail->reply();
-        return response()->json([
-          'reply_email',
-          $request['addresses'],
-          $request['email_id'],
-          $mail_reference,
-          $mail_in_reply_to,
-          $mail_subject,
-          $mail_messege_id
-        ], 200);
+        // return response()->json([
+        //   'reply_email',
+        //   $request['addresses'],
+        //   $request['email_id'],
+        //   $mail_reference,
+        //   $mail_in_reply_to,
+        //   $mail_subject,
+        //   $mail_messege_id
+        // ], 200);
+      }else if($request['option'] == 'forward_email'){
+        $mail = LaravelGmail::message()->get($request['email_id']);
+        $mail_reference = $mail->getHeader('References');
+        $mail_in_reply_to = $mail->getHeader('In-Reply-To');
+        $mail_subject = $mail->getHeader('Subject');
+        $mail_messege_id = $mail->getHeader('Message-ID');
+        
+        $mail->subject($mail_subject);
+        $mail->to($request['addresses']);
+        $mail->message($request['message']);
+        // $mail->setHeader('In-Reply-to', $mail_messege_id);
+
+        if(isset($request['cc'])){
+          $mail->cc($request['cc']);
+        }
+
+        if(isset($request['bcc'])){
+          $mail->bcc($request['bcc']);
+        }
+
+        if(isset($request['attachments'])){
+          foreach ($request['attachments'] as $index => $file) {
+            $attachment = json_decode($file);
+            
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $mail->attach($path);
+          }
+        }
+        
+        $mail->send();
+        // return response()->json([
+        //   'reply_email',
+        //   $request['addresses'],
+        //   $request['email_id'],
+        //   $mail_reference,
+        //   $mail_in_reply_to,
+        //   $mail_subject,
+        //   $mail_messege_id
+        // ], 200);
       }
 
       
@@ -276,6 +319,7 @@ class DummyDataController extends Controller
             'email_id' => $email->getId(),
             'from' => $email->getFrom(),
             'to' => $email->getTo()[0],
+            'cc' => $email->getHeader("Cc"),
             'subject' => $email->getSubject(),
             'date' => $email->getDate(),
             'recipients' => $email->getTo(),
