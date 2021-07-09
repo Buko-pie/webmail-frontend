@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App;
 use Illuminate\Support\ServiceProvider;
+use URL;
 
 class AppServiceProvider extends ServiceProvider {
     /**
@@ -21,6 +22,8 @@ class AppServiceProvider extends ServiceProvider {
      * @return void
      */
     public function boot() {
-
+        if(App::isProduction()) {
+            URL::forceScheme('https');
+        }
     }
 }
