@@ -17,3 +17,6 @@ public/webfonts
 .idea
 0
 webmail-front.iml
+_ide_helper.php
+.phpstorm.meta.php
+
