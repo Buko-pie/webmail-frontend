@@ -16,7 +16,7 @@ mix.disableNotifications();
 if(!mix.inProduction()){
   mix.webpackConfig({ devtool: "inline-source-map" });
 }
-mix.copyDirectory('./node_modules/@fortawesome/fontawesome-free/webfonts/', 'public/webfonts');
+mix.copyDirectory('./node_modules/@fortawesome/fontawesome-free/webfonts/', 'public/fonts');
 
 mix.options({
   processCssUrls: false,
