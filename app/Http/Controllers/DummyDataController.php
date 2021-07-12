@@ -107,7 +107,7 @@ class DummyDataController extends Controller
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
             $attachment = $file;
-            return response()->json($file, 200);
+
             $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
             $mail->attach($path);
           }
@@ -135,7 +135,7 @@ class DummyDataController extends Controller
 
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
-            $attachment = json_decode($file);
+            $attachment = $file;
             
             $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
             $mail->attach($path);
