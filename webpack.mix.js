@@ -29,7 +29,4 @@ mix.js('resources/js/app.js', 'public/js')
     require("tailwindcss"),
   ])
   .sass('resources/sass/app.scss', 'public/css')
-  .sass('resources/sass/syncfusion_material.scss', 'public/css')
-  .sass('resources/sass/sidebarTemplate.scss', 'public/css')
-  .sass('resources/sass/inboxTemplate.scss', 'public/css');
 
