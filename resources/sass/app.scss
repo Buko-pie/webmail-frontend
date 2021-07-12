@@ -1,6 +1,7 @@
-@import '~@fortawesome/fontawesome-free/scss/fontawesome';
-@import '~@fortawesome/fontawesome-free/scss/solid';
-@import '~@fortawesome/fontawesome-free/scss/regular';
+@import '~@fortawesome/fontawesome-free/css/solid.css';
+@import '~@fortawesome/fontawesome-free/css/regular.css';
+@import '~@fortawesome/fontawesome-free/css/brands.css';
+@import "tablecell_override";
 
 .text-lg {
   font-size: 1.125rem;
@@ -132,7 +133,7 @@ em.specs {
 }
 
 .tags-no-broders .ti-input {
-  border: none !important; 
+  border: none !important;
   display: flex;
   padding: 4px;
   flex-wrap: wrap;
