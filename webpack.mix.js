@@ -29,4 +29,5 @@ mix.js('resources/js/app.js', 'public/js')
     require("tailwindcss"),
   ])
   .sass('resources/sass/app.scss', 'public/css')
+    .sourceMaps(false)
 
