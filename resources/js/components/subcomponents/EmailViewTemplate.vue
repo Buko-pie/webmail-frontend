@@ -398,7 +398,7 @@ export default({
           method: "POST",
           url: this.routes.send_mail,
           headers: this.headers,
-          params: {
+          data: {
             option: this.email_action,
             email_id: this.email_data.email_id,
             addresses: this.email_addresses,

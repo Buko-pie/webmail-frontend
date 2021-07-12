@@ -820,8 +820,12 @@ export default Vue.extend({
         axios({
           method: "POST",
           url: this.routes.send_mail,
-          headers: this.headers,
-          params: {
+          headers: {
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
+          },
+          data: {
             option: "new_email",
             addresses: this.email_addresses,
             cc: this.cc_addresses,

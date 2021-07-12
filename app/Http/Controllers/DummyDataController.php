@@ -81,59 +81,60 @@ class DummyDataController extends Controller
   {
     $user = LaravelGmail::user();
 
-    // $content = $request->getContent();
+    $content = json_decode($request->getContent());
+    // $option =  $content->option;
 
     // return response()->json($content, 200);
-    if(isset($user) && isset($request['message'])){
+    if(isset($user) && isset($content->message)){
       
       
-      if($request['option'] == 'new_email'){
+      if($content->option == 'new_email'){
         $mail = new Mail;
 
-        $mail->to($request['addresses']);
+        $mail->to($content->addresses);
         $mail->from($user);
-        $mail->subject($request['subject']);
-        $mail->message($request['message']);
+        $mail->subject($content->subject);
+        $mail->message($content->message);
         
-        if(isset($request['cc'])){
-          $mail->cc($request['cc']);
+        if(isset($content->cc)){
+          $mail->cc($content->cc);
         }
 
-        if(isset($request['bcc'])){
-          $mail->bcc($request['bcc']);
+        if(isset($content->bcc)){
+          $mail->bcc($content->bcc);
         }
 
-        if(isset($request['attachments'])){
-          foreach ($request['attachments'] as $index => $file) {
-            $attachment = json_decode($file);
-            
+        if(isset($content->attachments)){
+          foreach ($content->attachments as $index => $file) {
+            $attachment = $file;
+            return response()->json($file, 200);
             $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
             $mail->attach($path);
           }
         }
 
-        $mail->send();
-      }else if($request['option'] == 'reply_email'){
-        $mail = LaravelGmail::message()->get($request['email_id']);
+        // $mail->send();
+      }else if($content->option == 'reply_email'){
+        $mail = LaravelGmail::message()->get($content->email_id);
         $mail_reference = $mail->getHeader('References');
         $mail_in_reply_to = $mail->getHeader('In-Reply-To');
         $mail_subject = $mail->getHeader('Subject');
         $mail_messege_id = $mail->getHeader('Message-ID');
         
-        $mail->to($request['addresses']);
-        $mail->message($request['message']);
+        $mail->to($content->addresses);
+        $mail->message($content->message);
         $mail->setHeader('In-Reply-to', $mail_messege_id);
 
-        if(isset($request['cc'])){
-          $mail->cc($request['cc']);
+        if(isset($content->cc)){
+          $mail->cc($content->cc);
         }
 
-        if(isset($request['bcc'])){
-          $mail->bcc($request['bcc']);
+        if(isset($content->bcc)){
+          $mail->bcc($content->bcc);
         }
 
-        if(isset($request['attachments'])){
-          foreach ($request['attachments'] as $index => $file) {
+        if(isset($content->attachments)){
+          foreach ($content->attachments as $index => $file) {
             $attachment = json_decode($file);
             
             $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
@@ -142,37 +143,28 @@ class DummyDataController extends Controller
         }
         
         $mail->reply();
-        // return response()->json([
-        //   'reply_email',
-        //   $request['addresses'],
-        //   $request['email_id'],
-        //   $mail_reference,
-        //   $mail_in_reply_to,
-        //   $mail_subject,
-        //   $mail_messege_id
-        // ], 200);
-      }else if($request['option'] == 'forward_email'){
-        $mail = LaravelGmail::message()->get($request['email_id']);
+      }else if($content->option == 'forward_email'){
+        $mail = LaravelGmail::message()->get($content->email_id);
         $mail_reference = $mail->getHeader('References');
         $mail_in_reply_to = $mail->getHeader('In-Reply-To');
         $mail_subject = $mail->getHeader('Subject');
         $mail_messege_id = $mail->getHeader('Message-ID');
         
         $mail->subject($mail_subject);
-        $mail->to($request['addresses']);
-        $mail->message($request['message']);
+        $mail->to($content->addresses);
+        $mail->message($content->message);
         // $mail->setHeader('In-Reply-to', $mail_messege_id);
 
-        if(isset($request['cc'])){
-          $mail->cc($request['cc']);
+        if(isset($content->cc)){
+          $mail->cc($content->cc);
         }
 
-        if(isset($request['bcc'])){
-          $mail->bcc($request['bcc']);
+        if(isset($content->bcc)){
+          $mail->bcc($content->bcc);
         }
 
-        if(isset($request['attachments'])){
-          foreach ($request['attachments'] as $index => $file) {
+        if(isset($content->attachments)){
+          foreach ($content->attachments as $index => $file) {
             $attachment = json_decode($file);
             
             $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
@@ -181,20 +173,7 @@ class DummyDataController extends Controller
         }
         
         $mail->send();
-        // return response()->json([
-        //   'reply_email',
-        //   $request['addresses'],
-        //   $request['email_id'],
-        //   $mail_reference,
-        //   $mail_in_reply_to,
-        //   $mail_subject,
-        //   $mail_messege_id
-        // ], 200);
       }
-
-      
-
-      
 
       return response()->json('message Sent!', 200);
     }else{
