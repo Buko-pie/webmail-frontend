@@ -5,14 +5,7 @@
 </template>
 
 <script>
-export default({
+export default{
   name: "MessageTemplate",
-  data(){
-    return{
-      data:{},
-      false: "false",
-      true: "true"
-    };
-  }
-});
+};
 </script>

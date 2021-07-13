@@ -59,7 +59,7 @@ function formatDate(data) {
   return data;
 }
 
-export default({
+export default{
   name: "InboxDisplayComponent",
   props:{
     custom_labels: Array,
@@ -662,7 +662,7 @@ export default({
       });
     });
   }
-});
+};
 </script>
 
 

@@ -8,12 +8,7 @@
 </template>
 
 <script>
-export default({
+export default{
   name: "AccountsListTemplate",
-  data(){
-    return{
-      data:{}
-    }
-  }
-})
+}
 </script>

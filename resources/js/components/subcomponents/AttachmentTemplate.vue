@@ -7,15 +7,7 @@
 </template>
 
 <script>
-export default({
+export default{
   name: "AttachmentTemplate",
-  data(){
-    return{
-      data:{},
-      false: "false",
-      true: "true"
-    };
-  }
-
-});
+};
 </script>
