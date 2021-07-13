@@ -1,4 +1,4 @@
-require('./bootstrap');
+const bootstrap = require('./bootstrap');
 import Vue from 'vue';
 import axios from 'axios';
 import { store } from "./store/store";
@@ -6,7 +6,7 @@ import Vueditor from 'vueditor'
 
 import 'vueditor/dist/style/vueditor.min.css'
 
-
+// console.log(bootstrap.get_token());
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);

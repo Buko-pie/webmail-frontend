@@ -385,7 +385,8 @@
 </template>
 
 <script>
-// console.log(token);
+console.log(bootstrap.get_token());
+
 import Vue from "vue";
 import moment from "moment";
 import VModal from "vue-js-modal";
