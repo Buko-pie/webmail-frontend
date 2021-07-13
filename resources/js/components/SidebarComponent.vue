@@ -385,6 +385,7 @@
 </template>
 
 <script>
+// console.log(token);
 import Vue from "vue";
 import moment from "moment";
 import VModal from "vue-js-modal";

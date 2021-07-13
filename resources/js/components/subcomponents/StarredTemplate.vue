@@ -14,7 +14,7 @@
 </template>
 
 <script>
-export default({
+export default{
   name: "StarredTemplate",
   data(){
     return{
@@ -29,5 +29,5 @@ export default({
       this.$eventHub.$emit("toggled_starred", {id: this.data.id, starred: this.data.starred});
     }
   }
-});
+};
 </script>

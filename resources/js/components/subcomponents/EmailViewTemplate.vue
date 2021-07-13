@@ -150,7 +150,7 @@ function validateEmails(emailArray){
   return results;
 }
 
-export default({
+export default{
   name: "EmailViewTemplate",
   data(){
     return{
@@ -435,5 +435,5 @@ export default({
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
     },
   }
-});
+};
 </script>

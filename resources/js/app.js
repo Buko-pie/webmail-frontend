@@ -5,8 +5,6 @@ import { store } from "./store/store";
 import Vueditor from 'vueditor'
 
 import 'vueditor/dist/style/vueditor.min.css'
-// app.component("webmail-component", require("./components/WebmailComponent.vue").default);
-// app.component("example-component", require("./components/ExampleComponent.vue").default);
 
 
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
@@ -65,7 +63,8 @@ const editor_config = {
     "24px",
     "28px",
     "32px",
-    "36px"],
+    "36px"
+  ],
   uploadUrl: ""
 };
 

@@ -42,7 +42,7 @@ class WebmailController extends Controller
           'user_profile_path' => url('/img/users_profile_photo/')
         ];
 
-        return view('test_component')->with(['routes' => $routes]);
+        return view('webmail')->with(['routes' => $routes]);
       }else{
         // return redirect()->to('oauth/gmail');
         return LaravelGmail::redirect();
