@@ -91,13 +91,13 @@
               />
             </div>
           </div>
-          
+
           <div class="ml-auto flex text-gray-500 font-bold">
             <p v-if="!add_cc" @click="add_cc = !add_cc" class="mr-3 cursor-pointer">Cc</p>
             <p v-if="!add_bcc" @click="add_bcc = !add_bcc" class="cursor-pointer">Bcc</p>
           </div>
         </div>
-        
+
         <Vueditor ref="reply_content" class="w-full"></Vueditor>
 
         <div class="flex w-full mt-3">
@@ -111,7 +111,7 @@
       <div class="border w-full p-3 mt-5">
         <p class="text-base font-bold"><i class="fas fa-paperclip"></i> Attchments</p>
       </div>
-      <ejs-uploader 
+      <ejs-uploader
         ref="ejs_uploader_reply"
         id="ejs_uploader_reply"
         name="UploadFiles"
@@ -212,7 +212,7 @@ export default({
       if(data !== null){
         this.email_date_display = formatDate(data.date);
       }
-      
+
       return data;
     },
 
@@ -242,7 +242,7 @@ export default({
       let data = this.email_data;
 
       if(data !== null){
-        
+
         if(this.current_inbox === "sent"){
           let reply_address = data.to.email ? data.to.email : data.to.name;
           this.email_addresses = [reply_address];
@@ -260,7 +260,7 @@ export default({
             classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
           }];
         }
-        
+
       }
     },
 
@@ -283,7 +283,7 @@ export default({
         "<div>From: &lt;" + from_email + "&gt;</div>" +
         "<div>Date: " + moment(this.email_data.date).format("llll") + "</div>" +
         "<div>To: &lt;" + to_email + "&gt;</div>"
-      
+
       console.log( forward_msg_template);
 
       if(this.email_data.cc !== null){
@@ -291,13 +291,13 @@ export default({
         cc_email = cc_email.replace(/"/g, "");
         cc_email = cc_email.replace(/</g, "&lt;");
         cc_email = cc_email.replace(/>/g, "&gt;");
-        
+
         forward_msg_template = forward_msg_template + "<div>Cc: " + cc_email + "</div>"
       }
 
       forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html;
       setTimeout(() => this.$refs.reply_content.setContent(forward_msg_template), 200);
-      
+
     },
 
     email_address_tags_add_class(args){
@@ -306,7 +306,7 @@ export default({
       }else{
         args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
       }
-      
+
       args.addTag();
     },
 
@@ -316,7 +316,7 @@ export default({
       }else{
         args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
       }
-      
+
       args.saveTag();
     },
 
@@ -393,35 +393,33 @@ export default({
         console.log(attachments);
       }
 
-      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
-        axios({
-          method: "POST",
-          url: this.routes.send_mail,
-          headers: this.headers,
-          data: {
-            option: this.email_action,
-            email_id: this.email_data.email_id,
-            addresses: this.email_addresses,
-            cc: this.cc_addresses,
-            bcc: this.bcc_addresses,
-            message: this.$refs.reply_content.getContent(),
-            attachments: attachments,
-          }
-        }).then(function (response) {
-          console.log(response.data);
-        }).catch(error => {
-          console.log(error);
-          alert("somthing went wrong");
-        });
-      }else{
-        alert("invalid email exists!");
+      if(invalid_emails || invalid_ccs || invalid_bccs){
+        return alert("invalid email exists!");
       }
+
+      let data = {
+        option: this.email_action,
+        email_id: this.email_data.email_id,
+        addresses: this.email_addresses,
+        cc: this.cc_addresses,
+        bcc: this.bcc_addresses,
+        message: this.$refs.reply_content.getContent(),
+        attachments: attachments,
+      }
+
+      axios.post(this.routes.send_mail, data)
+          .then((response) => {
+            console.log(response.data);
+          }).catch(error => {
+            console.log(error);
+            alert("somthing went wrong");
+          });
     },
 
     attachmentUpload(args){
       args.currentRequest.setRequestHeader("Authorization", "Bearer " + this.csrf_token);
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
-      
+
       args.customFormData = [
         {id: args.fileData.id},
         {filename: args.fileData.name},
