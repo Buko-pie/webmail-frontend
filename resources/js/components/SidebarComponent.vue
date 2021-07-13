@@ -385,7 +385,6 @@
 </template>
 
 <script>
-console.log(bootstrap.get_token());
 
 import Vue from "vue";
 import moment from "moment";
