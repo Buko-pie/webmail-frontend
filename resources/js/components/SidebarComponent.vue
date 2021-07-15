@@ -466,13 +466,13 @@ function isExistLabel(new_label, custom_labels){
 export default Vue.extend({
   name: "SidebarComponent",
   props:{
-    routes: { type: Object, required: true },
     gmail_user: { type: String, required: true },
     url_base: { type: String, required: true }
   },
 
   data() {
     return {
+      routes: null,
       enableDock:  true,
       dockSize : "72px",
       width : "16rem",
@@ -562,10 +562,7 @@ export default Vue.extend({
         return{ template: email_view_component}
       },
 
-      attachment_path:{
-        saveUrl: this.routes.upload_attachment,
-        removeUrl: this.routes.remove_attachment
-      },
+      attachment_path: null,
 
       dropElement: '.control-fluid',
 
@@ -574,10 +571,27 @@ export default Vue.extend({
 
   computed:{
     start(){
-      console.log(this.url_base);
-      console.log("bruh");
       console.log("Sidebar component computed");
-      this.$store.dispatch("set_routes", this.routes);
+      let routes = {
+        data_route:           this.url_base + "/get_dummy_data",
+        send_mail:            this.url_base + "/send_mail",
+        upload_attachment:    this.url_base + "/upload_attachment",
+        check_attachment:     this.url_base + "/check_attachment",
+        download_attachment:  this.url_base + "/download_attachment",
+        remove_attachment:    this.url_base + "/remove_attachment",
+        toggle_route:         this.url_base + "/toggle_dummy_data",
+        set_many_route:       this.url_base + "/toggle_many_dummy_data",
+        logging_out:          this.url_base + "/logging_out",
+        upload_profile_pic:   this.url_base + "/upload_profile_pic",
+        user_profile_path:    this.url_base + "/img/users_profile_photo/",
+      };
+
+      this.attachment_path = {
+        saveUrl: routes.upload_attachment,
+        removeUrl: routes.remove_attachment
+      }
+      this.routes = routes;
+      this.$store.dispatch("set_routes", routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
       this.$store.dispatch("set_user_email", this.gmail_user);
     },

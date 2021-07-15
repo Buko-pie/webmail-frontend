@@ -88,6 +88,7 @@ class DummyDataController extends Controller {
       
       
       if($content->option == 'new_email'){
+        
         $mail = new Mail;
 
         $mail->to($content->addresses);
@@ -111,8 +112,8 @@ class DummyDataController extends Controller {
             $mail->attach($path);
           }
         }
-
-        // $mail->send();
+        
+        $mail->send();
       }else if($content->option == 'reply_email'){
         $mail = LaravelGmail::message()->get($content->email_id);
         $mail_reference = $mail->getHeader('References');
