@@ -16,9 +16,12 @@ use App\Http\Controllers\AccountsController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('webmail');
+// });
+
+Route::get('/', [WebmailController::class, 'index'])->name('webmail');
+
 Route::get('/login', [WebmailController::class, 'login'])->name('login');
 Route::post('/register', [AccountsController::class, 'register'])->name('register');
 Route::post('/logging_in', [AccountsController::class, 'logging_in'])->name('logging_in');

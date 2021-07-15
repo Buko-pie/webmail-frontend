@@ -467,8 +467,8 @@ export default Vue.extend({
   name: "SidebarComponent",
   props:{
     routes: { type: Object, required: true },
-    gmail_user: { type: String, required: true }
-    // user: { type: Object, required: true }
+    gmail_user: { type: String, required: true },
+    url_base: { type: String, required: true }
   },
 
   data() {
@@ -574,6 +574,8 @@ export default Vue.extend({
 
   computed:{
     start(){
+      console.log(this.url_base);
+      console.log("bruh");
       console.log("Sidebar component computed");
       this.$store.dispatch("set_routes", this.routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
