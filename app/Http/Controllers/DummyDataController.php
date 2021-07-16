@@ -63,7 +63,6 @@ class DummyDataController extends Controller {
                         'read'            => !in_array('UNREAD', $data->getLabels()),
                         'labels'          => $data->getLabels(),
                         'has_attachment'  => $data->hasAttachments(),
-                        'attachment_link' => null,
                         'created_at'      => $data->getDate(),
                     ]);
                 }
@@ -280,6 +279,7 @@ class DummyDataController extends Controller {
 
                     return response()->json(['email' => $email], 200);
                 } else if ($request['column'] == 'important') {
+                    //toggle importan email
                     if ($value) {
                         $email->markAsImportant();
                     } else {
@@ -288,55 +288,57 @@ class DummyDataController extends Controller {
 
                     return response()->json(['email' => $email], 200);
                 } else if ($request['column'] == 'read') {
-
+                    //read email
                     if ($value) {
                         $email->markAsRead();
+
+                        $email_data = [
+                            'email_id'   => $email->getId(),
+                            'from'       => $email->getFrom(),
+                            'to'         => $email->getTo()[0],
+                            'cc'         => $email->getHeader("Cc"),
+                            'subject'    => $email->getSubject(),
+                            'date'       => $email->getDate(),
+                            'recipients' => $email->getTo(),
+                            'headers'    => $email->getHeaders(),
+                        ];
+
+                        if (isset($request['with']) && $request['with'] == 'bodyHtml') {
+                            $bodyHtml = $email->getHtmlBody();
+                            $attachments_files = [];
+    
+                            $files = Storage::disk('storage_attachment')->files($user . '/opened');
+    
+                            if (isset($files)) {
+                                $file = new Filesystem;
+                                $file->cleanDirectory(storage_path('app/public/attachments/' . $user . '/opened'));
+                            }
+    
+                            if ($email->hasAttachments()) {
+                                $attachments = $email->getAttachments();
+    
+                                foreach ($attachments as $attachment) {
+                                    
+                                    $attachment->saveAttachmentTo($path = $user . '/opened', $filename = null, $disk = 'storage_attachment');
+                                    $attachments_files[] = $attachment->filename;
+                                }
+    
+                                // $files = Storage::disk('storage_attachment')->files($user.'/opened');
+                                // Storage::download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+    
+                            }
+    
+                            // return response()->download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
+                            return response()->json([
+                                'bodyHtml'          => $bodyHtml,
+                                'attachments_files' => $attachments_files,
+                                'email_data'        => $email_data,
+                            ],
+                                200
+                            );
+                        }
                     } else {
                         $email->markAsUnread();
-                    }
-                    $email_data = [
-                        'email_id'   => $email->getId(),
-                        'from'       => $email->getFrom(),
-                        'to'         => $email->getTo()[0],
-                        'cc'         => $email->getHeader("Cc"),
-                        'subject'    => $email->getSubject(),
-                        'date'       => $email->getDate(),
-                        'recipients' => $email->getTo(),
-                        'headers'    => $email->getHeaders(),
-                    ];
-
-                    if (isset($request['with']) && $request['with'] == 'bodyHtml') {
-                        $bodyHtml = $email->getHtmlBody();
-                        $attachments_files = [];
-
-                        $files = Storage::disk('storage_attachment')->files($user . '/opened');
-
-                        if (isset($files)) {
-                            $file = new Filesystem;
-                            $file->cleanDirectory(storage_path('app/public/attachments/' . $user . '/opened'));
-                        }
-
-                        if ($email->hasAttachments()) {
-                            $attachments = $email->getAttachments();
-
-                            foreach ($attachments as $attachment) {
-                                $attachment->saveAttachmentTo($path = $user . '/opened', $filename = null, $disk = 'storage_attachment');
-                                $attachments_files[] = $attachment->filename;
-                            }
-
-                            // $files = Storage::disk('storage_attachment')->files($user.'/opened');
-                            // Storage::download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
-
-                        }
-
-                        // return response()->download(storage_path('app/public/attachments/'.$user.'/opened/'.$attachments[0]->filename));
-                        return response()->json([
-                            'bodyHtml'          => $bodyHtml,
-                            'attachments_files' => $attachments_files,
-                            'email_data'        => $email_data,
-                        ],
-                            200
-                        );
                     }
 
                     return response()->json(['email' => $email], 200);

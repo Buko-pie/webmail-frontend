@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <div v-if="show_reply" id="email_actions" class="grid grid-cols-4 gap-3 mt-6 pt-3">
+  <div v-if="show_reply" id="email_action_compose" class="grid grid-cols-4 gap-3 mt-6 pt-3">
     <div :class="[ show_attachment ? 'col-span-3' : 'col-span-4']">
       <div class="w-full">
         <div class="flex w-full">
