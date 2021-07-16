@@ -128,7 +128,9 @@
 </template>
 
 <script>
+import Vue from "vue";
 import moment from "moment";
+import VueNotification from "@kugatsu/vuenotification";
 
 function formatDate(date) {
   let new_date = moment(date).format("LLL");
@@ -150,7 +152,11 @@ function validateEmails(emailArray){
   return results;
 }
 
-export default{
+Vue.use(VueNotification, {
+  timer: 20
+});
+
+export default Vue.extend({
   name: "EmailViewTemplate",
   data(){
     return{
@@ -352,13 +358,13 @@ export default{
 
     sendReply(){
       console.log('send reply...');
-      console.log(this.$refs.vue_tags_address.tags);
 
       let _this = this;
       let invalid_emails = true;
       let invalid_ccs = false;
       let invalid_bccs = false;
       let files = [];
+
       if(this.$refs.ejs_uploader_reply !== undefined){
         files = this.$refs.ejs_uploader_reply.getFilesData();
       }
@@ -367,7 +373,7 @@ export default{
       if(this.email_addresses !== null){
         invalid_emails = validateEmails(this.email_addresses);
       }else{
-        alert("No email addresses added");
+        this.$notification.warning("No email addresses added!", {  timer: 5 });
       }
 
       if(this.cc_addresses !== null){
@@ -390,7 +396,6 @@ export default{
             });
           }
         });
-        console.log(attachments);
       }
 
       if(invalid_emails || invalid_ccs || invalid_bccs){
@@ -409,10 +414,12 @@ export default{
 
       axios.post(this.routes.send_mail, data)
           .then((response) => {
-            console.log(response.data);
+            let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Forwarded";
+            _this.$notification.success(message, {  timer: 5 });
+            this.show_reply = false;
           }).catch(error => {
             console.log(error);
-            alert("somthing went wrong");
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
           });
     },
 
@@ -435,5 +442,5 @@ export default{
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
     },
   }
-};
+});
 </script>

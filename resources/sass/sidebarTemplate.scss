@@ -122,3 +122,14 @@
   position: relative;
   vertical-align: middle;
 }
+
+.notificationCenter {
+  font-family: Avenir,Helvetica,Arial,sans-serif;
+  position: fixed;
+  width: 300px;
+  max-width: 90vw;
+  top: 0;
+  right: 0;
+  z-index: 900 !important;
+  margin: 0 8px;
+}
