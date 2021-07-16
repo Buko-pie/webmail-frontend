@@ -3,7 +3,9 @@
   <!-- run start computed -->
   <div :start="start"></div>
   
-  
+  <!-- Toaster  -->
+  <ejs-toast ref='toaster' id='toaster' position="Right"></ejs-toast>
+
   <!-- Compose Modal  -->
   <modal name="compose_new_modal" :adaptive="true" width="70%" height="70%" @before-open="modalOpened" @before-close="modalClosed">
     <div class="p-2 h-full relative flex ">
@@ -397,11 +399,12 @@ import $ from "jquery";
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
 import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
-import { enableRipple } from "@syncfusion/ej2-base";
+import { enableRipple, isNullOrUndefined  } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
 import { VueTagsInput } from "@johmun/vue-tags-input";
 import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
+// import { ToastPlugin, ToastCloseArgs } from "@syncfusion/ej2-vue-notifications";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -415,6 +418,7 @@ Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
+Vue.use(ToastPlugin);
 
 enableRipple(true);
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
@@ -802,65 +806,70 @@ export default Vue.extend({
 
     sendMail(){
       console.log("sending Mail ...");
+      this.$refs.toastRef.show({
+        title: 'Adaptive Tiles Meeting', 
+        content: 'Conference Room 01 / Building 135 10:00 AM-10:30 AM',
+        icon: 'e-meeting'
+      });
 
-      let _this = this;
-      let invalid_emails = validateEmails(this.email_addresses);
-      let invalid_ccs = false;
-      let invalid_bccs = false;
-      let files = this.$refs.ejs_uploader.getFilesData();
-      let attachments = [];
+      // let _this = this;
+      // let invalid_emails = validateEmails(this.email_addresses);
+      // let invalid_ccs = false;
+      // let invalid_bccs = false;
+      // let files = this.$refs.ejs_uploader.getFilesData();
+      // let attachments = [];
 
-      if(this.cc_addresses !== null){
-        invalid_ccs = validateEmails(this.cc_addresses);
-      }
+      // if(this.cc_addresses !== null){
+      //   invalid_ccs = validateEmails(this.cc_addresses);
+      // }
 
-       if(this.bcc_addresses !== null){
-        invalid_bccs = validateEmails(this.bcc_addresses);
-      }
+      //  if(this.bcc_addresses !== null){
+      //   invalid_bccs = validateEmails(this.bcc_addresses);
+      // }
 
-      if(files.length !== 0){
-        files.forEach(file => {
-          if(file.statusCode === "2"){
-            attachments.push({
-              id: file.id,
-              filename: file.name,
-              size: file.size,
-              status: "uploaded",
-              type: file.type,
-            });
-          }
-        });
-      }
+      // if(files.length !== 0){
+      //   files.forEach(file => {
+      //     if(file.statusCode === "2"){
+      //       attachments.push({
+      //         id: file.id,
+      //         filename: file.name,
+      //         size: file.size,
+      //         status: "uploaded",
+      //         type: file.type,
+      //       });
+      //     }
+      //   });
+      // }
       
       
-      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
-        console.log("sending Email...");
-        axios({
-          method: "POST",
-          url: this.routes.send_mail,
-          headers: {
-            "Content-Type": "multipart/mixed",
-            "Authorization": "Bearer " + csrf_token,
-            "X-CSRF-TOKEN": csrf_token
-          },
-          data: {
-            option: "new_email",
-            addresses: this.email_addresses,
-            cc: this.cc_addresses,
-            bcc: this.bcc_addresses,
-            subject: this.email_subject,
-            message: this.$refs.vueditor.getContent(),
-            attachments: attachments,
-          }
-        }).then(function (response) {
-          console.log(response.data);
-        }).catch(error => {
-          console.log(error);
-          alert("somthing went wrong");
-        });
-      }else{
-        alert("invalid email exists!");
-      }
+      // if(!invalid_emails && !invalid_ccs && !invalid_bccs){
+      //   console.log("sending Email...");
+      //   axios({
+      //     method: "POST",
+      //     url: this.routes.send_mail,
+      //     headers: {
+      //       "Content-Type": "multipart/mixed",
+      //       "Authorization": "Bearer " + csrf_token,
+      //       "X-CSRF-TOKEN": csrf_token
+      //     },
+      //     data: {
+      //       option: "new_email",
+      //       addresses: this.email_addresses,
+      //       cc: this.cc_addresses,
+      //       bcc: this.bcc_addresses,
+      //       subject: this.email_subject,
+      //       message: this.$refs.vueditor.getContent(),
+      //       attachments: attachments,
+      //     }
+      //   }).then(function (response) {
+      //     console.log(response.data);
+      //   }).catch(error => {
+      //     console.log(error);
+      //     alert("somthing went wrong");
+      //   });
+      // }else{
+      //   alert("invalid email exists!");
+      // }
     },
 
     createNewLabel(){
