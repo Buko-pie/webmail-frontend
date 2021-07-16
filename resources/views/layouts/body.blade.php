@@ -7,7 +7,6 @@
     <title>Webmail</title>
 
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="https://unpkg.com/splitpanes/dist/splitpanes.css" rel="stylesheet">
     <script src="{{ asset('js/app.js') }}" defer></script>
 </head>
 <body>
