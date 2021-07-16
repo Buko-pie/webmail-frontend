@@ -585,15 +585,16 @@ export default Vue.extend({
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
       };
+      console.log(routes);
+      this.$store.dispatch("set_routes", routes);
+      this.$store.dispatch("set_csrf_token", csrf_token);
+      this.$store.dispatch("set_user_email", this.gmail_user);
 
       this.attachment_path = {
         saveUrl: routes.upload_attachment,
         removeUrl: routes.remove_attachment
       }
       this.routes = routes;
-      this.$store.dispatch("set_routes", routes);
-      this.$store.dispatch("set_csrf_token", csrf_token);
-      this.$store.dispatch("set_user_email", this.gmail_user);
     },
     
     category_toggles(){
