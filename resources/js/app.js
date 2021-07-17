@@ -76,7 +76,6 @@ const app = new Vue({
     sidebar,
     navbar_buttons,
     searchbar,
-    login_component,
   },
   methods:{
     toggle_sidebar(){
