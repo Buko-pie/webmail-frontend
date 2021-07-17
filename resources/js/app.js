@@ -10,7 +10,6 @@ import 'vueditor/dist/style/vueditor.min.css'
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);
-const login_component = Vue.component("login-component", require("./components/LoginComponent.vue").default);
 
 const editor_config = {
   spellcheck: true,
