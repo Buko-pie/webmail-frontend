@@ -78,6 +78,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VModal from 'vue-js-modal';
+import VueNotification from "@kugatsu/vuenotification";
 
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
@@ -92,19 +93,19 @@ Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(VModal, { dialog: true });
+Vue.use(VueNotification, {
+  timer: 20
+});
 
 function selectedItemsTo(option, dataIDs, route) {
   let _this = this;
 
-  axios({
-    method: "GET",
-    url: route.set_many_route,
+  axios.get(route.set_many_route, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer {{ csrf_token() }}"
     },
     params: {
-      token: "{{ csrf_token() }}",
       option: option,
       dataIDs: dataIDs,
     }
@@ -112,7 +113,7 @@ function selectedItemsTo(option, dataIDs, route) {
     console.log(response);
   }).catch(error => {
     console.log(error);
-    alert("somthing went wrong");
+    _this.$notification.error("somthing went wrong", {  timer: 5 });
   });
 }
 

@@ -31,6 +31,7 @@
 <script>
 import Vue from "vue";
 import moment from "moment";
+import VueNotification from "@kugatsu/vuenotification";
 import { GridPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
 
 const fileIcons = require("file-icons-js");
@@ -43,6 +44,9 @@ let attachment_template = Vue.component("important-template", require("./subcomp
 let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
 
 Vue.use(GridPlugin);
+Vue.use(VueNotification, {
+  timer: 20
+});
 Vue.prototype.$eventHub = new Vue();
 
 function formatDate(data) {
@@ -203,16 +207,13 @@ export default{
     console.log("vue-grids mounted");
     let _this = this;
 
-    axios({
-      method: "GET",
-      url: this.routes.data_route,
+    axios.get(this.routes.data_route, {
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + this.csrf_token,
         "X-CSRF-TOKEN": this.csrf_token
       },
       params: {
-        token: this.csrf_token,
         option: "get_all"
       }
     }).then(function (response) {
@@ -222,7 +223,7 @@ export default{
       _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
     }).catch(error => {
       console.log(error);
-      alert("somthing went wrong");
+      this.$notification.error("somthing went wrong", {  timer: 5 });
     });
   },
 
@@ -237,29 +238,27 @@ export default{
       if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
-        /////Last construction here on add custome labels context menu
+        /////Last construction here on add custom labels context menu
         this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
         args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
-        console.log(row_data);
+
         console.log(this.custom_labels);
       }else if(args.item.text === "Mark as unread"){
         //Mark As Unread
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: false
           }
         }).then(function (response) {
-          console.log(response.data);
+
           // _this.viewData[args.rowInfo.rowIndex].read = false;
 
           _this.$store.dispatch("modify_email_batch", {
@@ -272,20 +271,19 @@ export default{
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+
       }else if(args.item.text === "Mark as read"){
         //Mark as read
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: true
@@ -304,7 +302,7 @@ export default{
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
       }
     },
@@ -343,20 +341,18 @@ export default{
       this.select_option = null;
     },
 
-    //Mark As Read on Email Click
     recordClick(args){
+      //Mark As Read on Email Click
+
       let _this = this;
       if(args.cellIndex > 3 && args.cellIndex < 8){
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             with: "bodyHtml",
             id: args.rowData.id,
@@ -393,9 +389,8 @@ export default{
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
-       
       }
     },
 
@@ -508,20 +503,16 @@ export default{
 
   created(){
     let _this = this;
+
     //Mark email as starred
     this.$eventHub.$on("toggled_starred", (e)=>{
-      // console.log(e);
-
-      axios({
-        method: "GET",
-        url: _this.routes.toggle_route,
+      axios.get(_this.routes.toggle_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           column: "starred",
           id: e.id,
           value: e.starred
@@ -539,23 +530,19 @@ export default{
         console.log(response.data);
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
-
     });
 
     //Mark email as important
     this.$eventHub.$on("toggled_important", (e)=>{
-      axios({
-        method: "GET",
-        url: _this.routes.toggle_route,
+      axios.get(_this.routes.toggle_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           column: "important",
           id: e.id,
           value: e.important
@@ -573,7 +560,7 @@ export default{
         console.log(response.data.data_update);
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     });
     //Sort by read toggle
@@ -610,21 +597,16 @@ export default{
     this.$eventHub.$on("refresh_inbox", (e)=>{
       console.log("refresh_inbox");
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           option: "get_all"
         }
       }).then(function (response) {
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
         _this.$eventHub.$emit("stop_loading", {
@@ -632,21 +614,19 @@ export default{
         });
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     });
 
     this.$eventHub.$on("page_next", (e) =>{
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      //========== This part is still WIP ==========
+      axios.get(this.routes.data_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           option: "get_next_page",
           page: this.current_page
         }

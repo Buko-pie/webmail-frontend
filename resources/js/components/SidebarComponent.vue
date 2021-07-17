@@ -836,15 +836,7 @@ export default Vue.extend({
       
       if(!invalid_emails && !invalid_ccs && !invalid_bccs){
         console.log("sending Email...");
-        axios({
-          method: "POST",
-          url: this.routes.send_mail,
-          headers: {
-            "Content-Type": "multipart/mixed",
-            "Authorization": "Bearer " + csrf_token,
-            "X-CSRF-TOKEN": csrf_token
-          },
-          data: {
+        let data = {
             option: "new_email",
             addresses: this.email_addresses,
             cc: this.cc_addresses,
@@ -852,15 +844,24 @@ export default Vue.extend({
             subject: this.email_subject,
             message: this.$refs.vueditor.getContent(),
             attachments: attachments,
+        };
+
+        axios.post(this.routes.send_mail, data, {
+          headers:{
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
           }
         }).then(function (response) {
           console.log(response);
           _this.$modal.hide("compose_new_modal");
           _this.$notification.success("Message Sent", {  timer: 5 });
         }).catch(error => {
+          console.log(error);
           _this.$modal.hide("compose_new_modal");
           _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+
       }else{
         this.$notification.warning("invalid email exists!", {  timer: 5 });
       }
@@ -910,14 +911,11 @@ export default Vue.extend({
     },
 
     getInbox(event){
-      console.log("get all");
       let _this = this;
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "get_all"
         }
       }).then(function (response) {
@@ -925,7 +923,7 @@ export default Vue.extend({
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -933,12 +931,9 @@ export default Vue.extend({
       console.log("starred Only");
       let _this = this;
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "starred_only"
         }
       }).then(function (response) {
@@ -950,7 +945,7 @@ export default Vue.extend({
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -958,12 +953,9 @@ export default Vue.extend({
       console.log("important Only");
       let _this = this;
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "important_only"
         }
       }).then(function (response) {
@@ -975,7 +967,7 @@ export default Vue.extend({
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -983,12 +975,9 @@ export default Vue.extend({
       console.log("sentEMails");
       let _this = this;
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "sent_emails"
         }
       }).then(function (response) {
@@ -1000,7 +989,7 @@ export default Vue.extend({
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -1027,19 +1016,16 @@ export default Vue.extend({
     },
 
     logout(){
-      axios({
-        method: "GET",
-        url: this.routes.logging_out,
+      axios.get(this.routes.logging_out, {
         headers: this.headers,
         params: {
-          token: this.token,
           message: "loggout"
         }
       }).then(function (response) {
         window.location.href = response.data;
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     }
   },
