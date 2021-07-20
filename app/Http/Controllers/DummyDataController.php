@@ -301,7 +301,10 @@ class DummyDataController extends Controller {
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
                             'headers'    => $email->getHeaders(),
+                            'threadId'   => $email->getThreadId(),
                         ];
+                        // $thread = LaravelGmail::message()->get($email_data['threadId']);
+                        // $thread = $thread->getHtmlBody();
 
                         if (isset($request['with']) && $request['with'] == 'bodyHtml') {
                             $bodyHtml = $email->getHtmlBody();
@@ -332,7 +335,10 @@ class DummyDataController extends Controller {
                             return response()->json([
                                 'bodyHtml'          => $bodyHtml,
                                 'attachments_files' => $attachments_files,
-                                'email_data'        => $email_data,
+                                'email'             => $email->getDecodedBody($email->payload[1]->body->data),
+                                // 'test'              => $email->parts[1]->body,
+                                // 'email_data'        => $email_data,
+                                // 'thread'            => $thread,
                             ],
                                 200
                             );
