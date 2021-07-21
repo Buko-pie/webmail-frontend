@@ -12,6 +12,9 @@ export const store = new Vuex.Store({
     csrf_token: null,
     current_inbox: 'inbox',
     email_batch: null,
+    current_page: 0,
+    max_page: 0,
+    inbox_items: 0,
     username: null,
     user_email: null,
     user_profile_photo: null,
@@ -47,6 +50,18 @@ export const store = new Vuex.Store({
 
     modify_email_batch(state, payload){
       state.email_batch[payload.index][payload.property] = payload.value;
+    },
+
+    set_current_page(state, payload){
+      state.current_page = payload;
+    },
+
+    set_max_page(state, payload){
+      state.max_page = payload;
+    },
+
+    set_inbox_items(state, payload){
+      state.inbox_items = payload;
     },
 
     set_user_email(state, payload){
@@ -117,6 +132,18 @@ export const store = new Vuex.Store({
 
     modify_email_batch(state, payload){
       state.commit("modify_email_batch", payload);
+    },
+
+    set_current_page(state, payload){
+      state.commit("set_current_page", payload);
+    },
+
+    set_max_page(state, payload){
+      state.commit("set_max_page", payload)
+    },
+
+    set_inbox_items(state, payload){
+      state.commit("set_inbox_items", payload);
     },
 
     set_user_email(state, payload){
