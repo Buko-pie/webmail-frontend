@@ -20,34 +20,43 @@ class DummyDataController extends Controller {
             $inbox_items_length = null;
 
             if ($request['option'] == 'get_all') {
-                $emails = LaravelGmail::message()->in('inbox')->all();
+                $emails = LaravelGmail::message()->in('INBOX')->all();
                 $inbox_items_length = count($emails);
-                $gmail_data = LaravelGmail::message()->in('inbox')->take(10)->preload()->all();
+
+                // while($emails->hasNextPage()){
+                //   $emails->next();
+                //   $inbox_items_length = $inbox_items_length + count($emails);
+                // }
+
+                
+                $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
                 // $gmail_data = $gmail_data->next();
 
                 // $data_1 = $gmail_data[0]->hasAttachments();
                 // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
             } else if ($request['option'] == 'get_next_page') {
-                $gmail_data = LaravelGmail::message()->in('inbox')->take(10)->preload()->all();
+                $gmail_data = LaravelGmail::message()->in('inbox')->take(50)->preload()->all();
 
-                for ($i = 1; $i <= $request['page']; $i++) {
+                if($gmail_data->hasNextPage()){
+                  for ($i = 1; $i <= $request['page']; $i++) {
                     $gmail_data = $gmail_data->next();
+                  }
                 }
-
+                
                 // return response()->json(['gmail_data' => $gmail_data], 200);
                 // $gmail_data = $gmail_data->next();
             } else if ($request['option'] == 'starred_only') {
                 $emails = LaravelGmail::message()->in('inbox')->all();
                 $inbox_items_length = count($emails);
-                $gmail_data = LaravelGmail::message()->in('starred')->take(10)->preload()->all();
+                $gmail_data = LaravelGmail::message()->in('starred')->take(50)->preload()->all();
             } else if ($request['option'] == 'important_only') {
                 $emails = LaravelGmail::message()->in('inbox')->all();
                 $inbox_items_length = count($emails);
-                $gmail_data = LaravelGmail::message()->in('important')->take(10)->preload()->all();
+                $gmail_data = LaravelGmail::message()->in('important')->take(50)->preload()->all();
             } else if ($request['option'] == 'sent_emails') {
                 $emails = LaravelGmail::message()->in('inbox')->all();
                 $inbox_items_length = count($emails);
-                $gmail_data = LaravelGmail::message()->in('sent')->take(10)->preload()->all();
+                $gmail_data = LaravelGmail::message()->in('sent')->take(50)->preload()->all();
             }
 
             if (isset($gmail_data)) {
@@ -70,6 +79,7 @@ class DummyDataController extends Controller {
                 return response()->json([
                     'gmail_data'         => $gmail_data,
                     'repackaged_data'    => $repackaged_data,
+                    'has_nextPage'       => $gmail_data->hasNextPage(),
                     'inbox_items_length' => $inbox_items_length,
                 ], 200);
             } else {
@@ -301,7 +311,10 @@ class DummyDataController extends Controller {
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
                             'headers'    => $email->getHeaders(),
+                            'threadId'   => $email->getThreadId(),
                         ];
+                        // $thread = LaravelGmail::message()->get($email_data['threadId']);
+                        // $thread = $thread->getHtmlBody();
 
                         if (isset($request['with']) && $request['with'] == 'bodyHtml') {
                             $bodyHtml = $email->getHtmlBody();
@@ -332,7 +345,10 @@ class DummyDataController extends Controller {
                             return response()->json([
                                 'bodyHtml'          => $bodyHtml,
                                 'attachments_files' => $attachments_files,
-                                'email_data'        => $email_data,
+                                'email'             => $email->getDecodedBody($email->payload[1]->body->data),
+                                // 'test'              => $email->parts[1]->body,
+                                // 'email_data'        => $email_data,
+                                // 'thread'            => $thread,
                             ],
                                 200
                             );

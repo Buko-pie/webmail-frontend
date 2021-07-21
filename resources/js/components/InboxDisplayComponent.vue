@@ -7,7 +7,7 @@
       id="gridcomp"
       :dataSource="gmail_data" 
       :selectionSettings="selectionSettings" 
-      :allowPaging="true"
+      :allowPaging="false"
       :allowSorting="true"
       :contextMenuItems="menuItems"
       :contextMenuClick="onSelect"
@@ -17,14 +17,13 @@
       :recordClick="recordClick"
       :rowSelected="rowSelected"
       :rowDeselected="rowDeselected"
-      :pagerTemplate="pagination_template"
-      :pageSettings="pageSettings"
       :data="routes"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
       </e-columns>
     </ejs-grid>
+    <ejs-pager id="inbox_pager" ref="inbox_pager" :template="pagination_template"> </ejs-pager>
   </div>
 </template>
 
@@ -32,7 +31,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
-import { GridPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
+import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
 
 const fileIcons = require("file-icons-js");
 let header_template = Vue.component("header-template", require("./subcomponents/HeaderTemplate.vue").default);
@@ -44,6 +43,7 @@ let attachment_template = Vue.component("important-template", require("./subcomp
 let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
 
 Vue.use(GridPlugin);
+Vue.use(PagerPlugin);
 Vue.use(VueNotification, {
   timer: 20
 });
@@ -74,14 +74,14 @@ export default{
     return{
       csrf_token: null,
       index: 0,
-      current_page: 1,
       max_pages: null,
       email_count: null,
       routes: null,
       selected_item_unread: 0,
       selected_items_count: 0,
       inbox_height: null,
-      pageSettings: { pageSize: 50, pageCount: 3 },
+      has_nextPage: true,
+      // pageSettings: { pageSize: 50, pageCount: 3 },
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
@@ -187,7 +187,35 @@ export default{
       console.log("vue-grids computed")
       this.routes = this.$store.state.routes;
       this.csrf_token = this.$store.state.csrf_token;
-      console.log(this.routes)
+
+      let _this = this;
+      axios.get(this.routes.data_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          option: "get_all"
+        }
+      }).then(function (response) {
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        _this.email_count = response.data.inbox_items_length;
+        _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        console.log(_this.max_pages);
+        console.log(_this.email_count);
+        _this.$store.dispatch("set_max_page", Math.ceil(response.data.inbox_items_length / 50));
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+
+        _this.has_nextPage = response.data.has_nextPage;
+        if(!response.data.has_nextPage){
+          _this.$eventHub.$emit("disable_nxtBtn", true);
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
     },
 
     splitter_height(){
@@ -200,6 +228,18 @@ export default{
 
     gmail_data(){
       return this.$store.state.email_batch;
+    },
+
+    current_page(){
+      return this.$store.state.current_page;
+    },
+
+    max_page(){
+      return this.$store.state.max_page;
+    },
+
+    inbox_items(){
+      return this.$store.state.inbox_items;
     }
   },
 
@@ -207,24 +247,7 @@ export default{
     console.log("vue-grids mounted");
     let _this = this;
 
-    axios.get(this.routes.data_route, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + this.csrf_token,
-        "X-CSRF-TOKEN": this.csrf_token
-      },
-      params: {
-        option: "get_all"
-      }
-    }).then(function (response) {
-      // _this.viewData = formatDate(response.data.repackaged_data);
-      _this.email_count = response.data.inbox_items_length;
-      _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-      _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-    }).catch(error => {
-      console.log(error);
-      this.$notification.error("somthing went wrong", {  timer: 5 });
-    });
+    
   },
 
   methods:{
@@ -620,26 +643,71 @@ export default{
 
     this.$eventHub.$on("page_next", (e) =>{
       //========== This part is still WIP ==========
-      axios.get(this.routes.data_route, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + this.csrf_token,
-          "X-CSRF-TOKEN": this.csrf_token
-        },
-        params: {
-          option: "get_next_page",
-          page: this.current_page
-        }
-      }).then(function (response) {
-        _this.current_page++;
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        if(_this.current_page === _this.max_pages){
-          this.$eventHub.$emit("pagination_test");
-        }
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
+      if(_this.has_nextPage){
+        let this_page = _this.current_page;
+        this_page++;
+        _this.$store.dispatch("set_current_page", this_page);
+        console.log(_this.current_page);
+        
+        axios.get(this.routes.data_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: "get_next_page",
+            page: _this.current_page
+          }
+        }).then(function (response) {
+          console.log(response.data);
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.has_nextPage = response.data.has_nextPage;
+          if(!response.data.has_nextPage){
+            _this.$eventHub.$emit("disable_nxtBtn", true);
+          }
+          _this.$eventHub.$emit("disable_prevBtn", false);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }
+      
+      
+    });
+
+    this.$eventHub.$on("page_prev", (e) =>{
+      //========== This part is still WIP ==========
+      if(_this.current_page > 0){
+        let this_page = _this.current_page;
+        this_page--;
+        _this.$store.dispatch("set_current_page", this_page);
+        console.log(_this.current_page);
+        
+        axios.get(this.routes.data_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: "get_next_page",
+            page: _this.current_page
+          }
+        }).then(function (response) {
+          console.log(response.data);
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.has_nextPage = response.data.has_nextPage;
+          if(_this.current_page === 0){
+            _this.$eventHub.$emit("disable_prevBtn", true);
+          }
+          _this.$eventHub.$emit("disable_nxtBtn", false);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }
+      
     });
   }
 };
