@@ -345,9 +345,9 @@ class DataController extends Controller {
                             return response()->json([
                                 'bodyHtml'          => $bodyHtml,
                                 'attachments_files' => $attachments_files,
-                                'email'             => $email->getDecodedBody($email->payload[1]->body->data),
+                                'email_data'        => $email_data,
+                                // 'email'             => $email->getDecodedBody($email->payload[1]->body->data),
                                 // 'test'              => $email->parts[1]->body,
-                                // 'email_data'        => $email_data,
                                 // 'thread'            => $thread,
                             ],
                                 200
