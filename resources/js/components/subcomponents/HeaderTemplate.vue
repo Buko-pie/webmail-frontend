@@ -59,13 +59,14 @@
           <ejs-tooltip content="Move to" position="BottomCenter">
             <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
-        </div>
 
-        <div class="px-2 flex">
           <!-- Button Labels  -->
           <ejs-tooltip content="Labels" position="BottomCenter">
             <ejs-button ref="btn_labels" @click.native="btnLabels" iconCss="fas fa-tag rotate-135" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
+        </div>
+
+        <div class="px-2 flex">
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
             <ejs-dropdownbutton :items="more_items_selected" :select="moreOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
