@@ -13,6 +13,7 @@ use Dacastro4\LaravelGmail\Services\Message\Mail;
 use Dacastro4\LaravelGmail\Services\Message\Attachment;
 
 class DataController extends Controller {
+
     public function get_dummy_data(Request $request) {
         if (isset($request['option'])) {
             $user = LaravelGmail::user();
@@ -20,43 +21,49 @@ class DataController extends Controller {
             $inbox_items_length = null;
 
             if ($request['option'] == 'get_all') {
-                $emails = LaravelGmail::message()->in('INBOX')->all();
-                $inbox_items_length = count($emails);
-
+                // $labels = LaravelGmail::message()->listLabels();
+                // $inbox = LaravelGmail::message()->getLabel('INBOX');
+                
+                // $formatEmailList = Mail::formatEmailList($emails);
                 // while($emails->hasNextPage()){
                 //   $emails->next();
                 //   $inbox_items_length = $inbox_items_length + count($emails);
                 // }
 
+                // return response()->json([
+                //     'labels' => $labels,
+                //     'inbox' => $inbox,
+                // ], 200);
                 
                 $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
-                // $gmail_data = $gmail_data->next();
+                $inbox_items_length = count($gmail_data);
 
-                // $data_1 = $gmail_data[0]->hasAttachments();
-                // $dummy_data = DummyData::orderBy('created_at', 'DESC')->get();
             } else if ($request['option'] == 'get_next_page') {
-                $gmail_data = LaravelGmail::message()->in('inbox')->take(50)->preload()->all();
+                $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
 
                 if($gmail_data->hasNextPage()){
                   for ($i = 1; $i <= $request['page']; $i++) {
                     $gmail_data = $gmail_data->next();
                   }
                 }
-                
-                // return response()->json(['gmail_data' => $gmail_data], 200);
-                // $gmail_data = $gmail_data->next();
+
+                $inbox_items_length = count($gmail_data);
+
             } else if ($request['option'] == 'starred_only') {
-                $emails = LaravelGmail::message()->in('inbox')->all();
-                $inbox_items_length = count($emails);
+                // $emails = LaravelGmail::message()->in('inbox')->all();
+                
                 $gmail_data = LaravelGmail::message()->in('starred')->take(50)->preload()->all();
+                $inbox_items_length = count($gmail_data);
             } else if ($request['option'] == 'important_only') {
-                $emails = LaravelGmail::message()->in('inbox')->all();
-                $inbox_items_length = count($emails);
+                // $emails = LaravelGmail::message()->in('inbox')->all();
+                
                 $gmail_data = LaravelGmail::message()->in('important')->take(50)->preload()->all();
+                $inbox_items_length = count($gmail_data);
             } else if ($request['option'] == 'sent_emails') {
-                $emails = LaravelGmail::message()->in('inbox')->all();
-                $inbox_items_length = count($emails);
+                // $emails = LaravelGmail::message()->in('inbox')->all();
+                
                 $gmail_data = LaravelGmail::message()->in('sent')->take(50)->preload()->all();
+                $inbox_items_length = count($gmail_data);
             }
 
             if (isset($gmail_data)) {
