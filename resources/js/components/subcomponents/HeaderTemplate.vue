@@ -48,12 +48,14 @@
           <ejs-tooltip :content="read_tgl_button_tt_content" position="BottomCenter">
             <ejs-button @click.native="btnToggleRead" :iconCss="read_tgl_button_icon" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
-          <!-- Button Snooze  -->
+
+          <!-- Button Snooze
           <ejs-tooltip content="Snooze" position="BottomCenter">
             <ejs-dropdownbutton target="#snooze_listView" :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
             <ejs-listview id="snooze_listView" ref="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
-          </ejs-tooltip>
+          </ejs-tooltip> -->
           <!-- Button Move to  -->
+          
           <ejs-tooltip content="Move to" position="BottomCenter">
             <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
