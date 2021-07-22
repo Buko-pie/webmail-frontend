@@ -12,7 +12,7 @@ use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use Dacastro4\LaravelGmail\Services\Message\Mail;
 use Dacastro4\LaravelGmail\Services\Message\Attachment;
 
-class DummyDataController extends Controller {
+class DataController extends Controller {
     public function get_dummy_data(Request $request) {
         if (isset($request['option'])) {
             $user = LaravelGmail::user();
