@@ -55,7 +55,7 @@
             <ejs-listview id="snooze_listView" ref="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
           </ejs-tooltip> -->
           <!-- Button Move to  -->
-          
+
           <ejs-tooltip content="Move to" position="BottomCenter">
             <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
@@ -148,8 +148,8 @@ export default Vue.extend({
         { id: 3, text: "Mark as not important" },
         { id: 4, text: "Add star" },
         { id: 5, text: "Remove star" },
-        { id: 6, text: "Mute" },
-        { id: 7, text: "Forward as attachment" }
+        // { id: 6, text: "Mute" },
+        // { id: 7, text: "Forward as attachment" }
       ],
       snooze_opitons :[
         { id: 0, class: "data", text: "Later today", day_time: "6:00 PM", category: "Snooze until..." },
