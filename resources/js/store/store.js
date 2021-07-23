@@ -10,11 +10,12 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
-    current_inbox: 'inbox',
+    current_inbox: 'INBOX',
     email_batch: null,
     current_page: 0,
     max_page: 0,
     inbox_items: 0,
+    inbox_total: 0,
     username: null,
     user_email: null,
     user_profile_photo: null,
@@ -62,6 +63,10 @@ export const store = new Vuex.Store({
 
     set_inbox_items(state, payload){
       state.inbox_items = payload;
+    },
+
+    set_inbox_total(state, payload){
+      state.inbox_total = payload
     },
 
     set_user_email(state, payload){
@@ -144,6 +149,10 @@ export const store = new Vuex.Store({
 
     set_inbox_items(state, payload){
       state.commit("set_inbox_items", payload);
+    },
+
+    set_inbox_total(state, payload){
+      state.commit("set_inbox_total", payload);
     },
 
     set_user_email(state, payload){

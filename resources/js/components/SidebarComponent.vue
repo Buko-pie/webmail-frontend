@@ -919,7 +919,7 @@ export default Vue.extend({
           option: "get_all"
         }
       }).then(function (response) {
-        _this.$store.dispatch("set_current_inbox", "inbox");
+        _this.$store.dispatch("set_current_inbox", "INBOX");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
@@ -941,8 +941,12 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "starred");
+        _this.$store.dispatch("set_current_inbox", "STARRED");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -963,8 +967,12 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "important");
+        _this.$store.dispatch("set_current_inbox", "IMPORTANT");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
         this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -985,8 +993,12 @@ export default Vue.extend({
         // _this.viewData = formatDate(response.data.repackaged_data);
         // _this.email_count = response.data.inbox_items_length;
         // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "sent");
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        _this.$store.dispatch("set_current_inbox", "SENT");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
         this.$notification.error("somthing went wrong", {  timer: 5 });

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use Illuminate\Support\Facades\Session;
-use Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 class AccountsController extends Controller {
     public function register(Request $request) {

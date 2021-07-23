@@ -200,13 +200,16 @@ export default{
         }
       }).then(function (response) {
         // _this.viewData = formatDate(response.data.repackaged_data);
-        _this.email_count = response.data.inbox_items_length;
-        _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        // _this.email_count = response.data.inbox_items_length;
         console.log(response.data);
-        console.log(_this.email_count);
+        // console.log(_this.email_count);
+
         _this.$store.dispatch("set_max_page", Math.ceil(response.data.inbox_items_length / 50));
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
 
         _this.has_nextPage = response.data.has_nextPage;
         if(!response.data.has_nextPage){
@@ -240,6 +243,10 @@ export default{
 
     inbox_items(){
       return this.$store.state.inbox_items;
+    },
+
+    current_inbox(){
+      return this.$store.state.current_inbox;
     }
   },
 
@@ -648,11 +655,11 @@ export default{
     });
 
     this.$eventHub.$on("page_next", (e) =>{
+      console.log(_this.current_inbox);
       if(_this.has_nextPage){
         let this_page = _this.current_page;
         this_page++;
         _this.$store.dispatch("set_current_page", this_page);
-        console.log(_this.current_page);
         
         axios.get(this.routes.data_route, {
           headers: {
@@ -662,11 +669,15 @@ export default{
           },
           params: {
             option: "get_next_page",
+            inbox: _this.current_inbox,
             page: _this.current_page
           }
         }).then(function (response) {
-          console.log(response.data);
           _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          
+          _this.$eventHub.$emit("page_change", "page_next");
+
           _this.has_nextPage = response.data.has_nextPage;
           if(!response.data.has_nextPage){
             _this.$eventHub.$emit("disable_nxtBtn", true);
@@ -686,7 +697,6 @@ export default{
         let this_page = _this.current_page;
         this_page--;
         _this.$store.dispatch("set_current_page", this_page);
-        console.log(_this.current_page);
         
         axios.get(this.routes.data_route, {
           headers: {
@@ -696,11 +706,15 @@ export default{
           },
           params: {
             option: "get_next_page",
+            inbox: _this.current_inbox,
             page: _this.current_page
           }
         }).then(function (response) {
-          console.log(response.data);
           _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          
+          _this.$eventHub.$emit("page_change", "page_prev");
+
           _this.has_nextPage = response.data.has_nextPage;
           if(_this.current_page === 0){
             _this.$eventHub.$emit("disable_prevBtn", true);
