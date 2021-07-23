@@ -10,7 +10,13 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
+    current_inbox: 'inbox',
     email_batch: null,
+    current_page: 0,
+    max_page: 0,
+    inbox_items: 0,
+    username: null,
+    user_email: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
@@ -19,6 +25,8 @@ export const store = new Vuex.Store({
     selected_items_dataID: [],
     selected_item_unread: 0,
     selected_email_html_body: null,
+    selected_email_data: null,
+    selected_email_attachments: null,
     splitter_height: null,
     splitter_pane_0_height: null,
   },
@@ -32,13 +40,32 @@ export const store = new Vuex.Store({
       state.csrf_token = payload;
     },
 
+    set_current_inbox(state, payload){
+      state.current_inbox = payload;
+    },
+
     set_email_batch(state, payload){
       state.email_batch = payload;
     },
 
     modify_email_batch(state, payload){
-      // console.log(payload)
       state.email_batch[payload.index][payload.property] = payload.value;
+    },
+
+    set_current_page(state, payload){
+      state.current_page = payload;
+    },
+
+    set_max_page(state, payload){
+      state.max_page = payload;
+    },
+
+    set_inbox_items(state, payload){
+      state.inbox_items = payload;
+    },
+
+    set_user_email(state, payload){
+      state.user_email = payload
     },
 
     set_user_profile_photo(state, payload){
@@ -55,6 +82,14 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.selected_email_html_body = payload;
+    },
+
+    set_email_data(state, payload){
+      state.selected_email_data = payload;
+    },
+
+    set_email_attachments(state, payload){
+      state.selected_email_attachments = payload;
     },
 
     dropdown_btn_lbl_toggle(state, payload){
@@ -87,12 +122,32 @@ export const store = new Vuex.Store({
       state.commit("set_csrf_token", payload);
     },
 
+    set_current_inbox(state, payload){
+      state.commit("set_current_inbox", payload);
+    },
+
     set_email_batch(state, payload){
       state.commit("set_email_batch", payload);
     },
 
     modify_email_batch(state, payload){
       state.commit("modify_email_batch", payload);
+    },
+
+    set_current_page(state, payload){
+      state.commit("set_current_page", payload);
+    },
+
+    set_max_page(state, payload){
+      state.commit("set_max_page", payload)
+    },
+
+    set_inbox_items(state, payload){
+      state.commit("set_inbox_items", payload);
+    },
+
+    set_user_email(state, payload){
+      state.commit("set_user_email", payload);
     },
 
     set_user_profile_photo(state, payload){
@@ -109,6 +164,14 @@ export const store = new Vuex.Store({
 
     set_email_html_body(state, payload){
       state.commit("set_email_html_body", payload);
+    },
+
+    set_email_data(state, payload){
+      state.commit("set_email_data", payload);
+    },
+
+    set_email_attachments(state, payload){
+      state.commit("set_email_attachments", payload);
     },
 
     dropdown_btn_lbl_toggle(state, payload){

@@ -28,16 +28,7 @@ class WebmailController extends Controller
       $user = LaravelGmail::user();
 
       if(isset($user)){
-        $routes= [
-          'data_route' => route('get_dummy_data'),
-          'send_mail' => route('send_mail'),
-          'toggle_route' => route('toggle_dummy_data'),
-          'set_many_route' => route('toggle_many_dummy_data'),
-          'logging_out' => route('logging_out'),
-          'upload_profile_pic' => route('upload_profile_pic'),
-          'user_profile_path' => url('/img/users_profile_photo/')
-        ];
-        return view('test_component')->with(['routes' => $routes]);
+        return view('webmail')->with(['base' => url('/')]);
       }else{
         // return redirect()->to('oauth/gmail');
         return LaravelGmail::redirect();

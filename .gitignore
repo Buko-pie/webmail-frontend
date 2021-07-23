@@ -13,3 +13,12 @@ yarn-error.log
 public/css
 public/js
 public/mix-manifest.json
+public/webfonts
+public/fonts/vendor
+public/webmail
+.idea
+0
+webmail-front.iml
+_ide_helper.php
+.phpstorm.meta.php
+public/uploads

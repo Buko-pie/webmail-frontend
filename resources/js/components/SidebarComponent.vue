@@ -2,8 +2,7 @@
 <div class="control-section sidebar-default">
   <!-- run start computed -->
   <div :start="start"></div>
-  
-  
+
   <!-- Compose Modal  -->
   <modal name="compose_new_modal" :adaptive="true" width="70%" height="70%" @before-open="modalOpened" @before-close="modalClosed">
     <div class="p-2 h-full relative flex ">
@@ -16,10 +15,10 @@
             :tags="email_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="To:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
             
           />
@@ -30,15 +29,41 @@
             :tags="cc_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="Cc:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="cc_address_tags_new"
             
           />
+          <vue-tags-input
+            v-model="bcc_address_tag"
+            ref="bcc_tags_address"
+            :tags="bcc_address_tags"
+            :add-on-key="[13, 32]"
+            :save-on-key="[13, 32]"
+            :allowEditTags="true"
+            placeholder="Bcc:"
+            @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
+            @tags-changed="bcc_address_tags_new"
+            
+          />
+
+          <ejs-uploader 
+            ref="ejs_uploader"
+            id='ejs_uploader'
+            name="UploadFiles"
+            maxFileSize=26214400
+            :asyncSettings="attachment_path"
+            :uploading="attachmentUpload"
+            :removing="removingAttachment"
+            :sequentialUpload='true'
+            :autoUpload='true' >
+          </ejs-uploader> 
+
           <div class="flex justify-end mt-auto pr-2">
-            <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
+            <ejs-button @click.native="sendMail" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           </div>
         </div>
         <div class="col-span-2">
@@ -149,7 +174,7 @@
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="sentEMails" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
@@ -359,6 +384,7 @@
 </template>
 
 <script>
+
 import Vue from "vue";
 import moment from "moment";
 import VModal from "vue-js-modal";
@@ -370,11 +396,12 @@ import $ from "jquery";
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
 import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
-import { enableRipple } from "@syncfusion/ej2-base";
+import { enableRipple, isNullOrUndefined  } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
-import { VueTagsInput } from '@johmun/vue-tags-input';
-
+import { VueTagsInput } from "@johmun/vue-tags-input";
+import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
+import VueNotification from "@kugatsu/vuenotification";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -387,14 +414,16 @@ Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
+Vue.use(UploaderPlugin);
+Vue.use(VueNotification, {
+  timer: 20
+});
 
 enableRipple(true);
-
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const csrf_token = $('meta[name="csrf-token"]').attr('content');
-const email_regex = /^(([^<>()[]\\.,;:\s@\"]+(\.[^<>()[]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 
 function formatDate(data) {
@@ -411,6 +440,21 @@ function formatDate(data) {
   return data;
 }
 
+function validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validateEmails(emailArray){
+  let results = emailArray.some(function(email, index){
+    if(!validateEmail(email)){
+      return true;
+    }
+  });
+
+  return results;
+}
+
 function isExistLabel(new_label, custom_labels){
   for (let i = 0; i < custom_labels.length; i++) {
     console.log(custom_labels)
@@ -425,13 +469,13 @@ function isExistLabel(new_label, custom_labels){
 export default Vue.extend({
   name: "SidebarComponent",
   props:{
-    routes: { type: Object, required: true },
-    gmail_user: { type: String, required: true }
-    // user: { type: Object, required: true }
+    gmail_user: { type: String, required: true },
+    url_base: { type: String, required: true }
   },
 
   data() {
     return {
+      routes: null,
       enableDock:  true,
       dockSize : "72px",
       width : "16rem",
@@ -465,6 +509,9 @@ export default Vue.extend({
       cc_address_tag: "",
       cc_address_tags: [],
       cc_addresses: null,
+      bcc_address_tag: "",
+      bcc_address_tags: [],
+      bcc_addresses: null,
       email_subject: "",
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
@@ -516,7 +563,11 @@ export default Vue.extend({
       
       email_view_template(){
         return{ template: email_view_component}
-      }
+      },
+
+      attachment_path: null,
+
+      dropElement: '.control-fluid',
 
     }
   },
@@ -524,8 +575,29 @@ export default Vue.extend({
   computed:{
     start(){
       console.log("Sidebar component computed");
-      this.$store.dispatch("set_routes", this.routes);
+      let routes = {
+        data_route:           this.url_base + "/get_dummy_data",
+        send_mail:            this.url_base + "/send_mail",
+        upload_attachment:    this.url_base + "/upload_attachment",
+        check_attachment:     this.url_base + "/check_attachment",
+        download_attachment:  this.url_base + "/download_attachment",
+        remove_attachment:    this.url_base + "/remove_attachment",
+        toggle_route:         this.url_base + "/toggle_dummy_data",
+        set_many_route:       this.url_base + "/toggle_many_dummy_data",
+        logging_out:          this.url_base + "/logging_out",
+        upload_profile_pic:   this.url_base + "/upload_profile_pic",
+        user_profile_path:    this.url_base + "/img/users_profile_photo/",
+      };
+      console.log(routes);
+      this.$store.dispatch("set_routes", routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
+      this.$store.dispatch("set_user_email", this.gmail_user);
+
+      this.attachment_path = {
+        saveUrl: routes.upload_attachment,
+        removeUrl: routes.remove_attachment
+      }
+      this.routes = routes;
     },
     
     category_toggles(){
@@ -560,7 +632,6 @@ export default Vue.extend({
   mounted(){
     console.log("Sidebar component mounted");
     console.log(this.gmail_user);
-    console.log("bruh");
     
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
@@ -683,9 +754,23 @@ export default Vue.extend({
     },
 
     email_address_tags_add_class(args){
-      // console.log(args);
-      args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
       args.addTag();
+    },
+
+    email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
+      args.saveTag();
     },
 
     email_address_tags_new(tags){
@@ -708,27 +793,78 @@ export default Vue.extend({
       this.cc_addresses = tags_text;
     },
 
-    sendMail(){
-      console.log("sending Mail ...");
-      let _this = this;
-      
-      axios({
-        method: "POST",
-        url: this.routes.send_mail,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          addresses: this.email_addresses,
-          cc: this.cc_addresses,
-          subject: this.email_subject,
-          message: this.$refs.vueditor.getContent()
-        }
-      }).then(function (response) {
-        console.log(response.data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
+    bcc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
       });
+
+      this.bcc_addresses = tags_text;
+    },
+
+    sendMail(){
+      let _this = this;
+      let invalid_emails = validateEmails(this.email_addresses);
+      let invalid_ccs = false;
+      let invalid_bccs = false;
+      let files = this.$refs.ejs_uploader.getFilesData();
+      let attachments = [];
+
+      if(this.cc_addresses !== null){
+        invalid_ccs = validateEmails(this.cc_addresses);
+      }
+
+       if(this.bcc_addresses !== null){
+        invalid_bccs = validateEmails(this.bcc_addresses);
+      }
+
+      if(files.length !== 0){
+        files.forEach(file => {
+          if(file.statusCode === "2"){
+            attachments.push({
+              id: file.id,
+              filename: file.name,
+              size: file.size,
+              status: "uploaded",
+              type: file.type,
+            });
+          }
+        });
+      }
+      
+      
+      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
+        console.log("sending Email...");
+        let data = {
+            option: "new_email",
+            addresses: this.email_addresses,
+            cc: this.cc_addresses,
+            bcc: this.bcc_addresses,
+            subject: this.email_subject,
+            message: this.$refs.vueditor.getContent(),
+            attachments: attachments,
+        };
+
+        axios.post(this.routes.send_mail, data, {
+          headers:{
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$modal.hide("compose_new_modal");
+          _this.$notification.success("Message Sent", {  timer: 5 });
+        }).catch(error => {
+          console.log(error);
+          _this.$modal.hide("compose_new_modal");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+
+      }else{
+        this.$notification.warning("invalid email exists!", {  timer: 5 });
+      }
     },
 
     createNewLabel(){
@@ -754,108 +890,40 @@ export default Vue.extend({
     composeNew(args){
       this.$modal.show("compose_new_modal");
     },
-     mirrorConversion: function(e) {
-        var textArea = this.$refs.rteObj.ej2Instances.contentModule.getEditPanel();
-        var id = this.$refs.rteObj.ej2Instances.getID() +  'mirror-view';
-        var mirrorView = this.$refs.rteObj.$el.parentNode.querySelector('#' + id);
-        var charCount = this.$refs.rteObj.$el.parentNode.querySelector('.e-rte-character-count');
-        if (e.targetItem === 'Preview') {
-          textArea.style.display = 'block';
-          mirrorView.style.display = 'none';
-          textArea.innerHTML = this.myCodeMirror.getValue();
-          charCount.style.display = 'block';
-        }
-        else {
-          if (!mirrorView) {
-            mirrorView = document.createElement('div', { className: 'e-content' });
-            mirrorView.id = id;
-            textArea.parentNode.appendChild(mirrorView);
-          }
-          else {
-            mirrorView.innerHTML = '';
-          }
-          textArea.style.display = 'none';
-          mirrorView.style.display = 'block';
-          this.renderCodeMirror(mirrorView, this.$refs.rteObj.ej2Instances.value);
-          charCount.style.display = 'none';
-        }
-      },
-      renderCodeMirror: function(mirrorView, content) {
-      this.myCodeMirror = CodeMirror(mirrorView, {
-        value: content,
-        lineNumbers: true,
-        mode: 'text/html',
-        lineWrapping: true,
 
-      });
-    },
-    handleFullScreen: function(e){
-      var sbCntEle = document.querySelector('.sb-content.e-view');
-      var sbHdrEle = document.querySelector('.sb-header.e-view');
-      var leftBar;
-      var transformElement;
-      if (Browser.isDevice) {
-        leftBar = document.querySelector('#right-sidebar');
-        transformElement = document.querySelector('.sample-browser.e-view.e-content-animation');
-      }
-      else {
-        leftBar = document.querySelector('#left-sidebar');
-        transformElement = document.querySelector('#right-pane');
-      }
-      if (e.targetItem === 'Maximize') {
-        if (Browser.isDevice && Browser.isIos) {
-          addClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        addClass([leftBar], ['e-close']);
-        removeClass([leftBar], ['e-open']);
-        if (!Browser.isDevice) {
-          transformElement.style.marginLeft = '0px';
-        }
-        transformElement.style.transform = 'inherit';
-      }
-      else if (e.targetItem === 'Minimize') {
-        if (Browser.isDevice && Browser.isIos) {
-          removeClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        removeClass([leftBar], ['e-close']);
-        if (!Browser.isDevice) {
-          addClass([leftBar], ['e-open']);
-          transformElement.style.marginLeft = leftBar.offsetWidth + 'px';
-        }
-        transformElement.style.transform = 'translateX(0px)';
-      }
+    attachmentUpload(args){
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
+      
+      args.customFormData = [
+        {id: args.fileData.id},
+        {filename: args.fileData.name},
+        {size: args.fileData.size},
+        {type: args.fileData.type}
+      ];
+      console.log(args);
     },
 
-    actionCompleteHandler: function(e) {
-      if (e.targetItem && (e.targetItem === 'SourceCode' || e.targetItem === 'Preview')) {
-        this.$refs.rteObj.ej2Instances.sourceCodeModule.getPanel().style.display = 'none';
-        this.mirrorConversion(e);
-      }
-      else {
-        var proxy = this;
-        setTimeout(function () { proxy.$refs.rteObj.ej2Instances.toolbarModule.refreshToolbarOverflow(); }, 400);
-      }
+    removingAttachment(args){
+      args.postRawFile = false;
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
     },
-
 
     getInbox(event){
-      console.log("get all");
       let _this = this;
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "get_all"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        _this.$store.dispatch("set_current_inbox", "inbox");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -863,42 +931,65 @@ export default Vue.extend({
       console.log("starred Only");
       let _this = this;
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "starred_only"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "starred");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
+
     importantOnly(event) {
       console.log("important Only");
       let _this = this;
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          token: this.token,
           option: "important_only"
         }
       }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "important");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    sentEMails(event) {
+      console.log("sentEMails");
+      let _this = this;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          option: "sent_emails"
+        }
+      }).then(function (response) {
+        console.log(response);
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        // _this.email_count = response.data.inbox_items_length;
+        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        _this.$store.dispatch("set_current_inbox", "sent");
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
 
@@ -925,19 +1016,16 @@ export default Vue.extend({
     },
 
     logout(){
-      axios({
-        method: "GET",
-        url: this.routes.logging_out,
+      axios.get(this.routes.logging_out, {
         headers: this.headers,
         params: {
-          token: this.token,
           message: "loggout"
         }
       }).then(function (response) {
         window.location.href = response.data;
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     }
   },

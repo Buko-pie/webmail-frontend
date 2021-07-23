@@ -1,17 +1,15 @@
-require('./bootstrap');
+const bootstrap = require('./bootstrap');
 import Vue from 'vue';
 import axios from 'axios';
 import { store } from "./store/store";
 import Vueditor from 'vueditor'
 
 import 'vueditor/dist/style/vueditor.min.css'
-// app.component("webmail-component", require("./components/WebmailComponent.vue").default);
-// app.component("example-component", require("./components/ExampleComponent.vue").default);
 
+// console.log(bootstrap.get_token());
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);
-const login_component = Vue.component("login-component", require("./components/LoginComponent.vue").default);
 
 const editor_config = {
   spellcheck: true,
@@ -64,7 +62,8 @@ const editor_config = {
     "24px",
     "28px",
     "32px",
-    "36px"],
+    "36px"
+  ],
   uploadUrl: ""
 };
 
@@ -77,7 +76,6 @@ const app = new Vue({
     sidebar,
     navbar_buttons,
     searchbar,
-    login_component,
   },
   methods:{
     toggle_sidebar(){

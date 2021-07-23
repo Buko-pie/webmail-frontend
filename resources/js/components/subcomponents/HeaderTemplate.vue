@@ -48,22 +48,25 @@
           <ejs-tooltip :content="read_tgl_button_tt_content" position="BottomCenter">
             <ejs-button @click.native="btnToggleRead" :iconCss="read_tgl_button_icon" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
-          <!-- Button Snooze  -->
+
+          <!-- Button Snooze
           <ejs-tooltip content="Snooze" position="BottomCenter">
             <ejs-dropdownbutton target="#snooze_listView" :items="more_items" iconCss="fas fa-clock" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
             <ejs-listview id="snooze_listView" ref="snooze_listView" class="shadow-black-lg" :select="snoozeSelect" :dataSource="snooze_opitons" :fields="snooze_fields" :template="snooze_template"></ejs-listview>
-          </ejs-tooltip>
+          </ejs-tooltip> -->
           <!-- Button Move to  -->
+
           <ejs-tooltip content="Move to" position="BottomCenter">
             <ejs-button ref="btn_move" @click.native="btnMove" iconCss="fas fa-file-export" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
-        </div>
 
-        <div class="px-2 flex">
           <!-- Button Labels  -->
           <ejs-tooltip content="Labels" position="BottomCenter">
             <ejs-button ref="btn_labels" @click.native="btnLabels" iconCss="fas fa-tag rotate-135" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
+        </div>
+
+        <div class="px-2 flex">
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
             <ejs-dropdownbutton :items="more_items_selected" :select="moreOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
@@ -78,6 +81,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VModal from 'vue-js-modal';
+import VueNotification from "@kugatsu/vuenotification";
 
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
@@ -92,19 +96,19 @@ Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(VModal, { dialog: true });
+Vue.use(VueNotification, {
+  timer: 20
+});
 
 function selectedItemsTo(option, dataIDs, route) {
   let _this = this;
 
-  axios({
-    method: "GET",
-    url: route.set_many_route,
+  axios.get(route.set_many_route, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer {{ csrf_token() }}"
     },
     params: {
-      token: "{{ csrf_token() }}",
       option: option,
       dataIDs: dataIDs,
     }
@@ -112,7 +116,7 @@ function selectedItemsTo(option, dataIDs, route) {
     console.log(response);
   }).catch(error => {
     console.log(error);
-    alert("somthing went wrong");
+    _this.$notification.error("somthing went wrong", {  timer: 5 });
   });
 }
 
@@ -145,8 +149,8 @@ export default Vue.extend({
         { id: 3, text: "Mark as not important" },
         { id: 4, text: "Add star" },
         { id: 5, text: "Remove star" },
-        { id: 6, text: "Mute" },
-        { id: 7, text: "Forward as attachment" }
+        // { id: 6, text: "Mute" },
+        // { id: 7, text: "Forward as attachment" }
       ],
       snooze_opitons :[
         { id: 0, class: "data", text: "Later today", day_time: "6:00 PM", category: "Snooze until..." },

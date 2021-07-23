@@ -1,5 +1,11 @@
 {
     "private": true,
+    "name": "webmail",
+    "description": "vue webmail app",
+    "version": "1.0.0",
+    "engines": {
+        "node": "12.20.0"
+    },
     "scripts": {
         "dev": "npm run development",
         "development": "mix",
@@ -7,7 +13,8 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production",
+        "heroku-postbuild": "npm run dev"
     },
     "devDependencies": {
         "autoprefixer": "^10.2.6",
@@ -24,6 +31,7 @@
     "dependencies": {
         "@fortawesome/fontawesome-free": "^5.15.3",
         "@johmun/vue-tags-input": "^2.1.0",
+        "@kugatsu/vuenotification": "^1.1.4",
         "@syncfusion/ej2-vue-buttons": "^19.1.63",
         "@syncfusion/ej2-vue-calendars": "^19.1.66",
         "@syncfusion/ej2-vue-dropdowns": "^19.1.65",
@@ -32,13 +40,17 @@
         "@syncfusion/ej2-vue-layouts": "^19.1.63",
         "@syncfusion/ej2-vue-lists": "^19.1.65",
         "@syncfusion/ej2-vue-navigations": "^19.1.63",
+        "@syncfusion/ej2-vue-notifications": "^19.2.44",
         "@syncfusion/ej2-vue-popups": "^19.1.64",
         "@syncfusion/ej2-vue-richtexteditor": "^19.1.69",
         "@syncfusion/ej2-vue-splitbuttons": "^19.1.63",
         "codemirror": "^5.62.0",
         "core-js": "^3.13.1",
+        "file-icons-js": "github:websemantics/file-icons-js",
+        "gsap": "^3.7.1",
         "jquery": "^3.6.0",
         "moment": "^2.29.1",
+        "pretty-file-icons": "^2.2.1",
         "vue": "^2.6.12",
         "vue-avatar-cropper": "^2.0.0",
         "vue-click-outside": "^1.1.0",

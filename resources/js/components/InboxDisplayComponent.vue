@@ -7,7 +7,7 @@
       id="gridcomp"
       :dataSource="gmail_data" 
       :selectionSettings="selectionSettings" 
-      :allowPaging="true"
+      :allowPaging="false"
       :allowSorting="true"
       :contextMenuItems="menuItems"
       :contextMenuClick="onSelect"
@@ -17,22 +17,23 @@
       :recordClick="recordClick"
       :rowSelected="rowSelected"
       :rowDeselected="rowDeselected"
-      :pagerTemplate="pagination_template"
-      :pageSettings="pageSettings"
       :data="routes"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
       </e-columns>
     </ejs-grid>
+    <ejs-pager id="inbox_pager" ref="inbox_pager" :template="pagination_template"> </ejs-pager>
   </div>
 </template>
 
 <script>
 import Vue from "vue";
 import moment from "moment";
-import { GridPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
+import VueNotification from "@kugatsu/vuenotification";
+import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
 
+const fileIcons = require("file-icons-js");
 let header_template = Vue.component("header-template", require("./subcomponents/HeaderTemplate.vue").default);
 let subheader_template = Vue.component("subheader-template", require("./subcomponents/SubheaderTemplate.vue").default);
 let starred_template = Vue.component("starred-template", require("./subcomponents/StarredTemplate.vue").default);
@@ -42,6 +43,10 @@ let attachment_template = Vue.component("important-template", require("./subcomp
 let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
 
 Vue.use(GridPlugin);
+Vue.use(PagerPlugin);
+Vue.use(VueNotification, {
+  timer: 20
+});
 Vue.prototype.$eventHub = new Vue();
 
 function formatDate(data) {
@@ -58,7 +63,7 @@ function formatDate(data) {
   return data;
 }
 
-export default({
+export default{
   name: "InboxDisplayComponent",
   props:{
     custom_labels: Array,
@@ -69,14 +74,14 @@ export default({
     return{
       csrf_token: null,
       index: 0,
-      current_page: 1,
       max_pages: null,
       email_count: null,
       routes: null,
       selected_item_unread: 0,
       selected_items_count: 0,
       inbox_height: null,
-      pageSettings: { pageSize: 50, pageCount: 3 },
+      has_nextPage: true,
+      // pageSettings: { pageSize: 50, pageCount: 3 },
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
@@ -182,7 +187,35 @@ export default({
       console.log("vue-grids computed")
       this.routes = this.$store.state.routes;
       this.csrf_token = this.$store.state.csrf_token;
-      console.log(this.routes)
+
+      let _this = this;
+      axios.get(this.routes.data_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          option: "get_all"
+        }
+      }).then(function (response) {
+        // _this.viewData = formatDate(response.data.repackaged_data);
+        _this.email_count = response.data.inbox_items_length;
+        _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
+        console.log(response.data);
+        console.log(_this.email_count);
+        _this.$store.dispatch("set_max_page", Math.ceil(response.data.inbox_items_length / 50));
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+
+        _this.has_nextPage = response.data.has_nextPage;
+        if(!response.data.has_nextPage){
+          _this.$eventHub.$emit("disable_nxtBtn", true);
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
     },
 
     splitter_height(){
@@ -195,36 +228,26 @@ export default({
 
     gmail_data(){
       return this.$store.state.email_batch;
+    },
+
+    current_page(){
+      return this.$store.state.current_page;
+    },
+
+    max_page(){
+      return this.$store.state.max_page;
+    },
+
+    inbox_items(){
+      return this.$store.state.inbox_items;
     }
   },
 
   mounted(){
     console.log("vue-grids mounted");
-    // this.viewData = this.localData;
     let _this = this;
-    // this.routes = this.$store.state.routes;
-    console.log(this.routes)
-    axios({
-      method: "GET",
-      url: this.routes.data_route,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + this.csrf_token,
-        "X-CSRF-TOKEN": this.csrf_token
-      },
-      params: {
-        token: this.csrf_token,
-        option: "get_all"
-      }
-    }).then(function (response) {
-      // _this.viewData = formatDate(response.data.repackaged_data);
-      _this.email_count = response.data.inbox_items_length;
-      _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-      _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-    }).catch(error => {
-      console.log(error);
-      alert("somthing went wrong");
-    });
+
+    
   },
 
   methods:{
@@ -238,29 +261,27 @@ export default({
       if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
-        /////Last construction here on add custome labels context menu
+        /////Last construction here on add custom labels context menu
         this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
         args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
-        console.log(row_data);
+
         console.log(this.custom_labels);
       }else if(args.item.text === "Mark as unread"){
         //Mark As Unread
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: false
           }
         }).then(function (response) {
-          console.log(response.data);
+
           // _this.viewData[args.rowInfo.rowIndex].read = false;
 
           _this.$store.dispatch("modify_email_batch", {
@@ -273,20 +294,19 @@ export default({
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+
       }else if(args.item.text === "Mark as read"){
         //Mark as read
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             id: args.rowInfo.rowData.id,
             value: true
@@ -305,7 +325,7 @@ export default({
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
       }
     },
@@ -344,20 +364,18 @@ export default({
       this.select_option = null;
     },
 
-    //Mark As Read on Email Click
     recordClick(args){
+      //Mark As Read on Email Click
+
       let _this = this;
       if(args.cellIndex > 3 && args.cellIndex < 8){
-        axios({
-          method: "GET",
-          url: _this.routes.toggle_route,
+        axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + this.csrf_token,
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            token: this.csrf_token,
             column: "read",
             with: "bodyHtml",
             id: args.rowData.id,
@@ -375,25 +393,46 @@ export default({
 
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
+          _this.$store.dispatch("set_email_data", response.data.email_data);
+
+          if(response.data.attachments_files.length > 0){
+            let files = [];
+
+            response.data.attachments_files.forEach(file => {
+              files.push({
+                name: file,
+                icon: fileIcons.getClassWithColor(file)
+              })
+            });
+
+            _this.$store.dispatch("set_email_attachments", files);
+          }else{
+            _this.$store.dispatch("set_email_attachments", null);
+          }
 
         }).catch(error => {
           console.log(error);
-          alert("somthing went wrong");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
-       
       }
     },
 
     contextMenuOpen(args){
       //On Context Menu Open
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
-      if(!args.rowInfo.rowData.read){
-        contextMenuObj.showItems(["Mark as read"]);
-        contextMenuObj.hideItems(["Mark as unread"]);
+      console.log(contextMenuObj);
+      if(args.rowInfo.rowData){
+        if(!args.rowInfo.rowData.read){
+          contextMenuObj.showItems(["Mark as read"]);
+          contextMenuObj.hideItems(["Mark as unread"]);
+        }else{
+          contextMenuObj.showItems(["Mark as unread"]);
+          contextMenuObj.hideItems(["Mark as read"]);
+        }
       }else{
-        contextMenuObj.showItems(["Mark as unread"]);
-        contextMenuObj.hideItems(["Mark as read"]);
+
       }
+      
     },
 
     rowSelected(args){
@@ -493,20 +532,16 @@ export default({
 
   created(){
     let _this = this;
+
     //Mark email as starred
     this.$eventHub.$on("toggled_starred", (e)=>{
-      // console.log(e);
-
-      axios({
-        method: "GET",
-        url: _this.routes.toggle_route,
+      axios.get(_this.routes.toggle_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           column: "starred",
           id: e.id,
           value: e.starred
@@ -524,23 +559,19 @@ export default({
         console.log(response.data);
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
-
     });
 
     //Mark email as important
     this.$eventHub.$on("toggled_important", (e)=>{
-      axios({
-        method: "GET",
-        url: _this.routes.toggle_route,
+      axios.get(_this.routes.toggle_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           column: "important",
           id: e.id,
           value: e.important
@@ -558,7 +589,7 @@ export default({
         console.log(response.data.data_update);
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     });
     //Sort by read toggle
@@ -595,21 +626,16 @@ export default({
     this.$eventHub.$on("refresh_inbox", (e)=>{
       console.log("refresh_inbox");
 
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
+      axios.get(this.routes.data_route, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          token: this.csrf_token,
           option: "get_all"
         }
       }).then(function (response) {
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
         _this.$eventHub.$emit("stop_loading", {
@@ -617,37 +643,78 @@ export default({
         });
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     });
 
     this.$eventHub.$on("page_next", (e) =>{
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + this.csrf_token,
-          "X-CSRF-TOKEN": this.csrf_token
-        },
-        params: {
-          token: this.csrf_token,
-          option: "get_next_page",
-          page: this.current_page
-        }
-      }).then(function (response) {
-        _this.current_page++;
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        if(_this.current_page === _this.max_pages){
-          this.$eventHub.$emit("pagination_test");
-        }
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
+      if(_this.has_nextPage){
+        let this_page = _this.current_page;
+        this_page++;
+        _this.$store.dispatch("set_current_page", this_page);
+        console.log(_this.current_page);
+        
+        axios.get(this.routes.data_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: "get_next_page",
+            page: _this.current_page
+          }
+        }).then(function (response) {
+          console.log(response.data);
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.has_nextPage = response.data.has_nextPage;
+          if(!response.data.has_nextPage){
+            _this.$eventHub.$emit("disable_nxtBtn", true);
+          }
+          _this.$eventHub.$emit("disable_prevBtn", false);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }
+      
+      
+    });
+
+    this.$eventHub.$on("page_prev", (e) =>{
+      if(_this.current_page > 0){
+        let this_page = _this.current_page;
+        this_page--;
+        _this.$store.dispatch("set_current_page", this_page);
+        console.log(_this.current_page);
+        
+        axios.get(this.routes.data_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: "get_next_page",
+            page: _this.current_page
+          }
+        }).then(function (response) {
+          console.log(response.data);
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.has_nextPage = response.data.has_nextPage;
+          if(_this.current_page === 0){
+            _this.$eventHub.$emit("disable_prevBtn", true);
+          }
+          _this.$eventHub.$emit("disable_nxtBtn", false);
+        }).catch(error => {
+          console.log(error);
+          alert("somthing went wrong");
+        });
+      }
+      
     });
   }
-});
+};
 </script>
 
 
