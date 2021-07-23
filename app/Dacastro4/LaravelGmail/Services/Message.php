@@ -106,15 +106,14 @@ class Message
   public function listLabels()
   {
     return $this->service->users_labels->listUsersLabels('me');
-    // return $this->service->users_messages->get('me', $id);
   }
 
   /**
-	 * Returns object info on $label
+	 * Returns object info on passed label
 	 *
    * @param  string  $label
    * 
-	 * @return object
+	 * @return array|null
 	 */
   public function getLabel($label)
   {
