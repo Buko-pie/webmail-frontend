@@ -5,6 +5,7 @@ namespace App\Dacastro4\LaravelGmail\Traits;
 use App\Dacastro4\LaravelGmail\Services\Message\Mail;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
+use Google_Service_Gmail_MessagePart;
 use Swift_Attachment;
 use Swift_Message;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
@@ -407,5 +408,5 @@ trait Replyable
 		return $this;
 	}
 
-	protected abstract function setMessage($message);
+	protected abstract function setMessage(\Google_Service_Gmail_Message $message);
 }
