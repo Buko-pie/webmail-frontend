@@ -13,7 +13,7 @@
     <ejs-button ref="btn_Oldest" @click.native="btnOldest" iconCss="fas fa-angle-double-right" cssClass="e-round shadow-none" ></ejs-button>
   </ejs-tooltip>
   <div class="flex items-center justify-center p-2 ml-auto">
-    <!-- <p class="text-sm">1 - 50 ({{ inbox_items }})</p> -->
+    <p class="text-sm">1 - 50</p>
   </div>
 </div>
 </template>
@@ -50,7 +50,7 @@ export default({
   
   methods:{
     btnNewest(){
-      console.log("btnNewest");
+      this.$eventHub.$emit("refresh_inbox");
     },
 
     btnPrev(){

@@ -202,7 +202,7 @@ export default{
         // _this.viewData = formatDate(response.data.repackaged_data);
         _this.email_count = response.data.inbox_items_length;
         _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        console.log(_this.max_pages);
+        console.log(response.data);
         console.log(_this.email_count);
         _this.$store.dispatch("set_max_page", Math.ceil(response.data.inbox_items_length / 50));
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
@@ -420,13 +420,19 @@ export default{
     contextMenuOpen(args){
       //On Context Menu Open
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
-      if(!args.rowInfo.rowData.read){
-        contextMenuObj.showItems(["Mark as read"]);
-        contextMenuObj.hideItems(["Mark as unread"]);
+      console.log(contextMenuObj);
+      if(args.rowInfo.rowData){
+        if(!args.rowInfo.rowData.read){
+          contextMenuObj.showItems(["Mark as read"]);
+          contextMenuObj.hideItems(["Mark as unread"]);
+        }else{
+          contextMenuObj.showItems(["Mark as unread"]);
+          contextMenuObj.hideItems(["Mark as read"]);
+        }
       }else{
-        contextMenuObj.showItems(["Mark as unread"]);
-        contextMenuObj.hideItems(["Mark as read"]);
+
       }
+      
     },
 
     rowSelected(args){
@@ -642,7 +648,6 @@ export default{
     });
 
     this.$eventHub.$on("page_next", (e) =>{
-      //========== This part is still WIP ==========
       if(_this.has_nextPage){
         let this_page = _this.current_page;
         this_page++;
@@ -677,7 +682,6 @@ export default{
     });
 
     this.$eventHub.$on("page_prev", (e) =>{
-      //========== This part is still WIP ==========
       if(_this.current_page > 0){
         let this_page = _this.current_page;
         this_page--;
