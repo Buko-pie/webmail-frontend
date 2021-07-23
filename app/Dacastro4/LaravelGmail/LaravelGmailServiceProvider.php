@@ -1,6 +1,6 @@
 <?php
 
-namespace Dacastro4\LaravelGmail;
+namespace App\Dacastro4\LaravelGmail;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;

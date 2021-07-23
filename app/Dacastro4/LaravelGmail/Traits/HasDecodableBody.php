@@ -1,6 +1,6 @@
 <?php
 
-namespace Dacastro4\LaravelGmail\Traits;
+namespace App\Dacastro4\LaravelGmail\Traits;
 
 trait HasDecodableBody
 {

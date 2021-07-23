@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 class WebmailController extends Controller
 {

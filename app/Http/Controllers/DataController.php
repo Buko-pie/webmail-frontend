@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
 
 use App\DummyData;
-use Dacastro4\LaravelGmail\Facade\LaravelGmail;
-use Dacastro4\LaravelGmail\Services\Message\Mail;
-use Dacastro4\LaravelGmail\Services\Message\Attachment;
+use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use App\Dacastro4\LaravelGmail\Services\Message\Mail;
+use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 
 class DataController extends Controller {
 
