@@ -169,7 +169,8 @@
 
           <a @click="importantOnly" class="sidebar_items" href="#">
             <div class="sidebar_icons">
-              <i class="fas fa-thumbtack text-lg"></i>
+              <!-- <i class="fas fa-thumbtack text-lg"></i> -->
+              <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
             </div>
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
