@@ -20,10 +20,24 @@ class DataController extends Controller {
             $repackaged_data = [];
             $inbox_items_length = null;
             $labels = null;
+            $user_labels = null;
 
             if ($request['option'] == 'get_all') {
                 //GENERAL INBOX
-                $labels = LaravelGmail::message()->listLabels();
+                $labels = LaravelGmail::message()->listLabels()->labels;
+                $labels = array_slice($labels, 14);
+                $user_labels = [];
+
+                foreach ($labels as $label) {
+                    $user_labels[] = [
+                      'id'                    => $label->id,
+                      'text'                  => $label->name,
+                      'type'                  => $label->type,
+                      'labelListVisibility'   => $label->labelListVisibility,
+                      'messageListVisibility' => $label->messageListVisibility,
+                      'color'                 => $label->color == null ? ['backgroundColor' => '#000000', 'textColor' => '#ffffff'] : $label->color
+                    ];
+                }
                 $inbox = LaravelGmail::message()->getLabel('INBOX');
                 
                 // $formatEmailList = Mail::formatEmailList($emails);
@@ -94,11 +108,11 @@ class DataController extends Controller {
                     'repackaged_data'    => $repackaged_data,
                     'has_nextPage'       => $gmail_data->hasNextPage(),
                     'inbox_items_length' => $inbox_items_length,
-                    'labels'             => $labels,
-                    'inbox_info'               => $inbox,
+                    'labels'             => $user_labels,
+                    'inbox_info'         => $inbox,
                 ], 200);
             } else {
-                return response()->json(['error_msg' => 'Nothing Found'], 400);
+                return response()->json(['error_msg' => 'Nothing Found'], 404);
             }
         }
     }
@@ -326,6 +340,7 @@ class DataController extends Controller {
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
                             'headers'    => $email->getHeaders(),
+                            'labels'     => $email->getLabels(),
                             'threadId'   => $email->getThreadId(),
                         ];
                         // $thread = LaravelGmail::message()->get($email_data['threadId']);
