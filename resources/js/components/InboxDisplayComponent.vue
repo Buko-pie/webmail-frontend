@@ -199,20 +199,19 @@ export default{
           option: "get_all"
         }
       }).then(function (response) {
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        // _this.email_count = response.data.inbox_items_length;
-        console.log(response.data);
-        // console.log(_this.email_count);
+        let payload = response.data;
+        console.log(payload);
 
-        _this.$store.dispatch("set_max_page", Math.ceil(response.data.inbox_items_length / 50));
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        _this.$store.dispatch("set_max_page", Math.ceil(payload.inbox_items_length / 50));
+        _this.$store.dispatch("set_email_batch", formatDate(payload.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", payload.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", payload.inbox_info.messagesTotal);
+        _this.$store.dispatch("set_user_labels", payload.labels)
         
         _this.$eventHub.$emit("page_change");
 
-        _this.has_nextPage = response.data.has_nextPage;
-        if(!response.data.has_nextPage){
+        _this.has_nextPage = payload.has_nextPage;
+        if(!payload.has_nextPage){
           _this.$eventHub.$emit("disable_nxtBtn", true);
         }
       }).catch(error => {
