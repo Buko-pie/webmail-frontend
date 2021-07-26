@@ -18,6 +18,7 @@ export const store = new Vuex.Store({
     inbox_total: 0,
     username: null,
     user_email: null,
+    user_labels: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
@@ -71,6 +72,11 @@ export const store = new Vuex.Store({
 
     set_user_email(state, payload){
       state.user_email = payload
+    },
+
+    set_user_labels(state, payload){
+      payload.sort((a,b) => (a.text > b.text) ? 1 : ((b.text > a.text) ? -1 : 0));
+      state.user_labels = payload;
     },
 
     set_user_profile_photo(state, payload){
@@ -157,6 +163,10 @@ export const store = new Vuex.Store({
 
     set_user_email(state, payload){
       state.commit("set_user_email", payload);
+    },
+
+    set_user_labels(state, payload){
+      state.commit("set_user_labels", payload);
     },
 
     set_user_profile_photo(state, payload){
