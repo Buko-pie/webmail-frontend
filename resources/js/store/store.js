@@ -10,13 +10,15 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
-    current_inbox: 'inbox',
+    current_inbox: 'INBOX',
     email_batch: null,
     current_page: 0,
     max_page: 0,
     inbox_items: 0,
+    inbox_total: 0,
     username: null,
     user_email: null,
+    user_labels: null,
     user_profile_photo: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
@@ -64,8 +66,17 @@ export const store = new Vuex.Store({
       state.inbox_items = payload;
     },
 
+    set_inbox_total(state, payload){
+      state.inbox_total = payload
+    },
+
     set_user_email(state, payload){
       state.user_email = payload
+    },
+
+    set_user_labels(state, payload){
+      payload.sort((a,b) => (a.text > b.text) ? 1 : ((b.text > a.text) ? -1 : 0));
+      state.user_labels = payload;
     },
 
     set_user_profile_photo(state, payload){
@@ -146,8 +157,16 @@ export const store = new Vuex.Store({
       state.commit("set_inbox_items", payload);
     },
 
+    set_inbox_total(state, payload){
+      state.commit("set_inbox_total", payload);
+    },
+
     set_user_email(state, payload){
       state.commit("set_user_email", payload);
+    },
+
+    set_user_labels(state, payload){
+      state.commit("set_user_labels", payload);
     },
 
     set_user_profile_photo(state, payload){

@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
 
 use App\DummyData;
-use Dacastro4\LaravelGmail\Facade\LaravelGmail;
-use Dacastro4\LaravelGmail\Services\Message\Mail;
-use Dacastro4\LaravelGmail\Services\Message\Attachment;
+use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use App\Dacastro4\LaravelGmail\Services\Message\Mail;
+use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 
 class DataController extends Controller {
 
@@ -19,10 +19,26 @@ class DataController extends Controller {
             $user = LaravelGmail::user();
             $repackaged_data = [];
             $inbox_items_length = null;
+            $labels = null;
+            $user_labels = null;
 
             if ($request['option'] == 'get_all') {
-                // $labels = LaravelGmail::message()->listLabels();
-                // $inbox = LaravelGmail::message()->getLabel('INBOX');
+                //GENERAL INBOX
+                $labels = LaravelGmail::message()->listLabels()->labels;
+                $labels = array_slice($labels, 14);
+                $user_labels = [];
+
+                foreach ($labels as $label) {
+                    $user_labels[] = [
+                      'id'                    => $label->id,
+                      'text'                  => $label->name,
+                      'type'                  => $label->type,
+                      'labelListVisibility'   => $label->labelListVisibility,
+                      'messageListVisibility' => $label->messageListVisibility,
+                      'color'                 => $label->color == null ? ['backgroundColor' => '#000000', 'textColor' => '#ffffff'] : $label->color
+                    ];
+                }
+                $inbox = LaravelGmail::message()->getLabel('INBOX');
                 
                 // $formatEmailList = Mail::formatEmailList($emails);
                 // while($emails->hasNextPage()){
@@ -39,8 +55,9 @@ class DataController extends Controller {
                 $inbox_items_length = count($gmail_data);
 
             } else if ($request['option'] == 'get_next_page') {
-                $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
-
+                //PAGINATION INBOX
+                $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take(50)->preload()->all();
+                $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
                 if($gmail_data->hasNextPage()){
                   for ($i = 1; $i <= $request['page']; $i++) {
                     $gmail_data = $gmail_data->next();
@@ -50,19 +67,22 @@ class DataController extends Controller {
                 $inbox_items_length = count($gmail_data);
 
             } else if ($request['option'] == 'starred_only') {
-                // $emails = LaravelGmail::message()->in('inbox')->all();
-                
-                $gmail_data = LaravelGmail::message()->in('starred')->take(50)->preload()->all();
+                //STARRED INBOX
+                $gmail_data = LaravelGmail::message()->in('STARRED')->take(50)->preload()->all();
+                $inbox = LaravelGmail::message()->getLabel('STARRED');
+
                 $inbox_items_length = count($gmail_data);
             } else if ($request['option'] == 'important_only') {
-                // $emails = LaravelGmail::message()->in('inbox')->all();
-                
-                $gmail_data = LaravelGmail::message()->in('important')->take(50)->preload()->all();
+                //IMPORTANT INBOX
+                $gmail_data = LaravelGmail::message()->in('IMPORTANT')->take(50)->preload()->all();
+                $inbox = LaravelGmail::message()->getLabel('IMPORTANT');
+
                 $inbox_items_length = count($gmail_data);
             } else if ($request['option'] == 'sent_emails') {
-                // $emails = LaravelGmail::message()->in('inbox')->all();
-                
-                $gmail_data = LaravelGmail::message()->in('sent')->take(50)->preload()->all();
+                //SENT INBOX
+                $gmail_data = LaravelGmail::message()->in('SENT')->take(50)->preload()->all();
+                $inbox = LaravelGmail::message()->getLabel('SENT');
+
                 $inbox_items_length = count($gmail_data);
             }
 
@@ -88,9 +108,11 @@ class DataController extends Controller {
                     'repackaged_data'    => $repackaged_data,
                     'has_nextPage'       => $gmail_data->hasNextPage(),
                     'inbox_items_length' => $inbox_items_length,
+                    'labels'             => $user_labels,
+                    'inbox_info'         => $inbox,
                 ], 200);
             } else {
-                return response()->json(['error_msg' => 'Nothing Found'], 400);
+                return response()->json(['error_msg' => 'Nothing Found'], 404);
             }
         }
     }
@@ -318,6 +340,7 @@ class DataController extends Controller {
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
                             'headers'    => $email->getHeaders(),
+                            'labels'     => $email->getLabels(),
                             'threadId'   => $email->getThreadId(),
                         ];
                         // $thread = LaravelGmail::message()->get($email_data['threadId']);

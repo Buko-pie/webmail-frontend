@@ -1,14 +1,18 @@
 <template>
 <div id="email_html_body" class="p-5" :start="start">
-  <div v-if="email_data" class="flex">
-    <div>
-      <p class="font-bold text-base">{{ email_data.from.name }}</p>
-      <p class="text-gray-500 text-sm"> {{ email_data.from.email }} </p>
-    </div>
+  <div v-if="email_data">
+    <h1 class="font-bold text-xl pb-4">{{ email_data.subject }}</h1>
+    <div class="flex">
+      <div>
+        <p class="font-bold text-base">{{ email_data.from.name }} <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span></p>
+        <p>{{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}</p>
+      </div>
 
-    <div class="ml-auto">
-      {{ email_date_display }}
+      <div class="ml-auto">
+        {{ email_date_display }}
+      </div>
     </div>
+    
   </div>
   <div class="divide-y divide-gray-500 mt-5 pt-3">
     <div v-html="email_body_html">
@@ -39,8 +43,8 @@
     <div :class="[ show_attachment ? 'col-span-3' : 'col-span-4']">
       <div class="w-full">
         <div class="flex w-full">
-          <div>
-            <div class="flex items-center">
+          <div class="w-full">
+            <div class="flex items-center w-full">
               <a class="text-sm text-gray-500">To:</a>
               <vue-tags-input
                 class="tags-no-broders"

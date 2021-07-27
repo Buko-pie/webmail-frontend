@@ -12,8 +12,8 @@
   <ejs-tooltip content="Oldest" position="BottomCenter">
     <ejs-button ref="btn_Oldest" @click.native="btnOldest" iconCss="fas fa-angle-double-right" cssClass="e-round shadow-none" ></ejs-button>
   </ejs-tooltip>
-  <div class="flex items-center justify-center p-2 ml-auto">
-    <p class="text-sm">1 - 50</p>
+  <div class="flex items-center justify-center p-2 ml-auto" :inbox_items="inbox_items">
+    <p class="text-sm">{{ first_item }} - {{ last_item }} ({{ inbox_total }})</p>
   </div>
 </div>
 </template>
@@ -25,10 +25,19 @@ export default({
     return{
       btn_prev: true,
       btn_next: false,
+      first_item: 1,
+      last_item: 0,
+      last_num: 0,
+      op: null,
     };
   },
 
   computed:{
+    // start(){
+    //   this.last_item = this.$store.state.inbox_items;
+    //   console.log('ssssstart');
+    // },
+
     current_page(){
       return this.$store.state.current_page;
     },
@@ -39,13 +48,15 @@ export default({
 
     inbox_items(){
       return this.$store.state.inbox_items;
+    },
+
+    inbox_total(){
+      return this.$store.state.inbox_total;
     }
   },
 
   mounted(){
     console.log("pagination mounted");
-    console.log(this.current_page);
-    console.log(this.max_page);
   },
   
   methods:{
@@ -54,12 +65,12 @@ export default({
     },
 
     btnPrev(){
-      console.log("btnPrev");
+      this.op = "page_prev";
       this.$eventHub.$emit("page_prev");
     },
 
     btnNext(){
-      console.log("btnNext");
+      this.op = "page_next";
       this.$eventHub.$emit("page_next");
     },
 
@@ -70,13 +81,24 @@ export default({
 
   created(){
     this.$eventHub.$on("disable_nxtBtn", (e)=>{
-      console.log(e);
       this.btn_next = e;
     });
 
     this.$eventHub.$on("disable_prevBtn", (e)=>{
-      console.log(e);
       this.btn_prev = e;
+    });
+
+    this.$eventHub.$on("page_change", (e)=>{
+      if(e === "page_next"){
+        this.first_item = this.last_item + 1;
+        this.last_item += this.inbox_items;
+        this.last_num = this.inbox_items;
+      }else if(e === "page_prev"){
+        this.first_item -= this.inbox_items;
+        this.last_item -= this.last_num;
+      }else{
+        this.last_item = this.inbox_items;
+      }
     });
   }
 });
