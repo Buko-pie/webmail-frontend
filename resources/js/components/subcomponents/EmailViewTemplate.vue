@@ -1,19 +1,35 @@
 <template>
 <div id="email_html_body" class="p-5" :start="start">
   <div v-if="email_data">
-    <h1 class="font-bold text-xl pb-4">{{ email_data.subject }}</h1>
+    <div class="flex pb-4">
+      <p class="font-bold text-xl">
+        {{ email_data.subject }} 
+      </p>
+      <div class="object-none content-center self-center pl-3 pb-3">
+        <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
+      </div>
+      <ejs-button ref="" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
+    </div>
+    
     <div class="flex">
       <div>
         <p class="font-bold text-base">{{ email_data.from.name }} 
           <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span>
+        </p>
+        <p>
+          {{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}{{ email_data.cc ? ", " + email_data.cc : ""}}
           <ejs-button ref="btn_email_data" @click.native="btnViewEmailData" iconCss="fas fa-caret-down" cssClass="e-round shadow-none" class=""></ejs-button>
         </p>
-        <p>{{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}{{ email_data.cc ? ", " + email_data.cc : ""}}</p>
         
       </div>
 
       <div class="ml-auto">
-        {{ email_date_display }}
+        <p>
+          {{ email_date_display }}
+          <ejs-button ref="" iconCss="far fa-star" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" class=""></ejs-button>
+        </p>
       </div>
     </div>
     

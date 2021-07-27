@@ -390,19 +390,34 @@
     :class="[!dropdown_btn_email_data ? 'hidden' : 'block']" 
     :style="{
       top: dropdown_label.top + 'px', 
-      left: dropdown_label.left + 'px', 
-      'z-index': dropdown_zIndex
+      left: dropdown_label.left + 'px',
+      'width': '35%',
+      'z-index': dropdown_zIndex,
     }"
   >
-    <div class="grid grid-cols-3">
-      <p>from:</p>
-      <p>reply-to:</p>
-      <p>to:</p>
-      <p>date:</p>
-      <p>subject:</p>
-      <p>from:</p>
-      <p>from:</p>
-      <p>from:</p>
+    <div v-if="email_data" class="grid grid-cols-4 gap-2 p-3">
+      <div class="text-right">
+        <p>from:</p>
+        <p>reply-to:</p>
+        <p>to:</p>
+        <p v-if="email_data.cc">cc:</p>
+        <p v-if="email_data.bcc">bcc:</p>
+        <p>date:</p>
+        <p>subject:</p>
+        <p>mailed-by:</p>
+        <p>signed-by:</p>
+      </div>
+      <div class="col-span-3 pl-2">
+        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+        <p>{{ email_data.to.email ? email_data.to.email : email_data.to.name }}</p>
+        <p>{{ email_data.cc ? email_data.cc : "" }}</p>
+        <p>{{ email_data.bcc ? email_data.bcc : "" }}</p>
+        <p>{{ email_data.date }}</p>
+        <p>{{ email_data.subject }}</p>
+        <p>{{ email_data.arc_auth }}</p>
+        <p>{{ email_data.arc_auth }}</p>
+      </div>
     </div>
   </div>  
 </div>
@@ -593,7 +608,7 @@ export default Vue.extend({
       attachment_path: null,
 
       dropElement: '.control-fluid',
-
+      email_date_display: null,
     }
   },
 
@@ -656,7 +671,13 @@ export default Vue.extend({
     },
 
     email_data(){
-      return this.$store.state.selected_email_data;
+      let data = this.$store.state.selected_email_data
+
+      if(data !== null){
+        this.email_date_display = moment(data.date).format("LLL");
+      }
+
+      return data;
     },
   },
 
