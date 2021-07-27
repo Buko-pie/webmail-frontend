@@ -394,8 +394,15 @@
       'z-index': dropdown_zIndex
     }"
   >
-    <div class="">
-     test
+    <div class="grid grid-cols-3">
+      <p>from:</p>
+      <p>reply-to:</p>
+      <p>to:</p>
+      <p>date:</p>
+      <p>subject:</p>
+      <p>from:</p>
+      <p>from:</p>
+      <p>from:</p>
     </div>
   </div>  
 </div>
