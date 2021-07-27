@@ -23,6 +23,7 @@ export const store = new Vuex.Store({
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
     dropdown_btn_user: false,
+    dropdown_btn_email_data: false,
     selected_items_count: 0,
     selected_items_dataID: [],
     selected_item_unread: 0,
@@ -115,6 +116,10 @@ export const store = new Vuex.Store({
       state.dropdown_btn_user = payload;
     },
 
+    dropdown_btn_email_data_toggle(state, payload){
+      state.dropdown_btn_email_data = payload;
+    },
+
     set_splitter_height(state, payload){
       state.splitter_height = payload;
     },
@@ -203,6 +208,10 @@ export const store = new Vuex.Store({
 
     dropdown_btn_user_toggle(state, payload){
       state.commit("dropdown_btn_user_toggle", payload);
+    },
+
+    dropdown_btn_email_data_toggle(state, payload){
+      state.commit("dropdown_btn_email_data_toggle", payload);
     },
 
     set_splitter_height(state, payload){

@@ -381,7 +381,22 @@
     </div>
   </div>
   
-    
+  <!-- Email details dropdown -->
+  <div 
+    v-click-outside="dropdownHideEmailData"
+    ref="email_data_dropdown"
+    class="custom-dropdown-user bg-white p-3" 
+    :class="[!dropdown_btn_email_data ? 'hidden' : 'block']" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px', 
+      'z-index': dropdown_zIndex
+    }"
+  >
+    <div class="">
+     test
+    </div>
+  </div>  
 </div>
 </template>
 
@@ -623,10 +638,18 @@ export default Vue.extend({
       return this.$store.state.dropdown_btn_user;
     },
 
+    dropdown_btn_email_data(){
+      return this.$store.state.dropdown_btn_email_data;
+    },
+
     user_labels(){
       console.log(this.$store.state.user_labels);
       return this.$store.state.user_labels;
-    }
+    },
+
+    email_data(){
+      return this.$store.state.selected_email_data;
+    },
   },
 
   components:{
@@ -717,6 +740,10 @@ export default Vue.extend({
 
     dropdownHideUser(){
       this.$store.dispatch("dropdown_btn_user_toggle", false);
+    },
+
+    dropdownHideEmailData(){
+      this.$store.dispatch("dropdown_btn_email_data_toggle", false);
     },
 
     modalShow(){
@@ -1107,12 +1134,16 @@ export default Vue.extend({
     let _this = this;
 
     this.$eventHub.$on("show_custom_dropdown", (e) => {
+      console.log(e);
       // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
       if(e.button === "btn_labels"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
       }else if(e.button === "btn_move"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left);
+      }else if(e.button === "btn_email_data"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
       }else if(e.button === "user_dropdown"){

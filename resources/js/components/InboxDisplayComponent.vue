@@ -196,7 +196,8 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          option: "get_all"
+          inbox: "INBOX",
+          option: "first_run"
         }
       }).then(function (response) {
         let payload = response.data;
@@ -639,7 +640,7 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          option: "get_all"
+          inbox: this.current_inbox
         }
       }).then(function (response) {
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
@@ -653,6 +654,7 @@ export default{
       });
     });
 
+    //Next Page
     this.$eventHub.$on("page_next", (e) =>{
       console.log(_this.current_inbox);
       if(_this.has_nextPage){
