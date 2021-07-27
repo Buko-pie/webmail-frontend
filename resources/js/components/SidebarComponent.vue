@@ -169,7 +169,8 @@
 
           <a @click="goToInbox('IMPORTANT')" class="sidebar_items" href="#">
             <div class="sidebar_icons">
-              <i class="fas fa-thumbtack text-lg"></i>
+              <!-- <i class="fas fa-thumbtack text-lg"></i> -->
+              <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
             </div>
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
@@ -955,6 +956,10 @@ export default Vue.extend({
       }).then(function (response) {
         _this.$store.dispatch("set_current_inbox", "INBOX");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+
+        _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
