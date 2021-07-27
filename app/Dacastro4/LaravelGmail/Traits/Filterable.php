@@ -144,6 +144,20 @@ trait Filterable
 		return $this;
 	}
 
+  /**
+	 * Filters emails by label
+	 *
+	 * @param $label
+	 *
+	 * @return self|Message
+	 */
+	public function labeled( $label )
+	{
+		$this->add( "label:{$label}" );
+
+		return $this;
+	}
+
 	/**
 	 * Determines if the email has attachments
 	 *

@@ -153,35 +153,35 @@
           </button>
         </div>
         <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-          <a @click="getInbox" class="sidebar_items_selected" href="#">
+          <a @click="goToInbox('INBOX')" class="sidebar_items_selected" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Inbox</p>
           </a>
 
-          <a @click="starredOnly" class="sidebar_items" href="#">
+          <a @click="goToInbox('STARRED')" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="far fa-star text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="importantOnly" class="sidebar_items" href="#">
+          <a @click="goToInbox('IMPORTANT')" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-thumbtack text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a @click="sentEMails" class="sidebar_items" href="#">
+          <a @click="goToInbox('SENT')" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Sent</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="goToInbox('DRAFT')" class="sidebar_items" href="#">
             <div class="sidebar_icons">
               <i class="far fa-file text-lg"></i>
             </div>
@@ -230,7 +230,7 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
-            <a v-for="label in user_labels" :key="label.id" class="sidebar_items" href="#">
+            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" class="sidebar_items" href="#">
               <div class="sidebar_icons">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
@@ -1012,6 +1012,56 @@ export default Vue.extend({
       });
     },
 
+    goToInbox(args){
+      console.log(args);
+
+      let _this = this;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          inbox: args
+        }
+      }).then(function (response) {
+        console.log(response);
+        _this.$store.dispatch("set_current_inbox", args);
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    goToLabel(name, id){
+      console.log(name);
+
+      let _this = this;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          inbox: name,
+          label_id: id,
+          option: "labeled"
+        }
+      }).then(function (response) {
+        console.log(response);
+        _this.$store.dispatch("set_current_inbox", name);
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
     selectMoveToOps(args){
       console.log(args);
       this.dropdownHideMoveTo();
@@ -1068,7 +1118,6 @@ export default Vue.extend({
       }else if(e.button === "user_dropdown"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left - 298);
-        console.log(this.$refs.user_dropdown.clientWidth);
       }
     });
 
