@@ -7,6 +7,7 @@ use App\Dacastro4\LaravelGmail\Services\Message\Mail;
 use App\Dacastro4\LaravelGmail\Traits\Filterable;
 use App\Dacastro4\LaravelGmail\Traits\SendsParameters;
 use Google_Service_Gmail;
+use Google_Service_Gmail_BatchModifyMessagesRequest;
 
 class Message
 {
@@ -38,6 +39,7 @@ class Message
 	{
 		$this->client = $client;
 		$this->service = new Google_Service_Gmail($client);
+    $this->batchModifyRequest = new Google_Service_Gmail_BatchModifyMessagesRequest();
 	}
 
 	/**
@@ -97,28 +99,6 @@ class Message
 	{
 		return !!$this->pageToken;
 	}
-
-  /**
-	 * Returns object list of user labels
-	 *
-	 * @return object
-	 */
-  public function listLabels()
-  {
-    return $this->service->users_labels->listUsersLabels('me');
-  }
-
-  /**
-	 * Returns object info on passed label
-	 *
-   * @param  string  $label
-   * 
-	 * @return array|null
-	 */
-  public function getLabel($label)
-  {
-    return $this->service->users_labels->get('me', $label);
-  }
 
 	/**
 	 * Limit the messages coming from the queryxw
@@ -221,4 +201,44 @@ class Message
 
 		return $responseOrRequest;
 	}
+
+  //==================ADDED CODES==================
+
+    /**
+	 * Returns object list of user labels
+	 *
+	 * @return object
+	 */
+  public function listLabels()
+  {
+    return $this->service->users_labels->listUsersLabels('me');
+  }
+
+  /**
+	 * Returns object info on passed label
+	 *
+   * @param  string  $label
+   * 
+	 * @return array|null
+	 */
+  public function getLabel($label)
+  {
+    return $this->service->users_labels->get('me', $label);
+  }
+
+
+  /**
+	 * Archives emails by removing INBOX label
+	 *
+   * @param  array  $ids
+   * 
+	 * @return null
+	 */
+  public function batchArchive($ids){
+    // $this->client->setUseBatch(true);
+    $this->batchModifyRequest->setRemoveLabelIds('INBOX');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
 }

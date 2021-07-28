@@ -15,7 +15,7 @@ use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 class DataController extends Controller {
 
     public function get_dummy_data(Request $request) {
-        $items = $request->items ?? 100;
+        $items = $request->items ?? 50;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
             $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
@@ -24,11 +24,13 @@ class DataController extends Controller {
                 $repackaged_data = [];
                 $inbox_items_length = null;
                 $labels = null;
+                $all_labels = null;
                 $user_labels = null;
 
                 if ($request['option'] == 'first_run') {
                     //GENERAL INBOX
                     $labels = LaravelGmail::message()->listLabels()->labels;
+                    $all_labels = $labels;
                     $labels = array_slice($labels, 14);
                     $user_labels = [];
 
@@ -39,7 +41,7 @@ class DataController extends Controller {
                           'type'                  => $label->type,
                           'labelListVisibility'   => $label->labelListVisibility,
                           'messageListVisibility' => $label->messageListVisibility,
-                          'color'                 => $label->color == null ? ['backgroundColor' => '#000000', 'textColor' => '#ffffff'] : $label->color
+                          'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff']
                         ];
                     }
                     $inbox = LaravelGmail::message()->getLabel('INBOX');
@@ -111,6 +113,7 @@ class DataController extends Controller {
                     'has_nextPage'       => $gmail_data->hasNextPage(),
                     'inbox_items_length' => $inbox_items_length,
                     'labels'             => $user_labels,
+                    'labels_all'         => $all_labels,
                     'inbox_info'         => $inbox,
                 ], 200);
 
@@ -400,6 +403,8 @@ class DataController extends Controller {
                     }
 
                     return response()->json(['email' => $email], 200);
+                } else if($request['column'] == 'archive') {
+                  $email->removeLabel('INBOX');
                 }
             } else {
                 return response()->json(['message' => 'email not found'], 404);
@@ -408,7 +413,10 @@ class DataController extends Controller {
     }
 
     public function toggle_many_dummy_data(Request $request) {
-        switch ($request['option']) {
+        $option = $request['option'];
+        $result = null;
+        $response = null;
+        switch ($option) {
             case 0:
                 //Mark as read
 
@@ -454,12 +462,18 @@ class DataController extends Controller {
                 break;
 
             case 6:
-                //Mute
+                //Mute - disabled
                 break;
 
             case 7:
-                //Forward as attachment
+                //Forward as attachment - disabled
 
+                break;
+            
+            case 8:
+                //Archive email
+                $result = 'archive';
+                $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
                 break;
 
             default:
@@ -469,6 +483,8 @@ class DataController extends Controller {
                 ]);
                 break;
         }
+
+        return response()->json([$result, $response], 200);  
     }
 
   public function delete_mail(Request $request) {

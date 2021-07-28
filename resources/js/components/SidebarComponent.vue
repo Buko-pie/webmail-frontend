@@ -153,21 +153,21 @@
           </button>
         </div>
         <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-          <a @click="goToInbox('INBOX')" class="sidebar_items_selected" href="#">
+          <a @click="goToInbox('INBOX')" :class="[ current_inbox === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Inbox</p>
           </a>
 
-          <a @click="goToInbox('STARRED')" class="sidebar_items" href="#">
+          <a @click="goToInbox('STARRED')" :class="[ current_inbox === 'STARRED' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-star text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="goToInbox('IMPORTANT')" class="sidebar_items" href="#">
+          <a @click="goToInbox('IMPORTANT')" :class="[ current_inbox === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <!-- <i class="fas fa-thumbtack text-lg"></i> -->
               <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
@@ -175,21 +175,21 @@
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a @click="goToInbox('SENT')" class="sidebar_items" href="#">
+          <a @click="goToInbox('SENT')" :class="[ current_inbox === 'SENT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Sent</p>
           </a>
 
-          <a @click="goToInbox('DRAFT')" class="sidebar_items" href="#">
+          <a @click="goToInbox('DRAFT')" :class="[ current_inbox === 'DELETE' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-file text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Drafts</p>
           </a>
 
-          <a @click="goToInbox('TRASH')" class="sidebar_items" href="#">
+          <a @click="goToInbox('TRASH')" :class="[ current_inbox === 'TRASH' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fa fa-trash text-lg"></i>
             </div>
@@ -239,7 +239,7 @@
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
             <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" class="sidebar_items" href="#">
-              <div class="sidebar_icons">
+              <div :class="[ current_inbox === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
                 />
@@ -646,6 +646,10 @@ export default Vue.extend({
         removeUrl: routes.remove_attachment
       }
       this.routes = routes;
+    },
+
+    current_inbox(){
+      return this.$store.state.current_inbox;
     },
     
     category_toggles(){
