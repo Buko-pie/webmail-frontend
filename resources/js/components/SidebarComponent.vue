@@ -238,8 +238,8 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
-            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" class="sidebar_items" href="#">
-              <div :class="[ current_inbox === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]">
+            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" :class="[ current_inbox === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+              <div class="sidebar_icons">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
                 />
