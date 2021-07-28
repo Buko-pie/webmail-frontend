@@ -189,6 +189,13 @@
             <p class="sidebar_text" v-show="toggled">Drafts</p>
           </a>
 
+          <a @click="goToInbox('TRASH')" class="sidebar_items" href="#">
+            <div class="sidebar_icons">
+              <i class="fa fa-trash text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Trash</p>
+          </a>
+
           <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-mail-bulk text-lg"></i>
@@ -627,6 +634,7 @@ export default Vue.extend({
         logging_out:          this.url_base + "/logging_out",
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
+        delete_mail:    this.url_base + "/delete_mail",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);

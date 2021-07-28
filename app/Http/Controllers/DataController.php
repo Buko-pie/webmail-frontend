@@ -15,11 +15,12 @@ use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 class DataController extends Controller {
 
     public function get_dummy_data(Request $request) {
+        $items = $request->items ?? 100;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
-            $check_empty = LaravelGmail::message()->labeled($request['inbox'])->take(1)->all();
+            $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
 
-            if(count($check_empty)){
+            if($check_empty){
                 $repackaged_data = [];
                 $inbox_items_length = null;
                 $labels = null;
@@ -53,14 +54,13 @@ class DataController extends Controller {
                     //     'labels' => $labels,
                     //     'inbox' => $inbox,
                     // ], 200);
-                    
-                    $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
+                    $gmail_data = LaravelGmail::message()->in('INBOX')->take($items)->preload()->all();
                     $inbox_items_length = count($gmail_data);
 
                 } else if ($request['option'] == 'get_next_page') {
                   //pagination
 
-                  $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take(50)->preload()->all();
+                  $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take($items)->preload()->all();
                   $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
                   if($gmail_data->hasNextPage()){
                     for ($i = 1; $i <= $request['page']; $i++) {
@@ -72,15 +72,17 @@ class DataController extends Controller {
 
                 } else if ($request['option'] == 'labeled') {
                   //get labeled emails
-                  $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take(50)->preload()->all();
+                  $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take($items)->preload()->all();
                   $inbox = LaravelGmail::message()->getLabel($request['label_id'] );
 
                   $inbox_items_length = count($gmail_data);
                   
                 } else {
                   //get emails through inbox/folders
-                  
-                  $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take(50)->preload()->all();
+                  $gmail_data = $check_empty;
+                  if(count($check_empty) > 0) {
+                    $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+                  }
                   $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
 
                   $inbox_items_length = count($gmail_data);
@@ -468,4 +470,9 @@ class DataController extends Controller {
                 break;
         }
     }
+
+  public function delete_mail(Request $request) {
+    $mail = LaravelGmail::message()->get($request->id);
+    $mail->sendToTrash();
+  }
 }

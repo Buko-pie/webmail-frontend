@@ -87,6 +87,7 @@ export default{
       menuItems:[
         { id: "mark_unread", text: "Mark as unread" },
         { id: "mark_read", text: "Mark as read" },
+        { id: "delete", text: "Delete" },
         // { text: "Add Label" }
       ],
       select_option: null,
@@ -333,6 +334,25 @@ export default{
         }).catch(error => {
           console.log(error);
           _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      } else if(args.item.id === "delete") {
+        axios.get(this.$store.state.routes.delete_mail,{
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            id: args.rowInfo.rowData.id
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
+        }).catch(error => {
+          console.log(error);
+          this.$notification.error("somthing went wrong", {  timer: 5 });
         });
       }
     },
