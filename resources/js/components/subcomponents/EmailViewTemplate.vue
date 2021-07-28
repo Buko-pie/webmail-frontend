@@ -1,15 +1,35 @@
 <template>
 <div id="email_html_body" class="p-5" :start="start">
   <div v-if="email_data">
-    <h1 class="font-bold text-xl pb-4">{{ email_data.subject }}</h1>
+    <div class="flex pb-4">
+      <p class="font-bold text-xl">
+        {{ email_data.subject }} 
+      </p>
+      <div class="object-none content-center self-center pl-3 pb-3">
+        <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
+      </div>
+      <ejs-button ref="" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
+    </div>
+    
     <div class="flex">
       <div>
-        <p class="font-bold text-base">{{ email_data.from.name }} <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span></p>
-        <p>{{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}</p>
+        <p class="font-bold text-base">{{ email_data.from.name }} 
+          <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span>
+        </p>
+        <p>
+          {{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}{{ email_data.cc ? ", " + email_data.cc : ""}}
+          <ejs-button ref="btn_email_data" @click.native="btnViewEmailData" iconCss="fas fa-caret-down" cssClass="e-round shadow-none" class=""></ejs-button>
+        </p>
+        
       </div>
 
       <div class="ml-auto">
-        {{ email_date_display }}
+        <p>
+          {{ email_date_display }}
+          <ejs-button ref="" iconCss="far fa-star" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" class=""></ejs-button>
+        </p>
       </div>
     </div>
     
@@ -135,6 +155,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
+import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 
 function formatDate(date) {
   let new_date = moment(date).format("LLL");
@@ -156,6 +177,7 @@ function validateEmails(emailArray){
   return results;
 }
 
+Vue.use(ButtonPlugin);
 Vue.use(VueNotification, {
   timer: 20
 });
@@ -228,6 +250,10 @@ export default Vue.extend({
 
     email_attachments(){
       return this.$store.state.selected_email_attachments;
+    },
+
+    dropdown_btn_email_data(){
+      return this.$store.state.dropdown_btn_email_data;
     }
   },
 
@@ -444,6 +470,20 @@ export default Vue.extend({
       args.postRawFile = false;
       args.currentRequest.setRequestHeader("Authorization", "Bearer " + this.csrf_token);
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
+    },
+
+    btnViewEmailData(){
+      let _this = this;
+
+      this.$eventHub.$emit("show_custom_dropdown", {
+        button: "btn_email_data",
+        top: this.$refs.btn_email_data.$el.getBoundingClientRect().top,
+        left: this.$refs.btn_email_data.$el.getBoundingClientRect().left
+      });
+
+      setTimeout(function() {
+        _this.$store.dispatch("dropdown_btn_email_data_toggle", !this.dropdown_btn_email_data);
+      }, 0);
     },
   }
 });

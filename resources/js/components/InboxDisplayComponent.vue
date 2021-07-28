@@ -87,6 +87,7 @@ export default{
       menuItems:[
         { id: "mark_unread", text: "Mark as unread" },
         { id: "mark_read", text: "Mark as read" },
+        { id: "delete", text: "Delete" },
         // { text: "Add Label" }
       ],
       select_option: null,
@@ -196,13 +197,14 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          option: "get_all"
+          inbox: "INBOX",
+          option: "first_run"
         }
       }).then(function (response) {
         let payload = response.data;
         console.log(payload);
 
-        _this.$store.dispatch("set_max_page", Math.ceil(payload.inbox_items_length / 50));
+        // _this.$store.dispatch("set_max_page", Math.ceil(payload.inbox_items_length / 50));
         _this.$store.dispatch("set_email_batch", formatDate(payload.repackaged_data));
         _this.$store.dispatch("set_inbox_items", payload.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", payload.inbox_info.messagesTotal);
@@ -333,6 +335,25 @@ export default{
           console.log(error);
           _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+      } else if(args.item.id === "delete") {
+        axios.get(this.$store.state.routes.delete_mail,{
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            id: args.rowInfo.rowData.id
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
+        }).catch(error => {
+          console.log(error);
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
       }
     },
 
@@ -425,6 +446,7 @@ export default{
 
     contextMenuOpen(args){
       //On Context Menu Open
+      console.log(args);
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
       console.log(contextMenuObj);
       if(args.rowInfo.rowData){
@@ -443,10 +465,17 @@ export default{
 
     rowSelected(args){
       this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
-
+      
       if(args.rowIndexes){
         this.selected_items_count = args.rowIndexes.length;
         this.$store.dispatch("set_selected_items_count", this.selected_items_count);
+        
+        // if(args.rowIndexes.length === this.inbox_items){
+        //   console.log('selected all');
+        //   console.log(args.rowIndexes.length + " = " + this.inbox_items);
+        // }
+      }else{
+        
       }
 
       if(args.data.length){
@@ -483,6 +512,7 @@ export default{
       if(args.rowIndexes){
         this.selected_items_count = this.selected_items_count - args.rowIndexes.length;
         this.$store.dispatch("set_selected_items_count", this.selected_items_count);
+        this.$store.dispatch("set_selected_all_items", false);
         
         if(args.data.length){
           console.log(args.data.length);
@@ -639,7 +669,7 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          option: "get_all"
+          inbox: this.current_inbox
         }
       }).then(function (response) {
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
@@ -653,6 +683,7 @@ export default{
       });
     });
 
+    //Next Page
     this.$eventHub.$on("page_next", (e) =>{
       console.log(_this.current_inbox);
       if(_this.has_nextPage){

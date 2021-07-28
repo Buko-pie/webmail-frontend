@@ -15,78 +15,82 @@ use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 class DataController extends Controller {
 
     public function get_dummy_data(Request $request) {
-        if (isset($request['option'])) {
+        $items = $request->items ?? 50;
+        if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
-            $repackaged_data = [];
-            $inbox_items_length = null;
-            $labels = null;
-            $user_labels = null;
+            $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
 
-            if ($request['option'] == 'get_all') {
-                //GENERAL INBOX
-                $labels = LaravelGmail::message()->listLabels()->labels;
-                $labels = array_slice($labels, 14);
-                $user_labels = [];
+            if($check_empty){
+                $repackaged_data = [];
+                $inbox_items_length = null;
+                $labels = null;
+                $all_labels = null;
+                $user_labels = null;
 
-                foreach ($labels as $label) {
-                    $user_labels[] = [
-                      'id'                    => $label->id,
-                      'text'                  => $label->name,
-                      'type'                  => $label->type,
-                      'labelListVisibility'   => $label->labelListVisibility,
-                      'messageListVisibility' => $label->messageListVisibility,
-                      'color'                 => $label->color == null ? ['backgroundColor' => '#000000', 'textColor' => '#ffffff'] : $label->color
-                    ];
-                }
-                $inbox = LaravelGmail::message()->getLabel('INBOX');
-                
-                // $formatEmailList = Mail::formatEmailList($emails);
-                // while($emails->hasNextPage()){
-                //   $emails->next();
-                //   $inbox_items_length = $inbox_items_length + count($emails);
-                // }
+                if ($request['option'] == 'first_run') {
+                    //GENERAL INBOX
+                    $labels = LaravelGmail::message()->listLabels()->labels;
+                    $all_labels = $labels;
+                    $labels = array_slice($labels, 14);
+                    $user_labels = [];
 
-                // return response()->json([
-                //     'labels' => $labels,
-                //     'inbox' => $inbox,
-                // ], 200);
-                
-                $gmail_data = LaravelGmail::message()->in('INBOX')->take(50)->preload()->all();
-                $inbox_items_length = count($gmail_data);
+                    foreach ($labels as $label) {
+                        $user_labels[] = [
+                          'id'                    => $label->id,
+                          'text'                  => $label->name,
+                          'type'                  => $label->type,
+                          'labelListVisibility'   => $label->labelListVisibility,
+                          'messageListVisibility' => $label->messageListVisibility,
+                          'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff']
+                        ];
+                    }
+                    $inbox = LaravelGmail::message()->getLabel('INBOX');
+                    
+                    // $formatEmailList = Mail::formatEmailList($emails);
+                    // while($emails->hasNextPage()){
+                    //   $emails->next();
+                    //   $inbox_items_length = $inbox_items_length + count($emails);
+                    // }
 
-            } else if ($request['option'] == 'get_next_page') {
-                //PAGINATION INBOX
-                $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take(50)->preload()->all();
-                $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
-                if($gmail_data->hasNextPage()){
-                  for ($i = 1; $i <= $request['page']; $i++) {
-                    $gmail_data = $gmail_data->next();
+                    // return response()->json([
+                    //     'labels' => $labels,
+                    //     'inbox' => $inbox,
+                    // ], 200);
+                    $gmail_data = LaravelGmail::message()->in('INBOX')->take($items)->preload()->all();
+                    $inbox_items_length = count($gmail_data);
+
+                } else if ($request['option'] == 'get_next_page') {
+                  //pagination
+
+                  $gmail_data = LaravelGmail::message()->in($request['inbox'] )->take($items)->preload()->all();
+                  $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+                  if($gmail_data->hasNextPage()){
+                    for ($i = 1; $i <= $request['page']; $i++) {
+                      $gmail_data = $gmail_data->next();
+                    }
                   }
+
+                  $inbox_items_length = count($gmail_data);
+
+                } else if ($request['option'] == 'labeled') {
+                  //get labeled emails
+                  $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take($items)->preload()->all();
+                  $inbox = LaravelGmail::message()->getLabel($request['label_id'] );
+
+                  $inbox_items_length = count($gmail_data);
+                  
+                } else {
+                  //get emails through inbox/folders
+                  $gmail_data = $check_empty;
+                  if(count($check_empty) > 0) {
+                    $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+                  }
+                  $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+
+                  $inbox_items_length = count($gmail_data);
                 }
 
-                $inbox_items_length = count($gmail_data);
 
-            } else if ($request['option'] == 'starred_only') {
-                //STARRED INBOX
-                $gmail_data = LaravelGmail::message()->in('STARRED')->take(50)->preload()->all();
-                $inbox = LaravelGmail::message()->getLabel('STARRED');
-
-                $inbox_items_length = count($gmail_data);
-            } else if ($request['option'] == 'important_only') {
-                //IMPORTANT INBOX
-                $gmail_data = LaravelGmail::message()->in('IMPORTANT')->take(50)->preload()->all();
-                $inbox = LaravelGmail::message()->getLabel('IMPORTANT');
-
-                $inbox_items_length = count($gmail_data);
-            } else if ($request['option'] == 'sent_emails') {
-                //SENT INBOX
-                $gmail_data = LaravelGmail::message()->in('SENT')->take(50)->preload()->all();
-                $inbox = LaravelGmail::message()->getLabel('SENT');
-
-                $inbox_items_length = count($gmail_data);
-            }
-
-            if (isset($gmail_data)) {
                 foreach ($gmail_data as $data) {
                     array_push($repackaged_data, [
                         'id'              => $data->id,
@@ -109,11 +113,17 @@ class DataController extends Controller {
                     'has_nextPage'       => $gmail_data->hasNextPage(),
                     'inbox_items_length' => $inbox_items_length,
                     'labels'             => $user_labels,
+                    'labels_all'         => $all_labels,
                     'inbox_info'         => $inbox,
                 ], 200);
-            } else {
-                return response()->json(['error_msg' => 'Nothing Found'], 404);
+
+            }else {
+              return response()->json(['error_msg' => 'Nothing Found'], 404);
             }
+
+          
+        } else {
+          return response()->json(['error_msg' => 'Inbox query empty'], 400);
         }
     }
 
@@ -330,12 +340,17 @@ class DataController extends Controller {
                     //read email
                     if ($value) {
                         $email->markAsRead();
-
+                        $signature = [];
+                        //regex for getting sender signature
+                        preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getHeader('ARC-Authentication-Results'), $signature);
                         $email_data = [
                             'email_id'   => $email->getId(),
                             'from'       => $email->getFrom(),
                             'to'         => $email->getTo()[0],
+                            'reply_to'   => $email->getHeader("In-Reply-To"),
                             'cc'         => $email->getHeader("Cc"),
+                            'bcc'        => $email->getHeader("Bcc"),
+                            'arc_auth'   => substr($signature[0], 1),
                             'subject'    => $email->getSubject(),
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
@@ -388,6 +403,8 @@ class DataController extends Controller {
                     }
 
                     return response()->json(['email' => $email], 200);
+                } else if($request['column'] == 'archive') {
+                  $email->removeLabel('INBOX');
                 }
             } else {
                 return response()->json(['message' => 'email not found'], 404);
@@ -396,7 +413,10 @@ class DataController extends Controller {
     }
 
     public function toggle_many_dummy_data(Request $request) {
-        switch ($request['option']) {
+        $option = $request['option'];
+        $result = null;
+        $response = null;
+        switch ($option) {
             case 0:
                 //Mark as read
 
@@ -442,12 +462,18 @@ class DataController extends Controller {
                 break;
 
             case 6:
-                //Mute
+                //Mute - disabled
                 break;
 
             case 7:
-                //Forward as attachment
+                //Forward as attachment - disabled
 
+                break;
+            
+            case 8:
+                //Archive email
+                $result = 'archive';
+                $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
                 break;
 
             default:
@@ -457,5 +483,12 @@ class DataController extends Controller {
                 ]);
                 break;
         }
+
+        return response()->json([$result, $response], 200);  
     }
+
+  public function delete_mail(Request $request) {
+    $mail = LaravelGmail::message()->get($request->id);
+    $mail->sendToTrash();
+  }
 }

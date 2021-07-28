@@ -74,6 +74,14 @@
         </div>
       </div>
     </div>
+    <div v-if="selected_all && !selected" class="ml-auto flex items-center justify-center content-center place-content-center">
+        <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ selected_items }}</b> emails on this page are selected.</p>
+        <ejs-button ref="select_all_email" @click.native="selected_all_items" cssClass="shadow-none">Select all {{ inbox_total }} emails in {{ current_inbox }}</ejs-button>
+    </div>
+    <div v-if="selected" class="ml-auto flex items-center justify-center content-center place-content-center">
+        <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ inbox_total }}</b> emails on this page are selected.</p>
+        <ejs-button ref="select_all_email" @click.native="clear_selected_items" cssClass="shadow-none">Clear selection</ejs-button>
+    </div>
   </div>
 </template>
 
@@ -99,26 +107,6 @@ Vue.use(VModal, { dialog: true });
 Vue.use(VueNotification, {
   timer: 20
 });
-
-function selectedItemsTo(option, dataIDs, route) {
-  let _this = this;
-
-  axios.get(route.set_many_route, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer {{ csrf_token() }}"
-    },
-    params: {
-      option: option,
-      dataIDs: dataIDs,
-    }
-  }).then(function (response) {
-    console.log(response);
-  }).catch(error => {
-    console.log(error);
-    _this.$notification.error("somthing went wrong", {  timer: 5 });
-  });
-}
 
 export default Vue.extend({
   name: "HeaderTemplate",
@@ -168,7 +156,85 @@ export default Vue.extend({
     }
   },
 
+  computed:{
+    message(){
+      return this.$store.state.message;
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
+    },
+
+    inbox_items(){
+      return this.$store.state.inbox_items;
+    },
+
+    inbox_total(){
+      return this.$store.state.inbox_total;
+    },
+
+    current_inbox(){
+      return this.$store.state.current_inbox;
+    },
+
+    selected_items(){
+      return this.$store.state.selected_items_count
+    },
+
+    selected_items_dataID(){
+      return this.$store.state.selected_items_dataID
+    },
+
+    selected_all(){
+      return this.$store.state.selected_items_count === this.inbox_items;
+    },
+
+    selected(){
+      return this.$store.state.selected_all_items;
+    }
+
+  },
+
+  mounted(){
+    console.log(moment().add(1,'days').format("ddd") + ", 8:00 AM");
+    // this.snooze_opitons[1].day_time = ;
+    // console.log(this.snooze_opitons[1].day_time);
+  },
+
   methods:{
+    refreshInbox(){
+      console.log("header refresh inbox");
+      this.$eventHub.$emit("refresh_inbox", {
+        event: "refresh_inbox"
+      });
+      this.loading = true;
+    },
+
+    selectedItemsTo(option, dataIDs, route) {
+      let _this = this;
+
+      axios.get(route.set_many_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          option: option,
+          dataIDs: dataIDs,
+        }
+      }).then(function (response) {
+        _this.refreshInbox();
+        console.log(response);
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
     dropDownSelect(args){
       this.$eventHub.$emit("select_by", {
         id: args.item.properties.id, 
@@ -186,16 +252,11 @@ export default Vue.extend({
       }
     },
 
-    refreshInbox(){
-      console.log("header refresh inbox");
-      this.$eventHub.$emit("refresh_inbox", {
-        event: "refresh_inbox"
-      });
-      this.loading = true;
-    },
 
     btnArchive(){
       console.log("Move selected emails to archive");
+      console.log(this.selected_items_dataID);
+      this.selectedItemsTo(8, this.$store.state.selected_items_dataID, this.$store.state.routes);
     },
 
     btnReportSpam(){
@@ -209,9 +270,9 @@ export default Vue.extend({
     btnToggleRead(){
       console.log(this.items_unread_selected ? "Mark selected emails as read" : "Mark selected emails as unread");
       if(this.items_unread_selected){
-        selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        this.selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }else{
-        selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
+        this.selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }
 
       this.refreshInbox();
@@ -261,54 +322,62 @@ export default Vue.extend({
       }
     },
 
+    selected_all_items(){
+      this.$store.dispatch("set_selected_all_items", true);
+    },
+
+    clear_selected_items(){ 
+      this.$store.dispatch("set_selected_all_items", false);
+    },
+
     moreOptions(args){
       switch (args.item.id) {
         case 0:
           //Mark as read
           console.log("Mark as read");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 1:
           //Mark as unread
           console.log("Mark as unread");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 2:
           //Mark as important
           console.log("Mark as important");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 3:
           //Mark as not important
           console.log("Mark as not important");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 4:
           //Add star
           console.log("Add star");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 5:
           //Remove star
           console.log("Remove star");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 6:
-          //Mute
+          //Mute - disabled
           console.log("Mute");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 7:
-          //Forward as attachment
+          //Forward as attachment - disabled
           console.log("Forward as attachment");
-          selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
       
         default:
@@ -318,26 +387,6 @@ export default Vue.extend({
 
       this.refreshInbox();
     }
-  },
-
-  computed:{
-    message(){
-      return this.$store.state.message;
-    },
-
-    dropdown_btn_lbl(){
-      return this.$store.state.dropdown_btn_lbl;
-    },
-
-    dropdown_btn_mv(){
-      return this.$store.state.dropdown_btn_mv;
-    }
-  },
-
-  mounted(){
-    console.log(moment().add(1,'days').format("ddd") + ", 8:00 AM");
-    // this.snooze_opitons[1].day_time = ;
-    // console.log(this.snooze_opitons[1].day_time);
   },
 
   created(){
@@ -355,6 +404,6 @@ export default Vue.extend({
       this.read_tgl_button_tt_content = e.value ? "Mark as read" : "Mark as unread";
       this.read_tgl_button_icon = e.value ? "fas fa-envelope-open-text" : "fas fa-envelope";
     });
-  }
+  },
 });
 </script>

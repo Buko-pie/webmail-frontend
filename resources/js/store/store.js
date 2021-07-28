@@ -14,7 +14,7 @@ export const store = new Vuex.Store({
     email_batch: null,
     current_page: 0,
     max_page: 0,
-    inbox_items: 0,
+    inbox_items: 1,
     inbox_total: 0,
     username: null,
     user_email: null,
@@ -23,7 +23,9 @@ export const store = new Vuex.Store({
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
     dropdown_btn_user: false,
+    dropdown_btn_email_data: false,
     selected_items_count: 0,
+    selected_all_items: false,
     selected_items_dataID: [],
     selected_item_unread: 0,
     selected_email_html_body: null,
@@ -87,6 +89,10 @@ export const store = new Vuex.Store({
       state.selected_items_count = payload;
     },
 
+    set_selected_all_items(state, payload){
+      state.selected_all_items = payload
+    },
+
     set_selected_items_dataID(state, payload){
       state.selected_items_dataID = payload;
     },
@@ -113,6 +119,10 @@ export const store = new Vuex.Store({
 
     dropdown_btn_user_toggle(state, payload){
       state.dropdown_btn_user = payload;
+    },
+
+    dropdown_btn_email_data_toggle(state, payload){
+      state.dropdown_btn_email_data = payload;
     },
 
     set_splitter_height(state, payload){
@@ -177,6 +187,10 @@ export const store = new Vuex.Store({
       state.commit("set_selected_items_count", payload);
     },
 
+    set_selected_all_items(state, payload){
+      state.commit("set_selected_all_items", payload);
+    },
+
     set_selected_items_dataID(state, payload){
       state.commit("set_selected_items_dataID", payload);
     },
@@ -203,6 +217,10 @@ export const store = new Vuex.Store({
 
     dropdown_btn_user_toggle(state, payload){
       state.commit("dropdown_btn_user_toggle", payload);
+    },
+
+    dropdown_btn_email_data_toggle(state, payload){
+      state.commit("dropdown_btn_email_data_toggle", payload);
     },
 
     set_splitter_height(state, payload){

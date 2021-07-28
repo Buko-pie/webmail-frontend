@@ -153,39 +153,47 @@
           </button>
         </div>
         <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-          <a @click="getInbox" class="sidebar_items_selected" href="#">
+          <a @click="goToInbox('INBOX')" :class="[ current_inbox === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Inbox</p>
           </a>
 
-          <a @click="starredOnly" class="sidebar_items" href="#">
+          <a @click="goToInbox('STARRED')" :class="[ current_inbox === 'STARRED' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-star text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="importantOnly" class="sidebar_items" href="#">
+          <a @click="goToInbox('IMPORTANT')" :class="[ current_inbox === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
-              <i class="fas fa-thumbtack text-lg"></i>
+              <!-- <i class="fas fa-thumbtack text-lg"></i> -->
+              <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
             </div>
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a @click="sentEMails" class="sidebar_items" href="#">
+          <a @click="goToInbox('SENT')" :class="[ current_inbox === 'SENT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Sent</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="goToInbox('DRAFT')" :class="[ current_inbox === 'DELETE' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-file text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Drafts</p>
+          </a>
+
+          <a @click="goToInbox('TRASH')" :class="[ current_inbox === 'TRASH' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <div class="sidebar_icons">
+              <i class="fa fa-trash text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Trash</p>
           </a>
 
           <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
@@ -230,8 +238,8 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
-            <a v-for="label in user_labels" :key="label.id" class="sidebar_items" href="#">
-              <div class="sidebar_icons">
+            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" class="sidebar_items" href="#">
+              <div :class="[ current_inbox === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
                 />
@@ -381,7 +389,44 @@
     </div>
   </div>
   
-    
+  <!-- Email details dropdown -->
+  <div 
+    v-click-outside="dropdownHideEmailData"
+    ref="email_data_dropdown"
+    class="custom-dropdown-user bg-white p-3" 
+    :class="[!dropdown_btn_email_data ? 'hidden' : 'block']" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px',
+      'width': '35%',
+      'z-index': dropdown_zIndex,
+    }"
+  >
+    <div v-if="email_data" class="grid grid-cols-4 gap-2 p-3">
+      <div class="text-right">
+        <p>from:</p>
+        <p>reply-to:</p>
+        <p>to:</p>
+        <p v-if="email_data.cc">cc:</p>
+        <p v-if="email_data.bcc">bcc:</p>
+        <p>date:</p>
+        <p>subject:</p>
+        <p>mailed-by:</p>
+        <p>signed-by:</p>
+      </div>
+      <div class="col-span-3 pl-2">
+        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+        <p>{{ email_data.to.email ? email_data.to.email : email_data.to.name }}</p>
+        <p>{{ email_data.cc ? email_data.cc : "" }}</p>
+        <p>{{ email_data.bcc ? email_data.bcc : "" }}</p>
+        <p>{{ email_data.date }}</p>
+        <p>{{ email_data.subject }}</p>
+        <p>{{ email_data.arc_auth }}</p>
+        <p>{{ email_data.arc_auth }}</p>
+      </div>
+    </div>
+  </div>  
 </div>
 </template>
 
@@ -570,7 +615,7 @@ export default Vue.extend({
       attachment_path: null,
 
       dropElement: '.control-fluid',
-
+      email_date_display: null,
     }
   },
 
@@ -589,6 +634,7 @@ export default Vue.extend({
         logging_out:          this.url_base + "/logging_out",
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
+        delete_mail:    this.url_base + "/delete_mail",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);
@@ -600,6 +646,10 @@ export default Vue.extend({
         removeUrl: routes.remove_attachment
       }
       this.routes = routes;
+    },
+
+    current_inbox(){
+      return this.$store.state.current_inbox;
     },
     
     category_toggles(){
@@ -623,10 +673,24 @@ export default Vue.extend({
       return this.$store.state.dropdown_btn_user;
     },
 
+    dropdown_btn_email_data(){
+      return this.$store.state.dropdown_btn_email_data;
+    },
+
     user_labels(){
       console.log(this.$store.state.user_labels);
       return this.$store.state.user_labels;
-    }
+    },
+
+    email_data(){
+      let data = this.$store.state.selected_email_data
+
+      if(data !== null){
+        this.email_date_display = moment(data.date).format("LLL");
+      }
+
+      return data;
+    },
   },
 
   components:{
@@ -717,6 +781,10 @@ export default Vue.extend({
 
     dropdownHideUser(){
       this.$store.dispatch("dropdown_btn_user_toggle", false);
+    },
+
+    dropdownHideEmailData(){
+      this.$store.dispatch("dropdown_btn_email_data_toggle", false);
     },
 
     modalShow(){
@@ -928,6 +996,10 @@ export default Vue.extend({
       }).then(function (response) {
         _this.$store.dispatch("set_current_inbox", "INBOX");
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+
+        _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -1012,6 +1084,56 @@ export default Vue.extend({
       });
     },
 
+    goToInbox(args){
+      console.log(args);
+
+      let _this = this;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          inbox: args
+        }
+      }).then(function (response) {
+        console.log(response);
+        _this.$store.dispatch("set_current_inbox", args);
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    goToLabel(name, id){
+      console.log(name);
+
+      let _this = this;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          inbox: name,
+          label_id: id,
+          option: "labeled"
+        }
+      }).then(function (response) {
+        console.log(response);
+        _this.$store.dispatch("set_current_inbox", name);
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.$eventHub.$emit("page_change");
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
     selectMoveToOps(args){
       console.log(args);
       this.dropdownHideMoveTo();
@@ -1057,6 +1179,7 @@ export default Vue.extend({
     let _this = this;
 
     this.$eventHub.$on("show_custom_dropdown", (e) => {
+      console.log(e);
       // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
       if(e.button === "btn_labels"){
@@ -1065,10 +1188,12 @@ export default Vue.extend({
       }else if(e.button === "btn_move"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
+      }else if(e.button === "btn_email_data"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left);
       }else if(e.button === "user_dropdown"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left - 298);
-        console.log(this.$refs.user_dropdown.clientWidth);
       }
     });
 

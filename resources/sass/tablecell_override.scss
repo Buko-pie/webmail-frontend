@@ -5,10 +5,15 @@
   font-size: 13px;
   line-height: 20px;
   overflow: hidden;
-  padding: 0.1rem 0 0 1rem !important;
+  padding: 0.1rem 0 0 0.1rem !important;
   vertical-align: middle;
   white-space: nowrap;
   width: auto;
+}
+
+.e-grid.e-responsive .e-rowcell.e-gridchkbox, .e-grid.e-responsive .e-headercelldiv.e-headerchkcelldiv {
+  text-overflow: clip;
+  padding-left: 20px !important;
 }
 
 .e-grid .e-rowcell .e-checkbox-wrapper, .e-grid .e-rowcell .e-css.e-checkbox-wrapper {
