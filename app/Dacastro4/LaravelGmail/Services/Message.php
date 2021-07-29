@@ -234,9 +234,44 @@ class Message
    * 
 	 * @return null
 	 */
-  public function batchArchive($ids){
-    // $this->client->setUseBatch(true);
+  public function batchArchive($ids)
+  {
     $this->batchModifyRequest->setRemoveLabelIds('INBOX');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+  public function batchRead($ids)
+  {
+    $this->batchModifyRequest->setRemoveLabelIds('UNREAD');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+  public function batchUnread($ids)
+  {
+    $this->batchModifyRequest->setAddLabelIds('UNREAD');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+  //function still need tests
+  public function batchModifyLabels($ids, $addLabelIds = null, $removeLabelIds = null)
+  {
+    $this->batchModifyRequest->setAddLabelIds($addLabelIds);
+    $this->batchModifyRequest->setRemoveLabelIds($removeLabelIds);
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+  public function batchMoveToLabel($ids, $labelIds, $currentInbox)
+  {
+    $this->batchModifyRequest->setAddLabelIds($labelIds);
+    $this->batchModifyRequest->setRemoveLabelIds($currentInbox);
     $this->batchModifyRequest->setIds($ids);
 
     return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
