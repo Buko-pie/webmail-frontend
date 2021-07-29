@@ -279,7 +279,7 @@ export default Vue.extend({
 
       if(data !== null){
 
-        if(this.current_inbox === "sent"){
+        if(this.current_inbox.name === "SENT"){
           let reply_address = data.to.email ? data.to.email : data.to.name;
           this.email_addresses = [reply_address];
 

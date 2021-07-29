@@ -669,7 +669,7 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          inbox: this.current_inbox
+          inbox: this.current_inbox.name
         }
       }).then(function (response) {
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
@@ -699,7 +699,7 @@ export default{
           },
           params: {
             option: "get_next_page",
-            inbox: _this.current_inbox,
+            inbox: _this.current_inbox.name,
             page: _this.current_page
           }
         }).then(function (response) {
@@ -736,7 +736,7 @@ export default{
           },
           params: {
             option: "get_next_page",
-            inbox: _this.current_inbox,
+            inbox: _this.current_inbox.name,
             page: _this.current_page
           }
         }).then(function (response) {

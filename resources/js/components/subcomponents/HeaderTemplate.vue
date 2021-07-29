@@ -76,7 +76,7 @@
     </div>
     <div v-if="selected_all && !selected" class="ml-auto flex items-center justify-center content-center place-content-center">
         <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ selected_items }}</b> emails on this page are selected.</p>
-        <ejs-button ref="select_all_email" @click.native="selected_all_items" cssClass="shadow-none">Select all {{ inbox_total }} emails in {{ current_inbox }}</ejs-button>
+        <ejs-button ref="select_all_email" @click.native="selected_all_items" cssClass="shadow-none">Select all {{ inbox_total }} emails in {{ current_inbox.name }}</ejs-button>
     </div>
     <div v-if="selected" class="ml-auto flex items-center justify-center content-center place-content-center">
         <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ inbox_total }}</b> emails on this page are selected.</p>
@@ -227,7 +227,7 @@ export default Vue.extend({
           dataIDs: dataIDs,
         }
       }).then(function (response) {
-        _this.refreshInbox();
+        _this.$refs.refresh_progress.click();
         console.log(response);
       }).catch(error => {
         console.log(error);
@@ -275,7 +275,7 @@ export default Vue.extend({
         this.selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }
 
-      this.refreshInbox();
+      _this.$refs.refresh_progress.click();
     },
 
     btnSnooze(){
@@ -385,7 +385,7 @@ export default Vue.extend({
         break;
       }
 
-      this.refreshInbox();
+      _this.$refs.refresh_progress.click();
     }
   },
 

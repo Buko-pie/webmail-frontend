@@ -153,21 +153,21 @@
           </button>
         </div>
         <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-          <a @click="goToInbox('INBOX')" :class="[ current_inbox === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('INBOX', 'INBOX')" :class="[ current_inbox.name === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Inbox</p>
           </a>
 
-          <a @click="goToInbox('STARRED')" :class="[ current_inbox === 'STARRED' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('STARRED', 'STARRED')" :class="[ current_inbox.name === 'STARRED' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-star text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="goToInbox('IMPORTANT')" :class="[ current_inbox === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('IMPORTANT', 'IMPORTANT')" :class="[ current_inbox.name === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <!-- <i class="fas fa-thumbtack text-lg"></i> -->
               <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
@@ -175,21 +175,21 @@
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a @click="goToInbox('SENT')" :class="[ current_inbox === 'SENT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('SENT', 'SENT')" :class="[ current_inbox.name === 'SENT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Sent</p>
           </a>
 
-          <a @click="goToInbox('DRAFT')" :class="[ current_inbox === 'DELETE' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('DRAFT', 'DRAFT')" :class="[ current_inbox.name === 'DELETE' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-file text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Drafts</p>
           </a>
 
-          <a @click="goToInbox('TRASH')" :class="[ current_inbox === 'TRASH' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToInbox('TRASH', 'TRASH')" :class="[ current_inbox.name === 'TRASH' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fa fa-trash text-lg"></i>
             </div>
@@ -327,7 +327,7 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="moveTo_locations" :fields="fields"></ejs-listview>
+          <ejs-listview id="moveTo_options_0" ref="moveTo_options_0" :select="selectMoveToOps" :dataSource="moveTo_locations" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -585,7 +585,7 @@ export default Vue.extend({
         { id: 0, text: "Promotions" }
       ],
 
-      moveTo_locations:[],
+      // moveTo_locations:[],
       searchbar_label: false,
       dropdown_btn_tgl: false,
       dropdown_zIndex: 1005,
@@ -623,14 +623,14 @@ export default Vue.extend({
     start(){
       console.log("Sidebar component computed");
       let routes = {
-        data_route:           this.url_base + "/get_dummy_data",
+        data_route:           this.url_base + "/get_data",
         send_mail:            this.url_base + "/send_mail",
         upload_attachment:    this.url_base + "/upload_attachment",
         check_attachment:     this.url_base + "/check_attachment",
         download_attachment:  this.url_base + "/download_attachment",
         remove_attachment:    this.url_base + "/remove_attachment",
-        toggle_route:         this.url_base + "/toggle_dummy_data",
-        set_many_route:       this.url_base + "/toggle_many_dummy_data",
+        toggle_route:         this.url_base + "/toggle_data",
+        set_many_route:       this.url_base + "/toggle_many_data",
         logging_out:          this.url_base + "/logging_out",
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
@@ -682,6 +682,16 @@ export default Vue.extend({
       return this.$store.state.user_labels;
     },
 
+    moveTo_locations(){
+      if(this.user_labels){
+        // return this.user_labels.concat(this.categories);
+        return this.user_labels;
+      }else{
+        // return this.categories;
+      }
+      
+    },
+
     email_data(){
       let data = this.$store.state.selected_email_data
 
@@ -691,10 +701,13 @@ export default Vue.extend({
 
       return data;
     },
+
+    selected_items_dataID(){
+      return this.$store.state.selected_items_dataID
+    }
   },
 
-  components:{
-  },
+  components:{},
 
   created(){
     console.log("Sidebar component created");
@@ -706,9 +719,10 @@ export default Vue.extend({
     
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
-    if(this.custom_labels.length > 0){
-      this.moveTo_locations = this.custom_labels.concat(this.categories);
-    }
+    
+    // if(this.user_labels.length > 0){
+    //   this.moveTo_locations = this.user_labels.concat(this.categories);
+    // }
     
     // this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
 
@@ -985,94 +999,18 @@ export default Vue.extend({
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
     },
 
-    getInbox(event){
+    goToInbox(inbox_name, inbox_id){
+      console.log(inbox_name);
       let _this = this;
 
       axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          option: "get_all"
-        }
-      }).then(function (response) {
-        _this.$store.dispatch("set_current_inbox", "INBOX");
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-
-        _this.$eventHub.$emit("page_change");
-      }).catch(error => {
-        console.log(error);
-        _this.$notification.error("somthing went wrong", {  timer: 5 });
-      });
-    },
-
-    starredOnly(event) {
-      console.log("starred Only");
-      let _this = this;
-
-      axios.get(this.routes.data_route,{
-        headers: this.headers,
-        params: {
-          option: "starred_only"
+          inbox: inbox_name
         }
       }).then(function (response) {
         console.log(response);
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        // _this.email_count = response.data.inbox_items_length;
-        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "STARRED");
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-        
-        _this.$eventHub.$emit("page_change");
-      }).catch(error => {
-        console.log(error);
-        _this.$notification.error("somthing went wrong", {  timer: 5 });
-      });
-    },
-
-    importantOnly(event) {
-      console.log("important Only");
-      let _this = this;
-
-      axios.get(this.routes.data_route,{
-        headers: this.headers,
-        params: {
-          option: "important_only"
-        }
-      }).then(function (response) {
-        console.log(response);
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        // _this.email_count = response.data.inbox_items_length;
-        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "IMPORTANT");
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-        
-        _this.$eventHub.$emit("page_change");
-      }).catch(error => {
-        console.log(error);
-        this.$notification.error("somthing went wrong", {  timer: 5 });
-      });
-    },
-
-    sentEMails(event) {
-      console.log("sentEMails");
-      let _this = this;
-
-      axios.get(this.routes.data_route,{
-        headers: this.headers,
-        params: {
-          option: "sent_emails"
-        }
-      }).then(function (response) {
-        console.log(response);
-        // _this.viewData = formatDate(response.data.repackaged_data);
-        // _this.email_count = response.data.inbox_items_length;
-        // _this.max_pages = Math.ceil(response.data.inbox_items_length / 50);
-        _this.$store.dispatch("set_current_inbox", "SENT");
+        _this.$store.dispatch("set_current_inbox", {name: inbox_name, id: inbox_id});
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
@@ -1084,45 +1022,20 @@ export default Vue.extend({
       });
     },
 
-    goToInbox(args){
-      console.log(args);
-
-      let _this = this;
-
-      axios.get(this.routes.data_route,{
-        headers: this.headers,
-        params: {
-          inbox: args
-        }
-      }).then(function (response) {
-        console.log(response);
-        _this.$store.dispatch("set_current_inbox", args);
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-        
-        _this.$eventHub.$emit("page_change");
-      }).catch(error => {
-        console.log(error);
-        this.$notification.error("somthing went wrong", {  timer: 5 });
-      });
-    },
-
-    goToLabel(name, id){
+    goToLabel(label_name, lable_id){
       console.log(name);
-
       let _this = this;
 
       axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          inbox: name,
-          label_id: id,
+          inbox: label_name,
+          label_id: lable_id,
           option: "labeled"
         }
       }).then(function (response) {
         console.log(response);
-        _this.$store.dispatch("set_current_inbox", name);
+        _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id});
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
@@ -1135,14 +1048,37 @@ export default Vue.extend({
     },
 
     selectMoveToOps(args){
-      console.log(args);
+      let _this = this;
       this.dropdownHideMoveTo();
+      this.$refs.moveTo_options_0.selectItem();
       this.$refs.moveTo_options_1.selectItem();
       this.$refs.moveTo_options_2.selectItem();
 
       if(args.data.text === "Create new"){
-        console.log("bruh");
         this.modalShow();
+      }else{
+        console.log(args.data.text);
+        console.log(args.data.id);
+        console.log(this.selected_items_dataID);
+
+        axios.get(this.routes.set_many_route, {
+          headers: {
+            "Content-Type":   "application/json",
+            "Authorization":  "Bearer {{ csrf_token() }}"
+          },
+          params: {
+            option:   9,
+            dataIDs:  this.selected_items_dataID,
+            labelID:  args.data.id,
+            current_inbox_id: this.current_inbox.id,
+          }
+        }).then(function (response) {
+          _this.refreshInbox();
+          console.log(response);
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
       }
     },
 
@@ -1151,7 +1087,6 @@ export default Vue.extend({
       this.dropdownHideLabel();
       this.$refs.lbl_options.selectItem();
       if(args.data.text === "Create new"){
-        console.log("bruh");
         this.modalShow();
       }
     },

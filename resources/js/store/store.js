@@ -10,7 +10,7 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
-    current_inbox: 'INBOX',
+    current_inbox: {name: 'INBOX', id: 'INBOX'},
     email_batch: null,
     current_page: 0,
     max_page: 0,
@@ -45,7 +45,8 @@ export const store = new Vuex.Store({
     },
 
     set_current_inbox(state, payload){
-      state.current_inbox = payload;
+
+      state.current_inbox = {name: payload.name, id: payload.id};
     },
 
     set_email_batch(state, payload){

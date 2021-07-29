@@ -459,7 +459,13 @@ class DataController extends Controller {
                 break;
               
             case 9: //move to on label
+                $result = 'moveTo';
                 
+                if(isset($request['dataIDs']) && isset($request['labelID']) && isset($request['current_inbox_id'])){
+                    $response = LaravelGmail::message()->batchMoveToLabel($request['dataIDs'], $request['labelID'], $request['current_inbox_id']);
+                }else{
+                    return response()->json('Request params missing', 404);
+                }
 
                 break;
 
