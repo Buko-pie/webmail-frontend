@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
 
-use App\DummyData;
+// use App\DummyData;
 use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use App\Dacastro4\LaravelGmail\Services\Message\Mail;
 use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
 
 class DataController extends Controller {
 
-    public function get_dummy_data(Request $request) {
-        $items = $request->items ?? 50;
+    public function get_data(Request $request) {
+        $items = $request->items ?? 100;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
             $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
@@ -310,7 +310,7 @@ class DataController extends Controller {
         return response()->download($path);
     }
 
-    public function toggle_dummy_data(Request $request) {
+    public function toggle_data(Request $request) {
         $user = LaravelGmail::user();
 
         if (isset($request['id'])) {
@@ -412,68 +412,55 @@ class DataController extends Controller {
         }
     }
 
-    public function toggle_many_dummy_data(Request $request) {
+    public function toggle_many_data(Request $request) {
         $option = $request['option'];
         $result = null;
         $response = null;
         switch ($option) {
-            case 0:
-                //Mark as read
+            case 0: //Mark as read
+                
 
-                foreach ($request['dataIDs'] as $id) {
-                    $email = LaravelGmail::message()->get($id)->markAsRead();
-                }
+                $response = LaravelGmail::message()->batchRead($request['dataIDs']);
                 break;
 
-            case 1:
-                //Mark as unread
+            case 1: //Mark as unread
+                
 
-                foreach ($request['dataIDs'] as $id) {
-                    $email = LaravelGmail::message()->get($id)->markAsUnread();
-                }
+                $response = LaravelGmail::message()->batchUnread($request['dataIDs']);
                 break;
 
-            case 2:
-                //Mark as important
-
-                $data_update = DummyData::whereIn('id', $request['dataIDs'])
-                                        ->update(['important' => 1]);
+            case 2: //Mark as important
+                
                 break;
 
-            case 3:
-                //Mark as not important
-
-                $data_update = DummyData::whereIn('id', $request['dataIDs'])
-                                        ->update(['important' => 0]);
+            case 3: //Mark as not important
+                
                 break;
 
-            case 4:
-                //Add star
-
-                $data_update = DummyData::whereIn('id', $request['dataIDs'])
-                                        ->update(['starred' => 1]);
+            case 4: //Add star
+                
                 break;
 
-            case 5:
-                //Remove star
-
-                $data_update = DummyData::whereIn('id', $request['dataIDs'])
-                                        ->update(['starred' => 0]);
+            case 5: //Remove star
+                
                 break;
 
-            case 6:
-                //Mute - disabled
+            case 6: //Mute - disabled
+                
                 break;
 
-            case 7:
-                //Forward as attachment - disabled
-
+            case 7: //Forward as attachment - disabled
+                
                 break;
             
-            case 8:
-                //Archive email
+            case 8: //Archive email
                 $result = 'archive';
                 $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
+                break;
+              
+            case 9: //move to on label
+                
+
                 break;
 
             default:
@@ -484,7 +471,7 @@ class DataController extends Controller {
                 break;
         }
 
-        return response()->json([$result, $response], 200);  
+        return response()->json([$result, $response], 200);
     }
 
   public function delete_mail(Request $request) {
