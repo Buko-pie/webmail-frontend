@@ -717,6 +717,8 @@ export default{
     this.$eventHub.$on("refresh_inbox", (e)=>{
       console.log("refresh_inbox");
 
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
       axios.get(this.routes.data_route, {
         headers: {
           "Content-Type": "application/json",
@@ -731,6 +733,8 @@ export default{
       }).then(function (response) {
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
+        _this.ref_headerTemplate.show_loading = false;
+          _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"
         });

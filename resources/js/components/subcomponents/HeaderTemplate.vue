@@ -233,6 +233,8 @@ export default Vue.extend({
     selectedItemsTo(option, dataIDs, route) {
       let _this = this;
 
+      this.show_loading = true;
+      this.loading = true;
       axios.get(route.set_many_route, {
         headers: {
           "Content-Type": "application/json",

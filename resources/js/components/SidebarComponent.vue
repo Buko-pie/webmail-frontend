@@ -1070,16 +1070,14 @@ export default Vue.extend({
       this.$refs.moveTo_options_0.selectItem();
       this.$refs.moveTo_options_1.selectItem();
       this.$refs.moveTo_options_2.selectItem();
-
+  
       if(args.data.text === "Create new"){
         this.modalShow();
       }else if(args.data.id === 1) { // Trash
         this.selectedItemsTo(9, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }else{
-        console.log(args.data.text);
-        console.log(args.data.id);
-        console.log(this.selected_items_dataID);
-
+        // Move to labels
+        
         _this.ref_headerTemplate.show_loading = true;
         _this.ref_headerTemplate.loading = true;
         axios.get(this.routes.set_many_route, {
@@ -1088,15 +1086,16 @@ export default Vue.extend({
             "Authorization":  "Bearer {{ csrf_token() }}"
           },
           params: {
-            option:   9,
+            option:   10,
             dataIDs:  this.selected_items_dataID,
             labelID:  args.data.id,
             current_inbox_id: this.current_inbox.id,
           }
         }).then(function (response) {
           // _this.refreshInbox();
-          _this.ref_headerTemplate.show_loading = false;
-          _this.ref_headerTemplate.loading = false;
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
           console.log(response);
         }).catch(error => {
           console.log(error);
@@ -1139,6 +1138,8 @@ export default Vue.extend({
     selectedItemsTo(option, dataIDs, route) {
       let _this = this;
 
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
       axios.get(route.set_many_route, {
         headers: {
           "Content-Type": "application/json",

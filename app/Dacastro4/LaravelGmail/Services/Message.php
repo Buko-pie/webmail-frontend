@@ -8,6 +8,8 @@ use App\Dacastro4\LaravelGmail\Traits\Filterable;
 use App\Dacastro4\LaravelGmail\Traits\SendsParameters;
 use Google_Service_Gmail;
 use Google_Service_Gmail_BatchModifyMessagesRequest;
+use Google_Service_Gmail_BatchDeleteMessagesRequest;
+
 
 class Message
 {
@@ -40,6 +42,7 @@ class Message
 		$this->client = $client;
 		$this->service = new Google_Service_Gmail($client);
     $this->batchModifyRequest = new Google_Service_Gmail_BatchModifyMessagesRequest();
+    $this->batchDeleteRequest = new Google_Service_Gmail_BatchDeleteMessagesRequest();
 	}
 
 	/**
@@ -275,5 +278,12 @@ class Message
     $this->batchModifyRequest->setIds($ids);
 
     return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+  public function batchDelete($ids)
+  {
+    $this->batchDeleteRequest->setIds($ids);
+
+    return $this->service->users_messages->batchDelete('me', $this->batchDeleteRequest);
   }
 }

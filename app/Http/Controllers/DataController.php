@@ -455,7 +455,13 @@ class DataController extends Controller {
                 $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
                 break;
               
-            case 9: //move to on label
+            case 9://Delete email
+
+                $result = 'Delete';
+                $response = LaravelGmail::message()->batchDelete($request['dataIDs']);
+                break;
+
+            case 10: //move to on label
                 $result = 'moveTo';
                 
                 if(isset($request['dataIDs']) && isset($request['labelID']) && isset($request['current_inbox_id'])){
@@ -464,14 +470,7 @@ class DataController extends Controller {
                     return response()->json('Request params missing', 404);
                 }
 
-                break;
-
-            case 9:
-                //Delete email
-                foreach ($request['dataIDs'] as $id) {
-                    $email = LaravelGmail::message()->get($id)->sendToTrash();
-                }
-                break;
+                  break;
 
             default:
                 return response()->json([
