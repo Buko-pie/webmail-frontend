@@ -243,6 +243,7 @@ export default Vue.extend({
         params: {
           option: option,
           dataIDs: dataIDs,
+          current_inbox_id: this.current_inbox.id
         }
       }).then(function (response) {
         _this.$refs.refresh_progress.click();

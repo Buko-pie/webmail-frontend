@@ -455,10 +455,10 @@ class DataController extends Controller {
                 $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
                 break;
               
-            case 9://Delete email
+            case 9://Trash email
 
-                $result = 'Delete';
-                $response = LaravelGmail::message()->batchDelete($request['dataIDs']);
+                $result = 'Move to trash';
+                $response = LaravelGmail::message()->batchMoveToLabel($request['dataIDs'], 'TRASH', $request['current_inbox_id']);
                 break;
 
             case 10: //move to on label

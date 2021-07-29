@@ -280,6 +280,7 @@ class Message
     return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
   }
 
+  //WARINING: permantly delete emails
   public function batchDelete($ids)
   {
     $this->batchDeleteRequest->setIds($ids);
