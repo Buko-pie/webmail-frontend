@@ -265,6 +265,7 @@ export default Vue.extend({
 
     btnDelete(){
       console.log("Delete selected emails");
+      this.selectedItemsTo(9, this.$store.state.selected_items_dataID, this.$store.state.routes);
     },
 
     btnToggleRead(){

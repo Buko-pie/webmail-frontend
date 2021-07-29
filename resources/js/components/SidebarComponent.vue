@@ -575,7 +575,8 @@ export default Vue.extend({
 
       moveTo_options:[
         {id: 0, text: "Spam"}, 
-        {id: 1, text: "Trash"}
+        {id: 1, text: "Trash"},
+        {id: 2, text: "Inbox"},
       ],
 
       categories:[
@@ -634,7 +635,8 @@ export default Vue.extend({
         logging_out:          this.url_base + "/logging_out",
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
-        delete_mail:    this.url_base + "/delete_mail",
+        delete_mail:          this.url_base + "/delete_mail",
+        move_to_inbox:        this.url_base + "/move_to_inbox",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);
@@ -1143,6 +1145,8 @@ export default Vue.extend({
       if(args.data.text === "Create new"){
         console.log("bruh");
         this.modalShow();
+      } else if(args.data.id === 1) { // Trash
+        this.selectedItemsTo(9, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }
     },
 
@@ -1168,7 +1172,36 @@ export default Vue.extend({
         console.log(error);
         this.$notification.error("somthing went wrong", {  timer: 5 });
       });
-    }
+    },
+
+    refreshInbox(){
+      console.log("header refresh inbox");
+      this.$eventHub.$emit("refresh_inbox", {
+        event: "refresh_inbox"
+      });
+      this.loading = true;
+    },
+
+    selectedItemsTo(option, dataIDs, route) {
+      let _this = this;
+
+      axios.get(route.set_many_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          option: option,
+          dataIDs: dataIDs,
+        }
+      }).then(function (response) {
+        _this.refreshInbox();
+        console.log(response);
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
   },
 
   directives: {

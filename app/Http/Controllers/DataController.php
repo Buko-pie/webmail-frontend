@@ -101,6 +101,7 @@ class DataController extends Controller {
                         'starred'         => in_array('STARRED', $data->getLabels()),
                         'important'       => in_array('IMPORTANT', $data->getLabels()),
                         'read'            => !in_array('UNREAD', $data->getLabels()),
+                        'deleted'         => in_array('TRASH', $data->getLabels()),
                         'labels'          => $data->getLabels(),
                         'has_attachment'  => $data->hasAttachments(),
                         'created_at'      => $data->getDate(),
@@ -476,6 +477,13 @@ class DataController extends Controller {
                 $response = LaravelGmail::message()->batchArchive($request['dataIDs']);
                 break;
 
+            case 9:
+                //Delete email
+                foreach ($request['dataIDs'] as $id) {
+                    $email = LaravelGmail::message()->get($id)->sendToTrash();
+                }
+                break;
+
             default:
                 return response()->json([
                     'message' => "Somthing went wrong!",
@@ -487,8 +495,44 @@ class DataController extends Controller {
         return response()->json([$result, $response], 200);  
     }
 
-  public function delete_mail(Request $request) {
-    $mail = LaravelGmail::message()->get($request->id);
-    $mail->sendToTrash();
-  }
+    public function delete_mail(Request $request) {
+        $items = $request->items ?? 100;
+        $mail = LaravelGmail::message()->get($request->id);
+        $mail->sendToTrash();
+
+        $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
+        $gmail_data = $check_empty;
+        if(count($check_empty) > 0) {
+            $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+        }
+        $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+        $inbox_items_length = count($gmail_data);
+
+        return response()->json([
+            'has_nextPage'       => $gmail_data->hasNextPage(),
+            'inbox_items_length' => $inbox_items_length,
+            'inbox_info'         => $inbox,
+        ], 200);
+    }
+
+    public function move_to_inbox(Request $request) {
+        $items = $request->items ?? 100;
+        $mail = LaravelGmail::message()->get($request->id);
+        $mail->addLabel('INBOX');
+        $mail->removeFromTrash();
+
+        $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
+        $gmail_data = $check_empty;
+        if(count($check_empty) > 0) {
+            $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+        }
+        $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+        $inbox_items_length = count($gmail_data);
+
+        return response()->json([
+            'has_nextPage'       => $gmail_data->hasNextPage(),
+            'inbox_items_length' => $inbox_items_length,
+            'inbox_info'         => $inbox,
+        ], 200);
+    }
 }

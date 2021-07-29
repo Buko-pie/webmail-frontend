@@ -38,6 +38,7 @@ Route::post('/remove_attachment', [DataController::class, 'remove_attachment'])-
 Route::get('/toggle_dummy_data', [DataController::class, 'toggle_dummy_data'])->name('toggle_dummy_data');
 Route::get('/toggle_many_dummy_data', [DataController::class, 'toggle_many_dummy_data'])->name('toggle_many_dummy_data');
 Route::get('/delete_mail', [DataController::class, 'delete_mail'])->name('delete_mail');
+Route::get('/move_to_inbox', [DataController::class, 'move_to_inbox'])->name('move_to_inbox');
 
 Route::get('/gmailAPItest', function () {
   return view('gmailAPItest');
