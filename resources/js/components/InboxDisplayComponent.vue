@@ -88,6 +88,7 @@ export default{
         { id: "mark_unread", text: "Mark as unread" },
         { id: "mark_read", text: "Mark as read" },
         { id: "delete", text: "Delete" },
+        { id: "move_to_inbox", text: "Move to Inbox" },
         // { text: "Add Label" }
       ],
       select_option: null,
@@ -350,13 +351,53 @@ export default{
             "X-CSRF-TOKEN": this.csrf_token
           },
           params: {
-            id: args.rowInfo.rowData.id
+            id: args.rowInfo.rowData.id,
+            inbox: 'INBOX'
           }
         }).then(function (response) {
           console.log(response);
           _this.$eventHub.$emit("refresh_inbox", {
             event: "refresh_inbox"
           });
+
+          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          
+          _this.$eventHub.$emit("page_change");
+
+          _this.has_nextPage = response.data.has_nextPage;
+          if(!response.data.has_nextPage){
+            _this.$eventHub.$emit("disable_nxtBtn", true);
+          }
+        }).catch(error => {
+          console.log(error);
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      } else if(args.item.id === "move_to_inbox") {
+        axios.get(this.$store.state.routes.move_to_inbox,{
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            id: args.rowInfo.rowData.id,
+            inbox: 'TRASH'
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
+            _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          
+          _this.$eventHub.$emit("page_change");
+
+          _this.has_nextPage = response.data.has_nextPage;
+          if(!response.data.has_nextPage){
+            _this.$eventHub.$emit("disable_nxtBtn", true);
+          }
         }).catch(error => {
           console.log(error);
           _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -463,6 +504,13 @@ export default{
         }else{
           contextMenuObj.showItems(["Mark as unread"]);
           contextMenuObj.hideItems(["Mark as read"]);
+        }
+        if(!args.rowInfo.rowData.deleted) {
+          contextMenuObj.showItems(["Delete"]);
+          contextMenuObj.hideItems(["Move to Inbox"]);
+        } else {
+          contextMenuObj.showItems(["Move to Inbox"]);
+          contextMenuObj.hideItems(["Delete"]);
         }
       }else{
 
