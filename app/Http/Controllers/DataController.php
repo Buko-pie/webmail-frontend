@@ -418,14 +418,10 @@ class DataController extends Controller {
         $response = null;
         switch ($option) {
             case 0: //Mark as read
-                
-
                 $response = LaravelGmail::message()->batchRead($request['dataIDs']);
                 break;
 
             case 1: //Mark as unread
-                
-
                 $response = LaravelGmail::message()->batchUnread($request['dataIDs']);
                 break;
 

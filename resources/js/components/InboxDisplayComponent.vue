@@ -184,6 +184,10 @@ export default{
 
 
   computed:{
+    ref_headerTemplate(){
+      return this.$store.state.headerTemplate;
+    },
+
     start(){
       console.log("vue-grids computed")
       this.routes = this.$store.state.routes;
@@ -203,7 +207,10 @@ export default{
       }).then(function (response) {
         let payload = response.data;
         console.log(payload);
-
+        console.log("ref_headerTemplate");
+        console.log(_this.ref_headerTemplate.loading);
+        _this.ref_headerTemplate.show_loading = false;
+        _this.ref_headerTemplate.loading = false;
         // _this.$store.dispatch("set_max_page", Math.ceil(payload.inbox_items_length / 50));
         _this.$store.dispatch("set_email_batch", formatDate(payload.repackaged_data));
         _this.$store.dispatch("set_inbox_items", payload.inbox_items_length);
@@ -248,7 +255,7 @@ export default{
 
     current_inbox(){
       return this.$store.state.current_inbox;
-    }
+    },
   },
 
   mounted(){
@@ -352,7 +359,7 @@ export default{
           });
         }).catch(error => {
           console.log(error);
-          this.$notification.error("somthing went wrong", {  timer: 5 });
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
       }
     },
@@ -669,7 +676,9 @@ export default{
           "X-CSRF-TOKEN": this.csrf_token
         },
         params: {
-          inbox: this.current_inbox.name
+          inbox: this.current_inbox.name,
+          label_id: this.current_inbox.id,
+          option: this.current_inbox.type == 1 ? 'labeled' : null
         }
       }).then(function (response) {
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));

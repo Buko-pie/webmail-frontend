@@ -1,5 +1,5 @@
 <template>
-  <div ref="header_template" class="flex relative items-center h-14">
+  <div ref="header_template" class="flex relative items-center h-14" :start="start">
     <div e-mappinguid="grid-column0">
       <div class="e-checkbox-wrapper e-css z-40">
         <input class="e-checkselectall e-focus" type="checkbox">
@@ -24,7 +24,7 @@
         </ejs-tooltip>
         
         <ejs-tooltip content="More" position="BottomCenter">
-          <ejs-dropdownbutton :items="more_items" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+          <ejs-dropdownbutton :select="markAllRead" :items="more_items" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
         </ejs-tooltip>
       </div>
       <div :class="{'hidden': !items_selected}" class="grid grid-cols-3 divide-x">
@@ -74,13 +74,20 @@
         </div>
       </div>
     </div>
-    <div v-if="selected_all && !selected" class="ml-auto flex items-center justify-center content-center place-content-center">
+    
+    <div class="ml-auto flex items-center justify-center content-center place-content-center">
+      <div v-if="selected_all && !selected">
         <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ selected_items }}</b> emails on this page are selected.</p>
         <ejs-button ref="select_all_email" @click.native="selected_all_items" cssClass="shadow-none">Select all {{ inbox_total }} emails in {{ current_inbox.name }}</ejs-button>
-    </div>
-    <div v-if="selected" class="ml-auto flex items-center justify-center content-center place-content-center">
+      </div>
+
+      <div v-if="selected">
         <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ inbox_total }}</b> emails on this page are selected.</p>
         <ejs-button ref="select_all_email" @click.native="clear_selected_items" cssClass="shadow-none">Clear selection</ejs-button>
+      </div>
+      <div v-if="(loading && items_selected) || (loading && show_loading)">
+        <vue-loaders-ball-beat color="black" scale="0.8"></vue-loaders-ball-beat>
+      </div>
     </div>
   </div>
 </template>
@@ -90,6 +97,8 @@ import Vue from "vue";
 import moment from "moment";
 import VModal from 'vue-js-modal';
 import VueNotification from "@kugatsu/vuenotification";
+import 'vue-loaders/dist/vue-loaders.css';
+import VueLoaders from 'vue-loaders';
 
 import { DropDownButtonPlugin, ProgressButtonPlugin  } from "@syncfusion/ej2-vue-splitbuttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
@@ -104,6 +113,7 @@ Vue.use(ButtonPlugin);
 Vue.use(TooltipPlugin);
 Vue.use(ListViewPlugin);
 Vue.use(VModal, { dialog: true });
+Vue.use(VueLoaders);
 Vue.use(VueNotification, {
   timer: 20
 });
@@ -113,9 +123,10 @@ export default Vue.extend({
   data(){
     return{
       data:{},
+      show_loading: true,
+      loading: true,
       items_selected: false,
       items_unread_selected: false,
-      loading: true,
       read_tgl_button_tt_content: "",
       read_tgl_button_icon: "",
       loading_duration: 15000,
@@ -157,6 +168,11 @@ export default Vue.extend({
   },
 
   computed:{
+    start(){
+      console.log("header computed start");
+      this.$store.dispatch("set_headerTemplate", this);
+    },
+
     message(){
       return this.$store.state.message;
     },
@@ -169,8 +185,8 @@ export default Vue.extend({
       return this.$store.state.dropdown_btn_mv;
     },
 
-    inbox_items(){
-      return this.$store.state.inbox_items;
+    email_batch(){
+      return this.$store.state.email_batch;
     },
 
     inbox_total(){
@@ -228,7 +244,7 @@ export default Vue.extend({
         }
       }).then(function (response) {
         _this.$refs.refresh_progress.click();
-        console.log(response);
+
       }).catch(error => {
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -275,7 +291,7 @@ export default Vue.extend({
         this.selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes);
       }
 
-      _this.$refs.refresh_progress.click();
+      this.$refs.refresh_progress.click();
     },
 
     btnSnooze(){
@@ -328,6 +344,23 @@ export default Vue.extend({
 
     clear_selected_items(){ 
       this.$store.dispatch("set_selected_all_items", false);
+    },
+    
+    markAllRead(){
+      console.log("markAllRead");
+      let unread_batch = [];
+
+      this.email_batch.forEach(email_batch => {
+        if(email_batch.read === false){
+          unread_batch.push(email_batch.id);
+        }
+      });
+
+      if (unread_batch === undefined || unread_batch.length == 0) {
+        this.$notification.dark("No unread messages", {  timer: 5 });
+      }else{
+        this.selectedItemsTo(0, unread_batch, this.$store.state.routes);
+      }
     },
 
     moreOptions(args){
@@ -385,7 +418,7 @@ export default Vue.extend({
         break;
       }
 
-      _this.$refs.refresh_progress.click();
+      this.$refs.refresh_progress.click();
     }
   },
 

@@ -10,7 +10,7 @@ export const store = new Vuex.Store({
     counter: 0,
     routes: {},
     csrf_token: null,
-    current_inbox: {name: 'INBOX', id: 'INBOX'},
+    current_inbox: {name: 'INBOX', id: 'INBOX', type: 0}, // type 0 for inbox folders, 1 for labels
     email_batch: null,
     current_page: 0,
     max_page: 0,
@@ -33,6 +33,7 @@ export const store = new Vuex.Store({
     selected_email_attachments: null,
     splitter_height: null,
     splitter_pane_0_height: null,
+    headerTemplate: null,
   },
 
   mutations:{
@@ -46,7 +47,7 @@ export const store = new Vuex.Store({
 
     set_current_inbox(state, payload){
 
-      state.current_inbox = {name: payload.name, id: payload.id};
+      state.current_inbox = {name: payload.name, id: payload.id, type: payload.type};
     },
 
     set_email_batch(state, payload){
@@ -132,6 +133,10 @@ export const store = new Vuex.Store({
 
     set_splitter_pane_0_height(state, payload){
       state.splitter_pane_0_height = payload;
+    },
+
+    set_headerTemplate(state, payload){
+      state.headerTemplate = payload;
     }
   },
 
@@ -230,6 +235,10 @@ export const store = new Vuex.Store({
 
     set_splitter_pane_0_height(state, payload){
       state.commit("set_splitter_pane_0_height", payload);
+    },
+
+    set_headerTemplate(state, payload){
+      state.commit("set_headerTemplate", payload);
     }
   },
 

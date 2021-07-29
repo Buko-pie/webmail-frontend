@@ -620,6 +620,10 @@ export default Vue.extend({
   },
 
   computed:{
+    ref_headerTemplate(){
+      return this.$store.state.headerTemplate;
+    },
+
     start(){
       console.log("Sidebar component computed");
       let routes = {
@@ -1003,18 +1007,25 @@ export default Vue.extend({
       console.log(inbox_name);
       let _this = this;
 
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
+
       axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
-          inbox: inbox_name
+          inbox: inbox_name,
+          inbox_id: inbox_id,
+          option: null
         }
       }).then(function (response) {
         console.log(response);
-        _this.$store.dispatch("set_current_inbox", {name: inbox_name, id: inbox_id});
+        _this.$store.dispatch("set_current_inbox", {name: inbox_name, id: inbox_id, type: 0});
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
         
+        _this.ref_headerTemplate.show_loading = false;
+        _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
@@ -1026,6 +1037,8 @@ export default Vue.extend({
       console.log(name);
       let _this = this;
 
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
       axios.get(this.routes.data_route,{
         headers: this.headers,
         params: {
@@ -1035,11 +1048,13 @@ export default Vue.extend({
         }
       }).then(function (response) {
         console.log(response);
-        _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id});
+        _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
         
+        _this.ref_headerTemplate.show_loading = false;
+        _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("page_change");
       }).catch(error => {
         console.log(error);
@@ -1061,6 +1076,8 @@ export default Vue.extend({
         console.log(args.data.id);
         console.log(this.selected_items_dataID);
 
+        _this.ref_headerTemplate.show_loading = true;
+        _this.ref_headerTemplate.loading = true;
         axios.get(this.routes.set_many_route, {
           headers: {
             "Content-Type":   "application/json",
@@ -1073,7 +1090,9 @@ export default Vue.extend({
             current_inbox_id: this.current_inbox.id,
           }
         }).then(function (response) {
-          _this.refreshInbox();
+          // _this.refreshInbox();
+          _this.ref_headerTemplate.show_loading = false;
+          _this.ref_headerTemplate.loading = false;
           console.log(response);
         }).catch(error => {
           console.log(error);
