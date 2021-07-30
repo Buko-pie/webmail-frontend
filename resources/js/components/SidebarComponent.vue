@@ -640,6 +640,7 @@ export default Vue.extend({
         upload_profile_pic:   this.url_base + "/upload_profile_pic",
         user_profile_path:    this.url_base + "/img/users_profile_photo/",
         delete_mail:          this.url_base + "/delete_mail",
+        delete_mail_forever:  this.url_base + "/delete_mail_forever",
         move_to_inbox:        this.url_base + "/move_to_inbox",
       };
       console.log(routes);

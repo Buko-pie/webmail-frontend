@@ -34,6 +34,7 @@ export const store = new Vuex.Store({
     splitter_height: null,
     splitter_pane_0_height: null,
     headerTemplate: null,
+    search: '',
   },
 
   mutations:{
@@ -137,7 +138,11 @@ export const store = new Vuex.Store({
 
     set_headerTemplate(state, payload){
       state.headerTemplate = payload;
-    }
+    },
+
+    set_search(state, payload){
+      state.search = payload;
+    },
   },
 
   actions:{
@@ -239,7 +244,11 @@ export const store = new Vuex.Store({
 
     set_headerTemplate(state, payload){
       state.commit("set_headerTemplate", payload);
-    }
+    },
+
+    set_search(state, payload){
+      state.commit("set_search", payload);
+    },
   },
 
   getters:{

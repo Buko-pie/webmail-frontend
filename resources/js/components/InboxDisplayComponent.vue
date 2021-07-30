@@ -18,6 +18,7 @@
       :rowSelected="rowSelected"
       :rowDeselected="rowDeselected"
       :data="routes"
+      :searchSettings="searchOptions"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
@@ -31,7 +32,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
-import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page } from "@syncfusion/ej2-vue-grids";
+import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page, Toolbar, Search } from "@syncfusion/ej2-vue-grids";
 
 const fileIcons = require("file-icons-js");
 let header_template = Vue.component("header-template", require("./subcomponents/HeaderTemplate.vue").default);
@@ -72,6 +73,7 @@ export default{
 
   data(){
     return{
+      searchOptions: { operator: 'contains', key: '', ignoreCase: true },
       csrf_token: null,
       index: 0,
       max_pages: null,
@@ -89,6 +91,7 @@ export default{
         { id: "mark_read", text: "Mark as read" },
         { id: "delete", text: "Delete" },
         { id: "move_to_inbox", text: "Move to Inbox" },
+        { id: "delete_forever", text: "Delete Forever" },
         // { text: "Add Label" }
       ],
       select_option: null,
@@ -373,6 +376,35 @@ export default{
           console.log(error);
           this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+      } else if(args.item.id === "delete_forever") {
+        axios.get(this.$store.state.routes.delete_mail_forever,{
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            id: args.rowInfo.rowData.id,
+            inbox: 'TRASH'
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
+            _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          
+          _this.$eventHub.$emit("page_change");
+
+          _this.has_nextPage = response.data.has_nextPage;
+          if(!response.data.has_nextPage){
+            _this.$eventHub.$emit("disable_nxtBtn", true);
+          }
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
       } else if(args.item.id === "move_to_inbox") {
         axios.get(this.$store.state.routes.move_to_inbox,{
           headers: {
@@ -508,7 +540,9 @@ export default{
         if(!args.rowInfo.rowData.deleted) {
           contextMenuObj.showItems(["Delete"]);
           contextMenuObj.hideItems(["Move to Inbox"]);
+          contextMenuObj.hideItems(["Delete Forever"]);
         } else {
+          contextMenuObj.showItems(["Delete Forever"]);
           contextMenuObj.showItems(["Move to Inbox"]);
           contextMenuObj.hideItems(["Delete"]);
         }
@@ -618,7 +652,7 @@ export default{
   },
 
   provide: {
-    grid: [ContextMenu, Sort, Edit, Page]
+    grid: [ContextMenu, Sort, Edit, Page, Toolbar, Search]
   },
 
   created(){
@@ -716,6 +750,8 @@ export default{
     //Refresh Inbox
     this.$eventHub.$on("refresh_inbox", (e)=>{
       console.log("refresh_inbox");
+      //sets the search text
+      this.$refs.grid.ej2Instances.searchSettings.key = this.$store.state.search;
 
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
