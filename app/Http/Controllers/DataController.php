@@ -503,6 +503,26 @@ class DataController extends Controller {
         ], 200);
     }
 
+    public function delete_mail_forever(Request $request) {
+        $items = $request->items ?? 100;
+        $mail = LaravelGmail::message()->get($request->id);
+        $mail->removeFromTrash();
+
+        $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
+        $gmail_data = $check_empty;
+        if(count($check_empty) > 0) {
+            $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+        }
+        $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+        $inbox_items_length = count($gmail_data);
+
+        return response()->json([
+            'has_nextPage'       => $gmail_data->hasNextPage(),
+            'inbox_items_length' => $inbox_items_length,
+            'inbox_info'         => $inbox,
+        ], 200);
+    }
+
     public function move_to_inbox(Request $request) {
         $items = $request->items ?? 100;
         $mail = LaravelGmail::message()->get($request->id);
