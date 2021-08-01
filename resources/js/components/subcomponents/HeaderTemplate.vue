@@ -74,17 +74,18 @@
         </div>
       </div>
     </div>
-    
-    <div class="ml-auto flex items-center justify-center content-center place-content-center">
-      <div v-if="selected_all && !selected">
+
+    <div class="ml-auto">
+      <div v-if="selected_all && !selected" class="flex items-center justify-center content-center place-content-center">
         <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ selected_items }}</b> emails on this page are selected.</p>
         <ejs-button ref="select_all_email" @click.native="selected_all_items" cssClass="shadow-none">Select all {{ inbox_total }} emails in {{ current_inbox.name }}</ejs-button>
       </div>
 
-      <div v-if="selected">
-        <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ inbox_total }}</b> emails on this page are selected.</p>
+      <div v-if="selected" class="flex items-center justify-center content-center place-content-center">
+        <p class="text-gray-500 text-base font-medium font-roboto"> All <b>{{ inbox_total }}</b> emails on this inbox are selected.</p>
         <ejs-button ref="select_all_email" @click.native="clear_selected_items" cssClass="shadow-none">Clear selection</ejs-button>
       </div>
+
       <div v-if="(loading && items_selected) || (loading && show_loading)">
         <vue-loaders-ball-beat color="black" scale="0.8"></vue-loaders-ball-beat>
       </div>
@@ -189,6 +190,10 @@ export default Vue.extend({
       return this.$store.state.email_batch;
     },
 
+    inbox_items(){
+      return this.$store.state.inbox_items;
+    },
+
     inbox_total(){
       return this.$store.state.inbox_total;
     },
@@ -206,7 +211,7 @@ export default Vue.extend({
     },
 
     selected_all(){
-      return this.$store.state.selected_items_count === this.inbox_items;
+      return this.selected_items === this.inbox_items;
     },
 
     selected(){
