@@ -325,7 +325,7 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="custom_labels_temp" showCheckBox="true" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="user_labels" showCheckBox="true" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -1053,12 +1053,22 @@ export default Vue.extend({
     },
 
     editLabel(){
-      let data = {
-        option: "edit",
-        label_id: this.selected_label.id,
-        label_name: this.new_lbl_name,
+      if(this.new_lbl_name){
+        if(isExistLabel(this.new_lbl_name, this.labels_locations)){
+          this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+        }else{
+          let data = {
+            option: "edit",
+            label_id: this.selected_label.id,
+            label_name: this.new_lbl_name,
+          }
+          this.labels_ajax(data);
+        }
+      }else{
+        this.new_lbl_txt = "No name specified. Please try another name:"
       }
-      this.labels_ajax(data);
+      
+     
     },
 
     //Compose new email
@@ -1255,7 +1265,7 @@ export default Vue.extend({
 
           _this.modalHide();
           _this.$store.dispatch("set_user_labels", payload.labels);
-          _this.$notification.success("Label: " + data.label_text + " " + data.option + "ed", {  timer: 5 });
+          _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
         }).catch(error => {
           console.log(error);
           _this.$notification.error("somthing went wrong", {  timer: 5 });
