@@ -40,6 +40,7 @@ Route::get('/toggle_many_data', [DataController::class, 'toggle_many_data'])->na
 Route::get('/delete_mail', [DataController::class, 'delete_mail'])->name('delete_mail');
 Route::get('/delete_mail_forever', [DataController::class, 'delete_mail_forever'])->name('delete_mail_forever');
 Route::get('/move_to_inbox', [DataController::class, 'move_to_inbox'])->name('move_to_inbox');
+Route::post('/labels', [DataController::class, 'labels'])->name('labels');
 
 Route::get('/gmailAPItest', function () {
   return view('gmailAPItest');
