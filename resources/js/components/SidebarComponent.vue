@@ -90,6 +90,23 @@
     </div>
   </modal>
 
+  <!-- Edit label modal  -->
+  <modal name="edit_label_modal" @before-open="modalOpened" @before-close="modalClosed">
+    <div class="p-5 h-full relative">
+      <h3 class="text-2xl font-semibold">Edit Label</h3>
+      <br>
+      <p class="text-gray-400">{{ new_lbl_txt }}</p>
+      <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
+        <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
+      </div>
+
+      <div class="absolute bottom-5 right-5">
+        <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
+        <ejs-button v-on:click.native="editLabel" :isPrimary="true">Edit</ejs-button>
+      </div>
+    </div>
+  </modal>
+
   <!-- Date picker modal -->
   <modal name="date_picker_modal" :adaptive="true">
     <div class="p-4 h-auto relative">
@@ -153,6 +170,13 @@
           </button>
         </div>
         <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
+          <a @click="goToInbox('All', 'All')" :class="[ current_inbox.name === 'All' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-box-open text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">All emails</p>
+          </a>
+
           <a @click="goToInbox('INBOX', 'INBOX')" :class="[ current_inbox.name === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
@@ -238,14 +262,16 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
-            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" :class="[ current_inbox === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
               <div class="sidebar_icons">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
                 />
               </div>
               <p class="sidebar_text" v-show="toggled">{{ label.text }}</p>
+              <ejs-dropdownbutton :items="more_items" :select="label_options" @click.native="selected_label = label" @mouseover.native="mouseHover" @mouseleave.native="mouseLeave" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide ml-auto w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
             </a>
+            
           </div>
 
           <a @click="modalShow" class="sidebar_items" href="#">
@@ -299,7 +325,7 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="custom_labels" showCheckBox="true" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="labels_locations" showCheckBox="true" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -327,7 +353,7 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview id="moveTo_options_0" ref="moveTo_options_0" :select="selectMoveToOps" :dataSource="moveTo_locations" :fields="fields"></ejs-listview>
+          <ejs-listview id="moveTo_options_0" ref="moveTo_options_0" :select="selectMoveToOps" :dataSource="labels_locations" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -502,10 +528,10 @@ function validateEmails(emailArray){
   return results;
 }
 
-function isExistLabel(new_label, custom_labels){
-  for (let i = 0; i < custom_labels.length; i++) {
-    console.log(custom_labels)
-    if(custom_labels[i].title === new_label){
+function isExistLabel(new_label, user_labels){
+  for (let i = 0; i < user_labels.length; i++) {
+    console.log(user_labels)
+    if(user_labels[i].text === new_label){
       return true;
     }
   }
@@ -550,6 +576,8 @@ export default Vue.extend({
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
       category_toggle: false,
+      hover_label_opt: false,
+      selected_label: null,
       email_address_tag: "",
       email_address_tags: [],
       email_addresses: null,
@@ -563,10 +591,6 @@ export default Vue.extend({
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
       fields: { tooltip: 'text'},
-      custom_labels:[
-        {id: 0, text: "test_label"},
-        {id: 1, text: "test_label_2"}
-      ],
 
       labels_options:[
         {id: 0, text: "Create new"}, 
@@ -584,6 +608,11 @@ export default Vue.extend({
         { id: 0, text: "Updates" },
         { id: 0, text: "Forums" },
         { id: 0, text: "Promotions" }
+      ],
+
+      more_items:[  
+        { id: 0, text: "Edit label" },
+        { id: 1, text: "Delete label" }
       ],
 
       // moveTo_locations:[],
@@ -642,6 +671,7 @@ export default Vue.extend({
         delete_mail:          this.url_base + "/delete_mail",
         delete_mail_forever:  this.url_base + "/delete_mail_forever",
         move_to_inbox:        this.url_base + "/move_to_inbox",
+        labels:               this.url_base + "/labels",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);
@@ -685,11 +715,10 @@ export default Vue.extend({
     },
 
     user_labels(){
-      console.log(this.$store.state.user_labels);
       return this.$store.state.user_labels;
     },
 
-    moveTo_locations(){
+    labels_locations(){
       if(this.user_labels){
         // return this.user_labels.concat(this.categories);
         return this.user_labels;
@@ -711,7 +740,7 @@ export default Vue.extend({
 
     selected_items_dataID(){
       return this.$store.state.selected_items_dataID
-    }
+    },
   },
 
   components:{},
@@ -737,6 +766,14 @@ export default Vue.extend({
   },
 
   methods: {
+    mouseHover(){
+      this.hover_label_opt = true;
+    },
+
+    mouseLeave(){
+      this.hover_label_opt = false;
+    },
+   
     openModalNewProfile(){
       // this.$modal.show('new_profile_modal');
       this.show_upload_profile_pic = !this.show_upload_profile_pic;
@@ -812,8 +849,13 @@ export default Vue.extend({
       this.$modal.show('new_label_modal');
     },
 
+    modalShow_editLabel(){
+      this.$modal.show('edit_label_modal');
+    },
+
     modalHide(){
       this.$modal.hide('new_label_modal');
+      this.$modal.hide('edit_label_modal');
     },
 
     modalOpened(){
@@ -965,21 +1007,54 @@ export default Vue.extend({
 
     createNewLabel(){
       if(this.new_lbl_name){
-        if(isExistLabel(this.new_lbl_name, this.custom_labels)){
+        if(isExistLabel(this.new_lbl_name, this.labels_locations)){
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
           console.log(this.new_lbl_name);
-          this.custom_labels.push({id: (this.custom_labels.length), text: this.new_lbl_name});
-          
-          this.moveTo_locations = this.custom_labels.concat(this.categories);
+          let _this = this;
+          let new_lbl_name = this.new_lbl_name;
 
+          let data = {
+            option: "create",
+            label_name: new_lbl_name,
+          };
+
+          axios.post(this.routes.labels, data, {
+          headers:{
+              "Content-Type": "multipart/mixed",
+              "Authorization": "Bearer " + csrf_token,
+              "X-CSRF-TOKEN": csrf_token
+            }
+          }).then(function (response) {
+            let payload = response.data;
+            console.log(payload);
+            console.log(new_lbl_name);
+
+            _this.$store.dispatch("set_user_labels", payload.labels)
+            _this.$modal.hide("new_label_modal");
+            _this.$notification.success("Label: " + new_lbl_name + " created", {  timer: 5 });
+          }).catch(error => {
+            console.log(error);
+            _this.$modal.hide("new_label_modal");
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+
+          this.new_lbl_txt = null;
           this.new_lbl_name = null;
-          this.$modal.hide("new_label_modal");
         }
       }else{
         this.new_lbl_txt = "No name specified. Please try another name:"
       }
       
+    },
+
+    editLabel(){
+      let data = {
+        option: "edit",
+        label_id: this.selected_label.id,
+        label_name: this.new_lbl_name,
+      }
+      this.labels_ajax(data);
     },
 
     //Compose new email
@@ -1037,32 +1112,34 @@ export default Vue.extend({
     },
 
     goToLabel(label_name, lable_id){
-      console.log(name);
-      let _this = this;
+      if(!this.hover_label_opt){
+        let _this = this;
 
-      _this.ref_headerTemplate.show_loading = true;
-      _this.ref_headerTemplate.loading = true;
-      axios.get(this.routes.data_route,{
-        headers: this.headers,
-        params: {
-          inbox: label_name,
-          label_id: lable_id,
-          option: "labeled"
-        }
-      }).then(function (response) {
-        console.log(response);
-        _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
-        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
-        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-        
-        _this.ref_headerTemplate.show_loading = false;
-        _this.ref_headerTemplate.loading = false;
-        _this.$eventHub.$emit("page_change");
-      }).catch(error => {
-        console.log(error);
-        this.$notification.error("somthing went wrong", {  timer: 5 });
-      });
+        _this.ref_headerTemplate.show_loading = true;
+        _this.ref_headerTemplate.loading = true;
+        axios.get(this.routes.data_route,{
+          headers: this.headers,
+          params: {
+            inbox: label_name,
+            label_id: lable_id,
+            option: "labeled"
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          
+          _this.ref_headerTemplate.show_loading = false;
+          _this.ref_headerTemplate.loading = false;
+          _this.$eventHub.$emit("page_change");
+        }).catch(error => {
+          console.log(error);
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      }
+      
     },
 
     selectMoveToOps(args){
@@ -1158,6 +1235,53 @@ export default Vue.extend({
         _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
+
+    labels_ajax(data){
+      if(data){
+        let _this = this;
+        axios.post(this.routes.labels, data, {
+        headers:{
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
+          }
+        }).then(function (response) {
+          let payload = response.data;
+          console.log(payload);
+
+          _this.modalHide();
+          _this.$store.dispatch("set_user_labels", payload.labels);
+          _this.$notification.success("Label: " + data.label_text + " " + data.option + "ed", {  timer: 5 });
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      }
+    },
+
+    label_options(args){
+
+      let data = null;
+      switch (args.item.text) {
+        case "Delete label":
+          data = {
+            option: "delete",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "Edit label":
+          this.new_lbl_name = this.selected_label.text;
+          this.modalShow_editLabel();
+          break;
+      
+        default:
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+          break;
+      }
+    }
   },
 
   directives: {
