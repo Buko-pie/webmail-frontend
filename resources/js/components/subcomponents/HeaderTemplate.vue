@@ -356,7 +356,6 @@ export default Vue.extend({
     },
     
     markAllRead(){
-      console.log("markAllRead");
       let unread_batch = [];
 
       this.email_batch.forEach(email_batch => {

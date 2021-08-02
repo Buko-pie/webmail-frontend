@@ -9,6 +9,7 @@ use App\Dacastro4\LaravelGmail\Traits\SendsParameters;
 use Google_Service_Gmail;
 use Google_Service_Gmail_BatchModifyMessagesRequest;
 use Google_Service_Gmail_BatchDeleteMessagesRequest;
+use Google_Service_Gmail_Label;
 
 
 class Message
@@ -43,6 +44,7 @@ class Message
 		$this->service = new Google_Service_Gmail($client);
     $this->batchModifyRequest = new Google_Service_Gmail_BatchModifyMessagesRequest();
     $this->batchDeleteRequest = new Google_Service_Gmail_BatchDeleteMessagesRequest();
+    $this->labelRequest = new Google_Service_Gmail_Label;
 	}
 
 	/**
@@ -207,6 +209,11 @@ class Message
 
   //==================ADDED CODES==================
 
+  public function getProfile()
+  {
+    return $this->service->users->getProfile('me');
+  }
+
     /**
 	 * Returns object list of user labels
 	 *
@@ -286,5 +293,25 @@ class Message
     $this->batchDeleteRequest->setIds($ids);
 
     return $this->service->users_messages->batchDelete('me', $this->batchDeleteRequest);
+  }
+
+  public function deleteLabel($label_id)
+  {
+
+    return $this->service->users_labels->delete('me', $label_id);
+  }
+
+  public function createLabel($label_name)
+  {
+    $this->labelRequest->setName($label_name);
+
+    return $this->service->users_labels->create('me', $this->labelRequest);
+  }
+
+  public function updateLabel($label_id, $new_label_name)
+  {
+    $this->labelRequest->setName($new_label_name);
+
+    return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
   }
 }
