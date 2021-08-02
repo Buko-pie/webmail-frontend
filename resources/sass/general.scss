@@ -134,3 +134,25 @@ em.specs {
   padding: 4px;
   flex-wrap: wrap;
 }
+
+.e-dropdown-popup ul {
+  background-color: white;
+  border: none;
+  border-radius: 0;
+  box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: normal;
+  list-style-image: none;
+  list-style-position: outside;
+  list-style-type: none;
+  margin: 0;
+  min-width: 120px;
+  overflow: hidden;
+  padding: 8px 0;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  white-space: nowrap;
+}
