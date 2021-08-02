@@ -79,6 +79,14 @@ class DataController extends Controller {
 
                   $inbox_items_length = count($gmail_data);
                   
+                } else if($request['inbox'] == 'All') {
+                  $gmail_data = $check_empty;
+                  if(count($check_empty) > 0) {
+                    $gmail_data = LaravelGmail::message()->take($items)->preload()->all();
+                  }
+                  $inbox = LaravelGmail::message()->getProfile();
+
+                  $inbox_items_length = count($gmail_data);
                 } else {
                   //get emails through inbox/folders
                   $gmail_data = $check_empty;
@@ -305,7 +313,7 @@ class DataController extends Controller {
         $path = storage_path($subpath);
 
         if (!file_exists($path)) {
-            return response()->json("File does not exist", 405);
+            return response()->json("File does not exist", 404);
         }
 
         return response()->download($path);
@@ -542,5 +550,61 @@ class DataController extends Controller {
             'inbox_items_length' => $inbox_items_length,
             'inbox_info'         => $inbox,
         ], 200);
+    }
+
+    public function labels(Request $request)
+    {
+      $user = LaravelGmail::user();
+
+      if(isset($user)){
+        $content = json_decode($request->getContent());
+        $option = $content->option;
+        $result = null;
+        $response = null;
+
+        switch ($option) {
+          case 'delete':
+            $result = 'delete label';
+            $response = LaravelGmail::message()->deleteLabel($content->label_id);
+            break;
+
+          case 'create':
+            $result = 'create label';
+            $response = LaravelGmail::message()->createLabel($content->label_name);
+            break;
+
+          case 'edit':
+            $result = 'create label';
+            $response = LaravelGmail::message()->updateLabel($content->label_id, $content->label_name);
+            break;
+          
+          default:
+            return response()->json("Empty label query", 404);
+            break;
+        }
+
+        $labels = LaravelGmail::message()->listLabels()->labels;
+        $labels = array_slice($labels, 14);
+        $user_labels = [];
+
+        foreach ($labels as $label) {
+          $user_labels[] = [
+            'id'                    => $label->id,
+            'text'                  => $label->name,
+            'type'                  => $label->type,
+            'labelListVisibility'   => $label->labelListVisibility,
+            'messageListVisibility' => $label->messageListVisibility,
+            'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff']
+          ];
+        }
+
+        return response()->json([
+          'labels' => $user_labels,
+          'result' => $result,
+          'response' => $response
+        ], 200);
+      }else{
+        return LaravelGmail::redirect();
+      }
     }
 }
