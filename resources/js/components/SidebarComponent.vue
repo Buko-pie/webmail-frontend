@@ -295,11 +295,11 @@
     <div>
         <p>Label as:</p>
         <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
-          <input id="searchbar_label" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <input id="searchbar_label" @change="searchInput" v-model="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="custom_labels" showCheckBox="true" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="custom_labels_temp" showCheckBox="true" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -522,6 +522,7 @@ export default Vue.extend({
 
   data() {
     return {
+      search: '',
       routes: null,
       enableDock:  true,
       dockSize : "72px",
@@ -563,10 +564,8 @@ export default Vue.extend({
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
       fields: { tooltip: 'text'},
-      custom_labels:[
-        {id: 0, text: "test_label"},
-        {id: 1, text: "test_label_2"}
-      ],
+      custom_labels: [],
+      custom_labels_temp: [],
 
       labels_options:[
         {id: 0, text: "Create new"}, 
@@ -734,6 +733,7 @@ export default Vue.extend({
     // this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
 
     // console.log(this.$store.state.user_profile_photo);
+    this.custom_labels_temp = this.custom_labels
   },
 
   methods: {
@@ -1158,6 +1158,11 @@ export default Vue.extend({
         _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
+
+    searchInput() {
+      const result = this.custom_labels.filter(word => word.text.includes(this.search))
+      this.custom_labels_temp = result
+    }
   },
 
   directives: {
@@ -1188,6 +1193,11 @@ export default Vue.extend({
 
     this.$eventHub.$on("show_datepick_modal", (e) => {
       this.$modal.show('date_picker_modal');
+    });
+
+    this.$eventHub.$on("show_custom_dropdown", (e) => {
+      this.custom_labels = this.$store.state.user_labels
+      this.custom_labels_temp = this.custom_labels
     });
   }
 });
