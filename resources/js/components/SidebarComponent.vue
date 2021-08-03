@@ -1333,16 +1333,17 @@ export default Vue.extend({
 
         case "Edit label":
           let labels = this.selected_label.text.split("/")
+          this.parent_label_edit = this.user_labels;
+
+          this.parent_label_edit.forEach((label, index) => {
+            if(label.text === this.selected_label.text){
+              this.parent_label_edit.splice(index, 1);
+            }
+          });
 
           if(labels.length > 1){
             this.nested_label = true;
-            this.parent_label_edit = this.user_labels;
-
-            this.parent_label_edit.forEach((label, index) => {
-              if(label.text === this.selected_label.text){
-                this.parent_label_edit.splice(index, 1);
-              }
-            });
+            
 
             let sub_label = labels[labels.length - 1];
             labels.pop();
