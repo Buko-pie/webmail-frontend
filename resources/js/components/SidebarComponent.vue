@@ -107,7 +107,7 @@
 
       <div id="subLabels_edit" class="pt-5">
         <ejs-checkbox label="Nested label under:" :checked="nested_label" :change="nestedCheckbox"></ejs-checkbox>
-        <ejs-dropdownlist id="parent_label_edit" ref="parent_label_edit" :enabled="nested_label" :dataSource="user_labels" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
+        <ejs-dropdownlist id="parent_label_edit" ref="parent_label_edit" :enabled="nested_label" :dataSource="parent_label_edit" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
       </div>
 
       <div class="absolute bottom-5 right-5">
@@ -613,6 +613,7 @@ export default Vue.extend({
       new_lbl_txt: "Please enter new label name:",
       nested_label: false,
       selected_parent: null,
+      parent_label_edit: null,
       fields: { tooltip: 'text'},
       custom_labels: [],
       custom_labels_temp: [],
@@ -1332,9 +1333,17 @@ export default Vue.extend({
 
         case "Edit label":
           let labels = this.selected_label.text.split("/")
-          this.nested_label = true;
 
-          if(labels.length > 0){
+          if(labels.length > 1){
+            this.nested_label = true;
+            this.parent_label_edit = this.user_labels;
+
+            this.parent_label_edit.forEach((label, index) => {
+              if(label.text === this.selected_label.text){
+                this.parent_label_edit.splice(index, 1);
+              }
+            });
+
             let sub_label = labels[labels.length - 1];
             labels.pop();
             let parent_label = "";
