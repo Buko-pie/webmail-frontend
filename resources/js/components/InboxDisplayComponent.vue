@@ -119,7 +119,7 @@ export default{
           //Column - Starred
           field: "starred",
           headerText: "",
-          width: "38",
+          width: "40",
           allowSorting: false,
           template(){
             return{ template: starred_template }
@@ -139,9 +139,9 @@ export default{
           //Column - Sender
           field: "sender",
           headerText: "",
-          minWidth: "100",
-          width: "150",
-          maxWidth: "160",
+          minWidth: "120",
+          width: "120",
+          maxWidth: "120",
           allowSorting: false
         },{
           //Column - Message
@@ -155,8 +155,8 @@ export default{
           //Column - Has attachment
           field: "has_attachment",
           headerText: "",
-          width: "60",
-          "text-align": "Right",
+          width: "40",
+          textAlign: "Right",
           template(){
             return{ template: attachment_template }
           },
@@ -165,14 +165,20 @@ export default{
           //Column - Created At
           field: "created_at",
           headerText: "",
-          width: "100",
-          "text-align": "Right",
+          width: "50",
+          textAlign: "Right",
           allowSorting: false
+        },{
+          //Column - spacer
+          field: "spacer",
+          headerText: "",
+          width: "20",
+          visible: true
         },{
           //Column - Read
           field: "read",
           headerText: "",
-          "text-align": "Right",
+          textAlign: "Right",
           visible: false
         }
       ],
