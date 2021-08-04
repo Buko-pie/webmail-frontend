@@ -102,14 +102,14 @@ class DataController extends Controller {
                 $custom_labels = [];
                 
                 foreach ($gmail_data as $data) {
-                  $labelsLen = count($data->getLabels());
-                  $custom_label_tags = "";
-                  for($i=0; $i<$labelsLen; $i++) {
-                    if($data->getLabels()[$i] !== 'UNREAD' && $data->getLabels()[$i] !== 'CATEGORY_UPDATES' && $data->getLabels()[$i] !== 'INBOX') { 
-                      array_push($custom_labels, $data->getLabels()[$i]);
-                      $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
-                    }
-                  }
+                  // $labelsLen = count($data->getLabels());
+                  // $custom_label_tags = "";
+                  // for($i=0; $i<$labelsLen; $i++) {
+                  //   if($data->getLabels()[$i] !== 'UNREAD' && $data->getLabels()[$i] !== 'CATEGORY_UPDATES' && $data->getLabels()[$i] !== 'INBOX') { 
+                  //     array_push($custom_labels, $data->getLabels()[$i]);
+                  //     $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
+                  //   }
+                  // }
                     array_push($repackaged_data, [
                         'id'              => $data->id,
                         'sender'          => $data->getFromName(),
