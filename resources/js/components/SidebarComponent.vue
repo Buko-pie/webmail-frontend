@@ -331,15 +331,15 @@
     <div>
         <p>Label as:</p>
         <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
-          <input id="searchbar_label" @change="searchInput" v-model="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <input id="searchbar_label" @keyup="searchInput" :value="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="user_labels" showCheckBox="true" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="custom_labels_temp" showCheckBox="true" :select="selected" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
-        <ejs-listview id="lbl_options" ref="lbl_options" :fields="fields" :select="selectLabelOps" :dataSource="labels_options"></ejs-listview>
+        <ejs-listview id="lbl_options" ref="lbl_options" :fields="fields" :select="selectLabelOps" :dataSource="label_selected ? labels_options_apply : labels_options"></ejs-listview>
       </div>
     </div>
   </div>
@@ -370,7 +370,7 @@
         <ejs-listview id="moveTo_options_1" ref="moveTo_options_1" :select="selectMoveToOps" :dataSource="moveTo_options" :fields="fields"></ejs-listview>
       </div>
       <div>
-        <ejs-listview id="moveTo_options_2" ref="moveTo_options_2" :select="selectMoveToOps" :dataSource="labels_options" :fields="fields"></ejs-listview>
+        <ejs-listview id="moveTo_options_2" ref="moveTo_options_2" :select="selectMoveToOps" :dataSource="label_selected ? labels_options_apply : labels_options" :fields="fields"></ejs-listview>
       </div>
     </div>
   </div>
@@ -569,6 +569,8 @@ export default Vue.extend({
   data() {
     return {
       search: '',
+      label_selected: false,
+      label_selected_array: [],
       routes: null,
       enableDock:  true,
       dockSize : "72px",
@@ -621,6 +623,10 @@ export default Vue.extend({
       labels_options:[
         {id: 0, text: "Create new"}, 
         {id: 1, text: "Manage labels"}
+      ],
+
+      labels_options_apply: [
+        {id: 0, text: "Apply"}
       ],
 
       moveTo_options:[
@@ -696,6 +702,7 @@ export default Vue.extend({
         delete_mail_forever:  this.url_base + "/delete_mail_forever",
         move_to_inbox:        this.url_base + "/move_to_inbox",
         labels:               this.url_base + "/labels",
+        labels_add:           this.url_base + "/labels/add",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);
@@ -1247,11 +1254,33 @@ export default Vue.extend({
     },
 
     selectLabelOps(args){
+      let _this = this;
       console.log(this.$refs.lbl_options);
       this.dropdownHideLabel();
       this.$refs.lbl_options.selectItem();
       if(args.data.text === "Create new"){
         this.modalShow();
+      } else if(args.data.text === "Apply") { // Apply button
+        console.log(this.label_selected_array)
+        // set labels
+        axios.get(this.routes.labels_add, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id: this.selected_items_dataID,
+          labels: this.label_selected_array
+        }
+      }).then(function (response) {
+        console.log(response.data.success)
+        _this.refreshInbox()
+        response.data.success ? _this.$notification.success("Label added", {  timer: 5 }) : _this.$notification.error("Something went wrong", { timer: 5 })
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
       }
     },
 
@@ -1392,14 +1421,33 @@ export default Vue.extend({
       }
     },
 
-    searchInput() {
+    searchInput(e) {
+      const value = e.target.value
+      this.search = value
       const result = this.custom_labels.filter(word => word.text.includes(this.search))
       this.custom_labels_temp = result
     },
 
     nestedCheckbox(args){
       this.nested_label = args.checked;
-    }
+    },
+
+    selected(args) {
+      console.log(args)
+      if(args.isChecked) {
+        this.label_selected = true
+        this.label_selected_array.push(args.data)
+      } else {
+        const pos = this.label_selected_array.findIndex( element => {
+          if (element.id === args.data.id) {
+            return true
+          }
+        })
+        this.label_selected_array.splice(pos,1)
+        this.label_selected_array.length > 0 ? this.label_selected = true : this.label_selected = false
+      }
+      console.log(this.label_selected_array)
+    },
   },
 
   directives: {
