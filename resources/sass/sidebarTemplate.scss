@@ -1,3 +1,17 @@
+.e-sidebar {
+  -webkit-tap-highlight-color: transparent;
+  background: #fff;
+  height: 93.5% !important;
+  overflow: auto;
+  position: fixed;
+  top: 0;
+  transition: none;
+  vertical-align: middle;
+  visibility: hidden;
+  will-change: transform;
+  z-index: 900 !important;
+}
+
 .custom-dropdown-menu{
   position: absolute;
   width: 213px;

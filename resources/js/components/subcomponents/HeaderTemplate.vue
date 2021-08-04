@@ -317,6 +317,7 @@ export default Vue.extend({
 
       setTimeout(function() {
         _this.$store.dispatch("dropdown_btn_mv_toggle", !this.dropdown_btn_mv);
+        _this.$store.dispatch("set_dropdown_menu_opened", "dropdown_btn_mv_toggle");
       }, 0);
     },
 
@@ -330,6 +331,7 @@ export default Vue.extend({
 
       setTimeout(function() {
         _this.$store.dispatch("dropdown_btn_lbl_toggle", !this.dropdown_btn_lbl);
+        _this.$store.dispatch("set_dropdown_menu_opened", "dropdown_btn_lbl_toggle");
       }, 0);
       
     },

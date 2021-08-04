@@ -20,6 +20,7 @@ export const store = new Vuex.Store({
     user_email: null,
     user_labels: null,
     user_profile_photo: null,
+    dropdown_menu_opened: null,
     dropdown_btn_lbl: false,
     dropdown_btn_mv: false,
     dropdown_btn_user: false,
@@ -110,6 +111,10 @@ export const store = new Vuex.Store({
 
     set_email_attachments(state, payload){
       state.selected_email_attachments = payload;
+    },
+
+    set_dropdown_menu_opened(state, payload){
+      state.dropdown_menu_opened = payload;
     },
 
     dropdown_btn_lbl_toggle(state, payload){
@@ -216,6 +221,10 @@ export const store = new Vuex.Store({
 
     set_email_attachments(state, payload){
       state.commit("set_email_attachments", payload);
+    },
+
+    set_dropdown_menu_opened(state, payload){
+      state.commit("set_dropdown_menu_opened", payload);
     },
 
     dropdown_btn_lbl_toggle(state, payload){

@@ -179,7 +179,7 @@
             <span class="compose_text" v-show="toggled">Compose</span>
           </button>
         </div>
-        <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
+        <div id="sidebar_list" ref="sidebar_list" class="sidebar-list pb-3">
           <a @click="goToInbox('All', 'All')" :class="[ current_inbox.name === 'All' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-box-open text-lg"></i>
@@ -655,9 +655,7 @@ export default Vue.extend({
       ],
       
       accounts_list_template(){
-        return{
-          template: accounts_list_template
-        }
+        return{ template: accounts_list_template }
       },
 
       inbox_template(){
@@ -755,7 +753,7 @@ export default Vue.extend({
     },
 
     email_data(){
-      let data = this.$store.state.selected_email_data
+      let data = this.$store.state.selected_email_data;
 
       if(data !== null){
         this.email_date_display = moment(data.date).format("LLL");
@@ -765,7 +763,11 @@ export default Vue.extend({
     },
 
     selected_items_dataID(){
-      return this.$store.state.selected_items_dataID
+      return this.$store.state.selected_items_dataID;
+    },
+
+    dropdown_menu_opened(){
+      return this.$store.state.dropdown_menu_opened;
     },
   },
 
@@ -872,7 +874,10 @@ export default Vue.extend({
       this.$store.dispatch("dropdown_btn_email_data_toggle", false);
     },
 
-    modalShow(){
+    modalShow(args){
+      if(args){
+        this.$store.dispatch("set_dropdown_menu_opened", null);
+      }
       this.$modal.show('new_label_modal');
     },
 
@@ -889,15 +894,24 @@ export default Vue.extend({
     },
 
     modalOpened(){
-      if(this.toggled){
-        this.$refs.dockSidebar.toggle();
-      }
+      // if(this.toggled){
+      //   this.$refs.dockSidebar.toggle();
+      // }
     },
     
-    modalClosed(){
-      if(!this.toggled_sidebar_before_modal_open){
-        this.$refs.dockSidebar.toggle();
+    modalClosed(args){
+      if(args.name === "new_label_modal" && this.dropdown_menu_opened){
+        let _this = this;
+        setTimeout(function() {
+          _this.$store.dispatch(_this.dropdown_menu_opened, true);
+        }, 0);
+        
+      }else{
+        this.$store.dispatch("set_dropdown_menu_opened", null);
       }
+      // if(!this.toggled_sidebar_before_modal_open){
+      //   this.$refs.dockSidebar.toggle();
+      // }
     },
 
     toggleClick() {
@@ -1396,7 +1410,7 @@ export default Vue.extend({
     let _this = this;
 
     this.$eventHub.$on("show_custom_dropdown", (e) => {
-      console.log(e);
+      // console.log(e);
       // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
       if(e.button === "btn_labels"){

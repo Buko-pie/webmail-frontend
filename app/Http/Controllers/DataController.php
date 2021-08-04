@@ -574,7 +574,7 @@ class DataController extends Controller {
             break;
 
           case 'edit':
-            $result = 'create label';
+            $result = 'edit label';
             $response = LaravelGmail::message()->updateLabel($content->label_id, $content->label_name);
             break;
           
