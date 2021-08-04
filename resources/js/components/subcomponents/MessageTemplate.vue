@@ -24,7 +24,7 @@ export default{
       let labelKey = [];
 
       labels.forEach(label => {
-        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#ffffff" }}
+        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" }}
       });
 
       return labelKey;
