@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
+use Validator;
 
 // use App\DummyData;
 use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
@@ -98,13 +99,22 @@ class DataController extends Controller {
                   $inbox_items_length = count($gmail_data);
                 }
 
-
+                $custom_labels = [];
+                
                 foreach ($gmail_data as $data) {
+                  $labelsLen = count($data->getLabels());
+                  $custom_label_tags = "";
+                  for($i=0; $i<$labelsLen; $i++) {
+                    if($data->getLabels()[$i] !== 'UNREAD' && $data->getLabels()[$i] !== 'CATEGORY_UPDATES' && $data->getLabels()[$i] !== 'INBOX') { 
+                      array_push($custom_labels, $data->getLabels()[$i]);
+                      $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
+                    }
+                  }
                     array_push($repackaged_data, [
                         'id'              => $data->id,
                         'sender'          => $data->getFromName(),
                         'receiver'        => $user,
-                        'message'         => $data->getSubject(),
+                        'message'         => $custom_label_tags.$data->getSubject(),
                         'plain_text'      => $data->getPlainTextBody(),
                         'starred'         => in_array('STARRED', $data->getLabels()),
                         'important'       => in_array('IMPORTANT', $data->getLabels()),
@@ -606,5 +616,32 @@ class DataController extends Controller {
       }else{
         return LaravelGmail::redirect();
       }
+    }
+
+    public function labels_add(Request $request)
+    {
+
+      $validator = Validator::make($request->all(), [
+        'id' => 'required'
+      ]);
+
+      if ($validator->fails()) {
+        return response()->json([
+          'success' => false
+        ], 400);
+      } else {
+        $label_arr = [];
+        for($i=0; $i<count($request->labels); $i++) {
+          array_push($label_arr, json_decode($request->labels[$i])->id);
+        }
+    
+        $response = LaravelGmail::message()->batchAddLabel($request['id'], $label_arr);
+        $response ? $success = true : $success = false;
+    
+        return response()->json([
+          'success' => $success
+        ], 200);
+      }
+
     }
 }

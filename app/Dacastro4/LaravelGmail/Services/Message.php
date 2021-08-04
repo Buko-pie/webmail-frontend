@@ -287,6 +287,14 @@ class Message
     return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
   }
 
+	public function batchAddLabel($ids, $labelIds)
+  {
+    $this->batchModifyRequest->setAddLabelIds($labelIds);
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
   //WARINING: permantly delete emails
   public function batchDelete($ids)
   {
