@@ -1,13 +1,14 @@
 <template>
 <div id="message">
   <div class="flex">
-    <p v-for="label_id in data.labels" :key="label_id" class="pr-2">
-      <span v-if="user_labels[label_id]" class="px-2 py-1 font-medium text-xs" :style="{ 'color': user_labels[label_id].color.textColor, 'background-color': user_labels[label_id].color.backgroundColor}">
+    <p v-for="label_id in data.labels" :key="label_id">
+      <span v-if="user_labels[label_id]" class="px-2 py-1 mr-2 font-medium text-xs" :style="{ 'color': user_labels[label_id].color.textColor, 'background-color': user_labels[label_id].color.backgroundColor}">
         {{ user_labels[label_id].name }}
       </span>
-      <span v-else-if="!label_id.includes('CATEGORY') && label_id !== 'UNREAD' && label_id !== 'STARRED' && label_id !== 'IMPORTANT'" class="px-2 py-1 bg-gray-300 font-medium text-xs">
+      <span v-else-if="!label_id.includes('CATEGORY') && !user_labels[label_id] && label_id !== 'UNREAD' && label_id !== 'STARRED' && label_id !== 'IMPORTANT'" class="px-2 py-1 mr-2 bg-gray-300 font-medium text-xs">
         {{ label_id }}
       </span>
+
     </p>
     <p>{{ data.message }}<span class="font-normal"> - {{ data.plain_text }}</span></p>
   </div>

@@ -114,7 +114,7 @@ class DataController extends Controller {
                         'id'              => $data->id,
                         'sender'          => $data->getFromName(),
                         'receiver'        => $user,
-                        'message'         => $custom_label_tags.$data->getSubject(),
+                        'message'         => $data->getSubject(),
                         'plain_text'      => $data->getPlainTextBody(),
                         'starred'         => in_array('STARRED', $data->getLabels()),
                         'important'       => in_array('IMPORTANT', $data->getLabels()),
