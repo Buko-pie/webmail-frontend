@@ -82,6 +82,11 @@
       <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
         <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
       </div>
+      
+      <div id="subLabels" class="pt-5">
+        <ejs-checkbox label="Nested label under:" :checked="false" :change="nestedCheckbox"></ejs-checkbox>
+        <ejs-dropdownlist id="parent_label" ref="parent_label" :enabled="nested_label" :dataSource="user_labels" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
+      </div>
 
       <div class="absolute bottom-5 right-5">
         <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
@@ -98,6 +103,11 @@
       <p class="text-gray-400">{{ new_lbl_txt }}</p>
       <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
         <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
+      </div>
+
+      <div id="subLabels_edit" class="pt-5">
+        <ejs-checkbox label="Nested label under:" :checked="nested_label" :change="nestedCheckbox"></ejs-checkbox>
+        <ejs-dropdownlist id="parent_label_edit" ref="parent_label_edit" :enabled="nested_label" :dataSource="parent_label_edit" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
       </div>
 
       <div class="absolute bottom-5 right-5">
@@ -467,7 +477,7 @@ import AvatarCropper from "vue-avatar-cropper";
 import $ from "jquery";
 
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
-import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
+import { ButtonPlugin , RadioButtonPlugin, CheckBoxPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
 import { enableRipple, isNullOrUndefined  } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
@@ -488,6 +498,7 @@ Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
+Vue.use(CheckBoxPlugin);
 Vue.use(VueNotification, {
   timer: 20
 });
@@ -530,8 +541,17 @@ function validateEmails(emailArray){
 
 function isExistLabel(new_label, user_labels){
   for (let i = 0; i < user_labels.length; i++) {
-    console.log(user_labels)
     if(user_labels[i].text === new_label){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function isExistSubLabel(new_label, parent_label, user_labels){
+  for (let i = 0; i < user_labels.length; i++) {
+    if(user_labels[i].text === parent_label + "/" + new_label){
       return true;
     }
   }
@@ -593,6 +613,9 @@ export default Vue.extend({
       email_subject: "",
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
+      nested_label: false,
+      selected_parent: null,
+      parent_label_edit: null,
       fields: { tooltip: 'text'},
       custom_labels: [],
       custom_labels_temp: [],
@@ -867,6 +890,9 @@ export default Vue.extend({
     modalHide(){
       this.$modal.hide('new_label_modal');
       this.$modal.hide('edit_label_modal');
+      this.selected_label = null;
+      this.selected_parent = null;
+      this.nested_label = false;
     },
 
     modalOpened(){
@@ -1018,7 +1044,22 @@ export default Vue.extend({
 
     createNewLabel(){
       if(this.new_lbl_name){
-        if(isExistLabel(this.new_lbl_name, this.labels_locations)){
+        if(this.nested_label){
+
+          if(isExistSubLabel(this.new_lbl_name, this.selected_parent, this.labels_locations)){
+            this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+          }else{
+            let new_subLabel = this.selected_parent + "/" + this.new_lbl_name;
+
+            let data = {
+              option: "create",
+              label_name: new_subLabel,
+            };
+
+            this.labels_ajax(data);
+          }
+          
+        }else if(isExistLabel(this.new_lbl_name, this.labels_locations)){
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
           console.log(this.new_lbl_name);
@@ -1030,28 +1071,7 @@ export default Vue.extend({
             label_name: new_lbl_name,
           };
 
-          axios.post(this.routes.labels, data, {
-          headers:{
-              "Content-Type": "multipart/mixed",
-              "Authorization": "Bearer " + csrf_token,
-              "X-CSRF-TOKEN": csrf_token
-            }
-          }).then(function (response) {
-            let payload = response.data;
-            console.log(payload);
-            console.log(new_lbl_name);
-
-            _this.$store.dispatch("set_user_labels", payload.labels)
-            _this.$modal.hide("new_label_modal");
-            _this.$notification.success("Label: " + new_lbl_name + " created", {  timer: 5 });
-          }).catch(error => {
-            console.log(error);
-            _this.$modal.hide("new_label_modal");
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
-
-          this.new_lbl_txt = null;
-          this.new_lbl_name = null;
+          this.labels_ajax(data);
         }
       }else{
         this.new_lbl_txt = "No name specified. Please try another name:"
@@ -1061,7 +1081,23 @@ export default Vue.extend({
 
     editLabel(){
       if(this.new_lbl_name){
-        if(isExistLabel(this.new_lbl_name, this.labels_locations)){
+        if(this.nested_label){
+
+          if(isExistSubLabel(this.new_lbl_name, this.selected_parent, this.labels_locations)){
+            this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+          }else{
+            let new_subLabel = this.selected_parent + "/" + this.new_lbl_name;
+
+            let data = {
+              option: "edit",
+              label_id: this.selected_label.id,
+              label_name: new_subLabel,
+            };
+
+            this.labels_ajax(data);
+          }
+
+        }else if(isExistLabel(this.new_lbl_name, this.labels_locations)){
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
           let data = {
@@ -1280,6 +1316,7 @@ export default Vue.extend({
     },
 
     labels_ajax(data){
+      this.modalHide();
       if(data){
         let _this = this;
         axios.post(this.routes.labels, data, {
@@ -1297,8 +1334,16 @@ export default Vue.extend({
           _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
         }).catch(error => {
           console.log(error);
+          _this.modalHide();
           _this.$notification.error("somthing went wrong", {  timer: 5 });
         });
+
+        this.new_lbl_txt = null;
+        this.new_lbl_name = null;
+        this.selected_parent = null;
+        this.nested_label = false;
+      }else{
+        this.$notification.error("data query empty!", {  timer: 5 });
       }
     },
 
@@ -1316,8 +1361,44 @@ export default Vue.extend({
           break;
 
         case "Edit label":
-          this.new_lbl_name = this.selected_label.text;
-          this.modalShow_editLabel();
+          let labels = this.selected_label.text.split("/")
+          this.parent_label_edit = this.user_labels;
+
+          this.parent_label_edit.forEach((label, index) => {
+            if(label.text === this.selected_label.text){
+              this.parent_label_edit.splice(index, 1);
+            }
+          });
+
+          if(labels.length > 1){
+            this.nested_label = true;
+            
+
+            let sub_label = labels[labels.length - 1];
+            labels.pop();
+            let parent_label = "";
+
+            labels.forEach((label, index) => {
+              if(index == 0){
+                parent_label = label;
+              }else{
+                if(index < labels.length){
+                  parent_label = parent_label + "/";
+                }
+                parent_label = parent_label + label;
+              }
+            });
+            console.log(sub_label);
+            console.log(parent_label);
+
+            this.new_lbl_name = sub_label;
+            this.selected_parent = parent_label;
+            this.modalShow_editLabel();
+          }else{
+            this.new_lbl_name = this.selected_label.text;
+            this.modalShow_editLabel();
+          }
+          
           break;
       
         default:
@@ -1331,6 +1412,10 @@ export default Vue.extend({
       this.search = value
       const result = this.custom_labels.filter(word => word.text.includes(this.search))
       this.custom_labels_temp = result
+    },
+
+    nestedCheckbox(args){
+      this.nested_label = args.checked;
     },
 
     selected(args) {
@@ -1348,7 +1433,7 @@ export default Vue.extend({
         this.label_selected_array.length > 0 ? this.label_selected = true : this.label_selected = false
       }
       console.log(this.label_selected_array)
-    }
+    },
   },
 
   directives: {
