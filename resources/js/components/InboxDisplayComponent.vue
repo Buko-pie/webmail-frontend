@@ -165,7 +165,7 @@ export default{
           //Column - Created At
           field: "created_at",
           headerText: "",
-          width: "50",
+          width: "80",
           textAlign: "Right",
           allowSorting: false
         },{
@@ -202,7 +202,8 @@ export default{
       console.log("vue-grids computed")
       this.routes = this.$store.state.routes;
       this.csrf_token = this.$store.state.csrf_token;
-
+      this.$store.dispatch("set_inboxDisplay", this);
+      
       let _this = this;
       axios.get(this.routes.data_route, {
         headers: {
@@ -280,6 +281,7 @@ export default{
       this.value = value;
       this.$emit("change", value);
     },
+    
     onSelect(args) {
 
       let _this = this;
@@ -495,7 +497,7 @@ export default{
             value: true
           }
         }).then(function (response) {
-          console.log(response.data);
+          // console.log(response.data);
           // _this.viewData[args.rowIndex].read = true;
 
           _this.$store.dispatch("modify_email_batch", {
@@ -507,6 +509,7 @@ export default{
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
           _this.$store.dispatch("set_email_data", response.data.email_data);
+          _this.$store.dispatch("set_email_rowData", args.rowData);
 
           if(response.data.attachments_files.length > 0){
             let files = [];
@@ -655,6 +658,11 @@ export default{
         }
       });
     },
+
+    soft_refresh(){
+      this.$refs.grid.ej2Instances.refresh();
+      this.ref_headerTemplate.show_loading = false;
+    }
   },
 
   provide: {

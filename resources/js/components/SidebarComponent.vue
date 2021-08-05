@@ -301,7 +301,7 @@
         <ejs-splitter id="splitter" ref="splitterObj" orientation="Vertical" :resizing="splitterResizing" width="100%" height="92%">
           <e-panes>
             <e-pane size="50%" min="20%" :content="inbox_template" cssClass="overflow-y-hidden e-inbox-display"></e-pane>
-            <e-pane size="50%" min ="20%" :content="email_view_template"></e-pane>
+            <e-pane size="50%" min ="20%" :content="email_view_template" cssClass="pane_1"></e-pane>
           </e-panes>
         </ejs-splitter>
       
@@ -708,6 +708,7 @@ export default Vue.extend({
       this.$store.dispatch("set_routes", routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
       this.$store.dispatch("set_user_email", this.gmail_user);
+      this.$store.dispatch("set_sidebar", this);
 
       this.attachment_path = {
         saveUrl: routes.upload_attachment,

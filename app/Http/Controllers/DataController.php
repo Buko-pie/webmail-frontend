@@ -101,7 +101,7 @@ class DataController extends Controller {
 
                 $custom_labels = [];
                 
-                foreach ($gmail_data as $data) {
+                foreach ($gmail_data as $index => $data) {
                   // $labelsLen = count($data->getLabels());
                   // $custom_label_tags = "";
                   // for($i=0; $i<$labelsLen; $i++) {
@@ -112,6 +112,7 @@ class DataController extends Controller {
                   // }
                     array_push($repackaged_data, [
                         'id'              => $data->id,
+                        'index'           => $index,
                         'sender'          => $data->getFromName(),
                         'receiver'        => $user,
                         'message'         => $data->getSubject(),
@@ -369,7 +370,7 @@ class DataController extends Controller {
                             'reply_to'   => $email->getHeader("In-Reply-To"),
                             'cc'         => $email->getHeader("Cc"),
                             'bcc'        => $email->getHeader("Bcc"),
-                            'arc_auth'   => substr($signature[0], 1),
+                            'arc_auth'   => substr($signature[0], 1), //error here on sent emails
                             'subject'    => $email->getSubject(),
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),

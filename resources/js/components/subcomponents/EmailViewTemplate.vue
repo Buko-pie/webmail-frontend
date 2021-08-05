@@ -1,19 +1,30 @@
 <template>
-<div id="email_html_body" class="p-5" :start="start">
+<div id="email_html_body" class="p-5" :start="start" :email_rowData="email_rowData">
   <div v-if="email_data">
-    <div class="flex pb-4">
+    <div class="flex pb-4 items-center">
       <p class="font-bold text-xl">
         {{ email_data.subject }} 
       </p>
-      <div class="object-none content-center self-center pl-3 pb-3">
-        <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
+      <div @click="importantEmail" class="object-none content-center m-2 cursor-pointer">
+        <img :src="[is_important ? '/images/label_important_yellow_20dp.png' : '/images/label_important_black_20dp.png']" alt="important icon">
       </div>
+
+      <p v-for="label_id in email_data.labels" :key="label_id">
+        <span v-if="user_labels_keyed[label_id]" class="px-2 py-1 mr-2 font-medium text-xs" :style="{ 'color': user_labels_keyed[label_id].color.textColor, 'background-color': user_labels_keyed[label_id].color.backgroundColor}">
+          {{ user_labels_keyed[label_id].name }}
+        </span>
+        <span v-else-if="!label_id.includes('CATEGORY') && !user_labels_keyed[label_id] && label_id !== 'UNREAD' && label_id !== 'STARRED' && label_id !== 'IMPORTANT'" class="px-2 py-1 mr-2 bg-gray-300 font-medium text-xs">
+          {{ label_id }}
+        </span>
+      </p>
+
       <ejs-button ref="" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
     </div>
     
     <div class="flex">
       <div>
-        <p class="font-bold text-base">{{ email_data.from.name }} 
+        <p class="font-bold text-base">
+        {{ email_data.from.name }} 
           <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span>
         </p>
         <p>
@@ -26,8 +37,8 @@
       <div class="ml-auto">
         <p>
           {{ email_date_display }}
-          <ejs-button ref="" iconCss="far fa-star" cssClass="e-round shadow-none" class=""></ejs-button>
-          <ejs-button ref="" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" @click.native="starEmail" :iconCss="[is_starred ? 'fas fa-star text-yellow-500' : 'far fa-star']" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-button ref="" @click.native="replyEmail" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
           <ejs-button ref="" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" class=""></ejs-button>
         </p>
       </div>
@@ -190,6 +201,8 @@ export default Vue.extend({
       csrf_token: null,
       user_email: null,
       headers: null,
+      is_important: false,
+      is_starred: false,
       email_action: null,
       show_reply: false,
       show_attachment: false,
@@ -228,12 +241,33 @@ export default Vue.extend({
       this.attachment_path.removeUrl = this.routes.remove_attachment;
     },
 
+    ref_headerTemplate(){
+      return this.$store.state.headerTemplate;
+    },
+
+    ref_inboxDisplay(){
+      return this.$store.state.inboxDisplay;
+    },
+
+    ref_sidebar(){
+      return this.$store.state.sidebar;
+    },
+
     current_inbox(){
       return this.$store.state.current_inbox;
     },
 
     email_body_html(){
       return this.$store.state.selected_email_html_body;
+    },
+
+    email_batch:{
+      get(){
+        return this.$store.state.email_batch;
+      },
+      set(new_batch){
+        return this.$store.dispatch('set_email_batch', new_batch);
+      }
     },
 
     email_data(){
@@ -248,16 +282,34 @@ export default Vue.extend({
       return data;
     },
 
+    email_rowData(){
+      if(this.$store.state.selected_email_rowData){
+        this.is_important = this.$store.state.selected_email_rowData.important;
+        this.is_starred = this.$store.state.selected_email_rowData.starred;
+      }
+
+      return this.$store.state.selected_email_rowData;
+    },
+
     email_attachments(){
       return this.$store.state.selected_email_attachments;
     },
 
     dropdown_btn_email_data(){
       return this.$store.state.dropdown_btn_email_data;
-    }
+    },
+
+    user_labels_keyed(){
+      return this.$store.state.user_labels_keyed;
+    },
   },
 
   methods:{
+    scrollToEnd(){    	
+      var container = this.ref_sidebar.$el.querySelector("#splitter .pane_1");
+      container.scrollTop = container.scrollHeight;
+    },
+
     attachmentClicked(event, file){
       console.log(file);
 
@@ -270,7 +322,7 @@ export default Vue.extend({
     },
 
     replyEmail(){
-      console.log("replyEmail");
+      let _this = this;
       this.show_reply = !this.show_reply;
       this.email_action = "reply_email";
       this.add_cc = false;
@@ -298,6 +350,11 @@ export default Vue.extend({
         }
 
       }
+      
+      setTimeout(function() {
+        _this.scrollToEnd();
+      }, 0);
+      
     },
 
     forwardEmail(){
@@ -485,6 +542,42 @@ export default Vue.extend({
         _this.$store.dispatch("dropdown_btn_email_data_toggle", !this.dropdown_btn_email_data);
       }, 0);
     },
+
+    starEmail(){
+      let _this = this;
+      let params = {
+        column: "starred",
+        id: this.email_data.email_id,
+        value: !this.is_starred
+      }
+      
+      this.$store.dispatch("data_toggle", params).then((response) => {
+        _this.is_starred = !this.is_starred;
+        _this.email_batch[_this.email_rowData.index].starred = _this.is_starred;
+        _this.ref_inboxDisplay.soft_refresh();
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    importantEmail(){
+      let _this = this;
+      let params = {
+        column: "important",
+        id: this.email_data.email_id,
+        value: !this.is_important
+      }
+      
+      this.$store.dispatch("data_toggle", params).then((response) => {
+        _this.is_important = !this.is_important;
+        _this.email_batch[_this.email_rowData.index].important = _this.is_important;
+        _this.ref_inboxDisplay.soft_refresh();
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    }
   }
 });
 </script>

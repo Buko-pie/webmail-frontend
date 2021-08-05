@@ -1,3 +1,5 @@
+import axios from "axios";
+import { truncate } from "lodash";
 import Vue from "vue";
 import Vuex from "vuex";
 
@@ -19,6 +21,7 @@ export const store = new Vuex.Store({
     username: null,
     user_email: null,
     user_labels: null,
+    user_labels_keyed: null,
     user_profile_photo: null,
     dropdown_menu_opened: null,
     dropdown_btn_lbl: false,
@@ -31,11 +34,16 @@ export const store = new Vuex.Store({
     selected_item_unread: 0,
     selected_email_html_body: null,
     selected_email_data: null,
+    selected_email_rowData: null,
     selected_email_attachments: null,
     splitter_height: null,
     splitter_pane_0_height: null,
-    headerTemplate: null,
     search: '',
+
+    //COMPONENTS REF
+    headerTemplate: null,
+    inboxDisplay: null,
+    sidebar: null,
   },
 
   mutations:{
@@ -48,7 +56,6 @@ export const store = new Vuex.Store({
     },
 
     set_current_inbox(state, payload){
-
       state.current_inbox = {name: payload.name, id: payload.id, type: payload.type};
     },
 
@@ -82,6 +89,14 @@ export const store = new Vuex.Store({
 
     set_user_labels(state, payload){
       payload.sort((a,b) => (a.text > b.text) ? 1 : ((b.text > a.text) ? -1 : 0));
+      
+      let labelKey = [];
+
+      payload.forEach(label => {
+        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" }}
+      });
+      
+      state.user_labels_keyed = labelKey;
       state.user_labels = payload;
     },
 
@@ -107,6 +122,10 @@ export const store = new Vuex.Store({
 
     set_email_data(state, payload){
       state.selected_email_data = payload;
+    },
+
+    set_email_rowData(state, payload){
+      state.selected_email_rowData = payload;
     },
 
     set_email_attachments(state, payload){
@@ -145,9 +164,23 @@ export const store = new Vuex.Store({
       state.headerTemplate = payload;
     },
 
+    set_inboxDisplay(state, payload){
+      state.inboxDisplay = payload;
+    },
+
+    set_sidebar(state, payload){
+      state.sidebar = payload;
+    },
+
     set_search(state, payload){
       state.search = payload;
     },
+  },
+
+  getters:{
+    Routes(state){
+      return state.routes;
+    }
   },
 
   actions:{
@@ -219,6 +252,10 @@ export const store = new Vuex.Store({
       state.commit("set_email_data", payload);
     },
 
+    set_email_rowData(state, payload){
+      state.commit("set_email_rowData", payload);
+    },
+
     set_email_attachments(state, payload){
       state.commit("set_email_attachments", payload);
     },
@@ -255,14 +292,36 @@ export const store = new Vuex.Store({
       state.commit("set_headerTemplate", payload);
     },
 
+    set_inboxDisplay(state, payload){
+      state.commit("set_inboxDisplay", payload);
+    },
+
+    set_sidebar(state, payload){
+      state.commit("set_sidebar", payload);
+    },
+
     set_search(state, payload){
       state.commit("set_search", payload);
     },
+
+    data_toggle({state}, payload){
+      if(payload){
+
+        return axios.get(state.routes.toggle_route, {
+          params: payload,
+          headers:{
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + state.csrf_token,
+            "X-CSRF-TOKEN": state.csrf_token
+          }
+        }).then((response) => {
+          return response;
+        }).catch(error => {
+          return error;
+        });
+      }else{
+        return "Error Empty payload";
+      }
+    }
   },
-
-  getters:{
-
-  },
-
-
 });
