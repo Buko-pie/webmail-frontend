@@ -37,6 +37,7 @@
       <div class="ml-auto">
         <p>
           {{ email_date_display }}
+          <span>({{ time_duration }})</span>
           <ejs-button ref="" @click.native="starEmail" :iconCss="[is_starred ? 'fas fa-star text-yellow-500' : 'far fa-star']" cssClass="e-round shadow-none" class=""></ejs-button>
           <ejs-button ref="" @click.native="replyEmail" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
           <ejs-dropdownbutton :items="emailOpts" :select="moreEmailOpts" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
@@ -222,6 +223,7 @@ export default Vue.extend({
         saveUrl: null,
         removeUrl: null
       },
+      time_duration: null,
       emailOpts:[
         { id: 0, text: "Reply" },
         { id: 1, text: "Forward" },
@@ -290,6 +292,7 @@ export default Vue.extend({
 
         if(data !== null){
           this.email_date_display = formatDate(data.date);
+          this.time_duration = moment(data.date, "YYYYMMDDhhmmss").fromNow();
         }
 
         return data;
