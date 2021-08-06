@@ -39,7 +39,7 @@
           {{ email_date_display }}
           <ejs-button ref="" @click.native="starEmail" :iconCss="[is_starred ? 'fas fa-star text-yellow-500' : 'far fa-star']" cssClass="e-round shadow-none" class=""></ejs-button>
           <ejs-button ref="" @click.native="replyEmail" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
-          <ejs-button ref="" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" class=""></ejs-button>
+          <ejs-dropdownbutton :items="emailOpts" :select="moreEmailOpts" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
         </p>
       </div>
     </div>
@@ -222,6 +222,12 @@ export default Vue.extend({
         saveUrl: null,
         removeUrl: null
       },
+      emailOpts:[
+        { id: 0, text: "Reply" },
+        { id: 1, text: "Forward" },
+        { id: 2, text: "Delete this message" },
+        { id: 3, text: "Mark as unread" }
+      ]
     };
   },
 
@@ -257,8 +263,14 @@ export default Vue.extend({
       return this.$store.state.current_inbox;
     },
 
-    email_body_html(){
-      return this.$store.state.selected_email_html_body;
+    email_body_html:{
+      get(){
+        return this.$store.state.selected_email_html_body;
+      },
+      set(new_data){
+        return this.$store.dispatch('set_email_html_body', new_data);
+      }
+      
     },
 
     email_batch:{
@@ -270,16 +282,22 @@ export default Vue.extend({
       }
     },
 
-    email_data(){
-      this.show_reply = false;
-      this.email_action = null;
-      let data = this.$store.state.selected_email_data
+    email_data:{
+      get(){
+        this.show_reply = false;
+        this.email_action = null;
+        let data = this.$store.state.selected_email_data
 
-      if(data !== null){
-        this.email_date_display = formatDate(data.date);
+        if(data !== null){
+          this.email_date_display = formatDate(data.date);
+        }
+
+        return data;
+      },
+      set(new_data){
+        return this.$store.dispatch('set_email_data', new_data);
       }
-
-      return data;
+      
     },
 
     email_rowData(){
@@ -358,6 +376,7 @@ export default Vue.extend({
     },
 
     forwardEmail(){
+      let _this = this;
       this.show_reply = !this.show_reply;
       this.email_action = "forward_email";
       this.add_cc = false;
@@ -390,7 +409,10 @@ export default Vue.extend({
 
       forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html;
       setTimeout(() => this.$refs.reply_content.setContent(forward_msg_template), 200);
-
+      
+      setTimeout(function() {
+        _this.scrollToEnd();
+      }, 0);
     },
 
     email_address_tags_add_class(args){
@@ -567,7 +589,7 @@ export default Vue.extend({
         column: "important",
         id: this.email_data.email_id,
         value: !this.is_important
-      }
+      };
       
       this.$store.dispatch("data_toggle", params).then((response) => {
         _this.is_important = !this.is_important;
@@ -577,6 +599,63 @@ export default Vue.extend({
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
+    },
+
+    moreEmailOpts(args){
+      let _this = this;
+      switch (args.item.id) {
+        case 0:
+          //Reply
+          this.replyEmail();
+          break;
+
+        case 1:
+          //Forward
+          this.forwardEmail();
+          break;
+
+        case 2:
+          //Delete this message
+          
+          let params = {
+            option: 9,
+            dataIDs: [this.email_data.email_id],
+            current_inbox_id: this.current_inbox.id
+          };
+
+          this.$store.dispatch("data_toggle_many", params).then((response) => {
+            _this.email_data = null;
+            _this.email_body_html = null;
+            _this.ref_headerTemplate.refreshInbox();
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+          break;
+
+        case 3:
+          //Mark as unread
+          let params_ = {
+            column: "read",
+            id: this.email_data.email_id,
+            value: false
+          };
+          
+          this.$store.dispatch("data_toggle", params_).then((response) => {
+            _this.email_batch[_this.email_rowData.index].read = false;
+            _this.email_data = null;
+            _this.email_body_html = null;
+            _this.ref_inboxDisplay.soft_refresh();
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+          break;
+      
+        default:
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+          break;
+      }
     }
   }
 });

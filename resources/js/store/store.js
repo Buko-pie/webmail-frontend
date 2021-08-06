@@ -322,6 +322,26 @@ export const store = new Vuex.Store({
       }else{
         return "Error Empty payload";
       }
+    },
+
+    data_toggle_many({state}, payload){
+      if(payload){
+
+        return axios.get(state.routes.set_many_route, {
+          params: payload,
+          headers:{
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + state.csrf_token,
+            "X-CSRF-TOKEN": state.csrf_token
+          }
+        }).then((response) => {
+          return response;
+        }).catch(error => {
+          return error;
+        });
+      }else{
+        return "Error Empty payload";
+      }
     }
   },
 });

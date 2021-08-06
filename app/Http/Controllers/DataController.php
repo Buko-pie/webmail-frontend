@@ -110,6 +110,7 @@ class DataController extends Controller {
                   //     $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
                   //   }
                   // }
+                    $email_labels = $data->getLabels();
                     array_push($repackaged_data, [
                         'id'              => $data->id,
                         'index'           => $index,
@@ -117,11 +118,11 @@ class DataController extends Controller {
                         'receiver'        => $user,
                         'message'         => $data->getSubject(),
                         'plain_text'      => $data->getPlainTextBody(),
-                        'starred'         => in_array('STARRED', $data->getLabels()),
-                        'important'       => in_array('IMPORTANT', $data->getLabels()),
-                        'read'            => !in_array('UNREAD', $data->getLabels()),
-                        'deleted'         => in_array('TRASH', $data->getLabels()),
-                        'labels'          => $data->getLabels(),
+                        'starred'         => in_array('STARRED', $email_labels),
+                        'important'       => in_array('IMPORTANT', $email_labels),
+                        'read'            => !in_array('UNREAD', $email_labels),
+                        'deleted'         => in_array('TRASH', $email_labels),
+                        'labels'          => $email_labels,
                         'has_attachment'  => $data->hasAttachments(),
                         'created_at'      => $data->getDate(),
                     ]);
@@ -378,8 +379,6 @@ class DataController extends Controller {
                             'labels'     => $email->getLabels(),
                             'threadId'   => $email->getThreadId(),
                         ];
-                        // $thread = LaravelGmail::message()->get($email_data['threadId']);
-                        // $thread = $thread->getHtmlBody();
 
                         if (isset($request['with']) && $request['with'] == 'bodyHtml') {
                             $bodyHtml = $email->getHtmlBody();
