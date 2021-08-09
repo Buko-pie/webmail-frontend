@@ -42,7 +42,8 @@ class DataController extends Controller {
                           'type'                  => $label->type,
                           'labelListVisibility'   => $label->labelListVisibility,
                           'messageListVisibility' => $label->messageListVisibility,
-                          'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff']
+                          'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
+                          'isChecked'             => false
                         ];
                     }
                     $inbox = LaravelGmail::message()->getLabel('INBOX');
