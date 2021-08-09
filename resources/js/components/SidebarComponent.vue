@@ -331,11 +331,11 @@
     <div>
         <p>Label as:</p>
         <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
-          <input id="searchbar_label" @keyup="searchInput" :value="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <input id="searchbar_label" ref='textboxEle' @keyup='searchInput' :value="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="custom_labels_temp" showCheckBox="true" :select="selected" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="user_labels_temp" ref='listObj' showCheckBox="true" :select="selected" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -553,6 +553,7 @@ import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
 import { VueTagsInput } from "@johmun/vue-tags-input";
 import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
 import VueNotification from "@kugatsu/vuenotification";
+import { DataManager, Query } from "@syncfusion/ej2-data";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -637,6 +638,7 @@ export default Vue.extend({
   data() {
     return {
       search: '',
+      user_labels_temporary: [],
       label_selected: false,
       label_selected_array: [],
       routes: null,
@@ -750,6 +752,10 @@ export default Vue.extend({
   computed:{
     ref_headerTemplate(){
       return this.$store.state.headerTemplate;
+    },
+
+    user_labels_temp() {
+      return this.user_labels_temporary
     },
 
     start(){
@@ -1493,8 +1499,8 @@ export default Vue.extend({
     searchInput(e) {
       const value = e.target.value
       this.search = value
-      const result = this.custom_labels.filter(word => word.text.includes(this.search))
-      this.custom_labels_temp = result
+      const result = this.user_labels.filter(word => word.text.includes(this.search))
+      this.user_labels_temporary = result
     },
 
     nestedCheckbox(args){
@@ -1550,8 +1556,39 @@ export default Vue.extend({
     });
 
     this.$eventHub.$on("show_custom_dropdown", (e) => {
-      this.custom_labels = this.$store.state.user_labels
-      this.custom_labels_temp = this.custom_labels
+      this.user_labels_temporary = this.user_labels
+      const selected_count = this.$store.state.email_batch.length
+
+      let label_arr = []
+
+      this.$store.state.selected_items_dataID.forEach((element, key) => {
+        for (let i = 0; i < selected_count; i++) {
+          if(this.$store.state.email_batch[i].id === this.$store.state.selected_items_dataID[key]) {
+            label_arr.push(this.$store.state.email_batch[i].labels)
+          }
+        }
+      });
+
+      if(this.user_labels_temporary.length > 0) {
+        this.user_labels_temporary.forEach((element,index) => {
+          this.user_labels_temporary[index].isChecked = false
+        });
+  
+          console.log('====================')
+        label_arr[0].forEach((element) => {
+          if(element === "UNREAD" || element === "CATEGORY_UPDATES" || element === "INBOX") {
+            // console.log(element)
+          } else {
+            let pos = this.user_labels_temporary.map(function (e) {
+              return e.id;
+            }).indexOf(element);
+            this.user_labels_temporary[pos].isChecked = true
+          }
+        });
+      }
+
+      const result = this.user_labels.filter(word => word.text.includes(this.search))
+      this.user_labels_temporary = result
     });
   }
 });
