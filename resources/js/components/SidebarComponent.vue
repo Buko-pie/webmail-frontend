@@ -434,33 +434,101 @@
     :style="{
       top: dropdown_label.top + 'px', 
       left: dropdown_label.left + 'px',
-      'width': '35%',
+      'width': '38%',
       'z-index': dropdown_zIndex,
     }"
   >
-    <div v-if="email_data" class="grid grid-cols-4 gap-2 p-3">
-      <div class="text-right">
-        <p>from:</p>
-        <p>reply-to:</p>
-        <p>to:</p>
-        <p v-if="email_data.cc">cc:</p>
-        <p v-if="email_data.bcc">bcc:</p>
-        <p>date:</p>
-        <p>subject:</p>
-        <p>mailed-by:</p>
-        <p>signed-by:</p>
-      </div>
-      <div class="col-span-3 pl-2">
-        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
-        <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
-        <p>{{ email_data.to.email ? email_data.to.email : email_data.to.name }}</p>
-        <p>{{ email_data.cc ? email_data.cc : "" }}</p>
-        <p>{{ email_data.bcc ? email_data.bcc : "" }}</p>
-        <p>{{ email_data.date }}</p>
-        <p>{{ email_data.subject }}</p>
-        <p>{{ email_data.arc_auth }}</p>
-        <p>{{ email_data.arc_auth }}</p>
-      </div>
+    <div v-if="email_data" class="p-3">
+      <table class="table-fixed">
+        <thead>
+          <tr>
+            <th class="w-1/5"></th>
+            <th class="w-1/2 "></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-right align-top">
+              <p>from:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-right align-top">
+              <p>reply-to:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>to:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.to.email ? email_data.to.email : email_data.to.name }}</p>
+            </td>
+          </tr>
+          
+          <tr v-if="email_data.cc">
+            <td class="text-right align-top">
+              <p>cc:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.cc ? email_data.cc : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr v-if="email_data.bcc">
+            <td class="text-right align-top">
+              <p>bcc:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.bcc ? email_data.bcc : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>date:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.date }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>subject:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.subject }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>mailed-by:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.arc_auth }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>signed-by:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.arc_auth }}</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>  
 </div>
@@ -770,7 +838,7 @@ export default Vue.extend({
       let data = this.$store.state.selected_email_data;
 
       if(data !== null){
-        this.email_date_display = moment(data.date).format("LLL");
+        this.data = moment(data.date).format("LLL");
       }
 
       return data;
