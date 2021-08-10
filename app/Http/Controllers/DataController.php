@@ -300,7 +300,7 @@ class DataController extends Controller {
                         $download_link,
                     ], 200);
                 } else {
-                    return response()->json("File does not exist", 405);
+                    return response()->json("File does not exist", 404);
                 }
             } else {
                 return response()->json("Empty filename query", 400);

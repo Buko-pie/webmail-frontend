@@ -29,26 +29,6 @@
       </div>
       <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
         <navbar-buttons/>
-        
-        {{-- <button class="bg-white p-1 rounded-full hover:bg-gray-300 focus:outline-none">
-          <span class="sr-only">View notifications</span>
-          <!-- Heroicon name: outline/bell -->
-          <i class="h-5 w-5 fas fa-bell text-lg"></i>
-        </button>
-        <button class="bg-white p-1 rounded-full hover:bg-gray-300 focus:outline-none">
-          <i class="h-5 w-5 fas fa-cog text-lg"></i>
-        </button> --}}
-
-        <!-- Profile dropdown -->
-        {{-- <div class="ml-3 relative">
-          <div>
-            <button type="button" class="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-              <span class="sr-only">Open user menu</span>
-              <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
-            </button>
-          </div>
-        </div> --}}
-
       </div>
     </div>
   </div>
