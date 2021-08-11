@@ -628,8 +628,13 @@ class DataController extends Controller {
     {
 
       $validator = Validator::make($request->all(), [
-        'id' => 'required'
+        'id' => 'required',
+        'mode' => 'required|numeric'
       ]);
+
+      // modes
+      // 0 = from apply label
+      // 1 = from save label
 
       if ($validator->fails()) {
         return response()->json([
@@ -637,15 +642,18 @@ class DataController extends Controller {
         ], 400);
       } else {
         $label_arr = [];
-        for($i=0; $i<count($request->labels); $i++) {
-          array_push($label_arr, json_decode($request->labels[$i])->id);
+        if($request->mode == 0) {
+          for($i=0; $i<count($request->labels); $i++) {
+            array_push($label_arr, json_decode($request->labels[$i])->id);
+          }
+        } else if($request->mode == 1) {
+          array_push($label_arr, $request->labels);
         }
-    
         $response = LaravelGmail::message()->batchAddLabel($request['id'], $label_arr);
         $response ? $success = true : $success = false;
     
         return response()->json([
-          'success' => $success
+          'success' => $response
         ], 200);
       }
 

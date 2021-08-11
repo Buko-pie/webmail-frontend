@@ -1353,7 +1353,6 @@ export default Vue.extend({
     },
 
     selectLabelOps(args){
-      let _this = this;
       console.log(this.$refs.lbl_options);
       this.dropdownHideLabel();
       this.$refs.lbl_options.selectItem();
@@ -1362,15 +1361,22 @@ export default Vue.extend({
       } else if(args.data.text === "Apply") { // Apply button
         console.log(this.label_selected_array)
         // set labels
-        axios.get(this.routes.labels_add, {
+        this.saveLabels(this.selected_items_dataID, this.label_selected_array,0)
+      }
+    },
+
+    saveLabels(labelsId,labelsArr,mode) {
+      let _this = this
+      axios.get(this.routes.labels_add, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + csrf_token,
           "X-CSRF-TOKEN": csrf_token
         },
         params: {
-          id: this.selected_items_dataID,
-          labels: this.label_selected_array
+          id: labelsId,
+          labels: labelsArr,
+          mode
         }
       }).then(function (response) {
         console.log(response.data.success)
@@ -1380,7 +1386,6 @@ export default Vue.extend({
         console.log(error);
         this.$notification.error("somthing went wrong", {  timer: 5 });
       });
-      }
     },
 
     logout(){
@@ -1445,6 +1450,9 @@ export default Vue.extend({
           _this.modalHide();
           _this.$store.dispatch("set_user_labels", payload.labels);
           _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
+
+          // add label to mail
+          _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
         }).catch(error => {
           console.log(error);
           _this.modalHide();
