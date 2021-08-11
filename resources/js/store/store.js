@@ -6,6 +6,18 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 Vue.config.devtools = true
 
+function assign(obj, keyPath, value) {
+  let lastKeyIndex = keyPath.length-1;
+
+ keyPath.forEach(path => {
+   if (!(path in obj)){
+     obj[path] = {}
+   }
+   obj = obj[path];
+ });
+ // obj[keyPath[lastKeyIndex]] = value;
+}
+
 export const store = new Vuex.Store({
   state:{
     message: "Vuex Active",
@@ -22,6 +34,7 @@ export const store = new Vuex.Store({
     user_email: null,
     user_labels: null,
     user_labels_keyed: null,
+    labels_tree: null,
     user_profile_photo: null,
     dropdown_menu_opened: null,
     dropdown_btn_lbl: false,
@@ -91,11 +104,24 @@ export const store = new Vuex.Store({
       payload.sort((a,b) => (a.text > b.text) ? 1 : ((b.text > a.text) ? -1 : 0));
       
       let labelKey = [];
-
-      payload.forEach(label => {
-        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" }}
-      });
+      let tree = {};
       
+      //Labels dictionary
+      payload.forEach(label => {
+        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" }};
+        let labels = label.text.split("/");
+        
+        console.log(labels);
+        
+        if(labels.length > 1){
+          assign(tree, labels, 'JWPlayer');
+        }else{
+          tree[label.text] = {};
+        }
+      });
+
+      console.log(tree);
+      state.labels_tree = tree;
       state.user_labels_keyed = labelKey;
       state.user_labels = payload;
     },

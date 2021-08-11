@@ -270,7 +270,7 @@
             </a>
           </div>
 
-          <!-- Custom labels labels_hover[label.id] -->
+          <!-- Custom labels -->
           <div ref="sidebar_custom_labels">
             <a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
               <div class="sidebar_icons">
@@ -1616,4 +1616,5 @@ export default Vue.extend({
     });
   }
 });
+
 </script>
