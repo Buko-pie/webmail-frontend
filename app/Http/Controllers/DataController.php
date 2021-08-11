@@ -36,13 +36,17 @@ class DataController extends Controller {
                     $user_labels = [];
 
                     foreach ($labels as $label) {
+                        $label_data = LaravelGmail::message()->getLabel($label->id);
+
                         $user_labels[] = [
-                          'id'                    => $label->id,
-                          'text'                  => $label->name,
-                          'type'                  => $label->type,
-                          'labelListVisibility'   => $label->labelListVisibility,
-                          'messageListVisibility' => $label->messageListVisibility,
-                          'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
+                          'id'                    => $label_data->id,
+                          'text'                  => $label_data->name,
+                          'type'                  => $label_data->type,
+                          'labelListVisibility'   => $label_data->labelListVisibility,
+                          'messageListVisibility' => $label_data->messageListVisibility,
+                          'messagesTotal'         => $label_data->messagesTotal,
+                          'messagesUnread'        => $label_data->messagesUnread,
+                          'color'                 => $label_data->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
                           'isChecked'             => false
                         ];
                     }
@@ -136,6 +140,7 @@ class DataController extends Controller {
                     'inbox_items_length' => $inbox_items_length,
                     'labels'             => $user_labels,
                     'labels_all'         => $all_labels,
+                    'labels_2'           => $labels,
                     'inbox_info'         => $inbox,
                 ], 200);
 
@@ -301,7 +306,7 @@ class DataController extends Controller {
                         $download_link,
                     ], 200);
                 } else {
-                    return response()->json("File does not exist", 405);
+                    return response()->json("File does not exist", 404);
                 }
             } else {
                 return response()->json("Empty filename query", 400);

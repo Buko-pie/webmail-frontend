@@ -270,16 +270,24 @@
             </a>
           </div>
 
-          <!-- Custom labels -->
+          <!-- Custom labels labels_hover[label.id] -->
           <div ref="sidebar_custom_labels">
-            <a v-for="label in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
               <div class="sidebar_icons">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
                 />
               </div>
               <p class="sidebar_text" v-show="toggled">{{ label.text }}</p>
-              <ejs-dropdownbutton :items="more_items" :select="label_options" @click.native="selected_label = label" @mouseover.native="mouseHover" @mouseleave.native="mouseLeave" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide ml-auto w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+              
+              <div class="flex ml-auto items-center justify-center text-center">
+                <ejs-dropdownbutton v-show="label_hovered === label.id" :items="more_items" :select="label_options" @click.native="selected_label = label" @mouseover.native="mouseHover_labelOpts" @mouseleave.native="mouseLeave_labelOpts" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+
+                <div v-if="label.messagesUnread > 0" v-show="label_hovered !== label.id" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
+                  <p>{{label.messagesUnread}}</p>
+                </div>
+
+              </div>
             </a>
             
           </div>
@@ -689,6 +697,7 @@ export default Vue.extend({
       fields: { tooltip: 'text'},
       custom_labels: [],
       custom_labels_temp: [],
+      label_hovered: null,
 
       labels_options:[
         {id: 0, text: "Create new"}, 
@@ -821,7 +830,14 @@ export default Vue.extend({
     },
 
     user_labels(){
-      return this.$store.state.user_labels;
+      let labels = this.$store.state.user_labels;
+      this.labels_hover = [];
+      if(labels){
+        labels.forEach(label => {
+          this.labels_hover.push(false)
+        });
+      }
+      return labels;
     },
 
     labels_locations(){
@@ -877,12 +893,20 @@ export default Vue.extend({
   },
 
   methods: {
-    mouseHover(){
+    mouseHover_labelOpts(){
       this.hover_label_opt = true;
     },
 
-    mouseLeave(){
+    mouseLeave_labelOpts(){
       this.hover_label_opt = false;
+    },
+
+    mouseHover_labels(id){
+      this.label_hovered = id;
+    },
+
+    mouseLeave_labels(id){
+      this.label_hovered = null;
     },
    
     openModalNewProfile(){

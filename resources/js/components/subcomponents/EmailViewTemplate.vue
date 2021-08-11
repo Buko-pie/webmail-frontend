@@ -3,7 +3,7 @@
   <div v-if="email_data">
     <div class="flex pb-4 items-center">
       <p class="font-bold text-xl">
-        {{ email_data.subject }} 
+        {{ email_data.subject }}
       </p>
       <div @click="importantEmail" class="object-none content-center m-2 cursor-pointer">
         <img :src="[is_important ? '/images/label_important_yellow_20dp.png' : '/images/label_important_black_20dp.png']" alt="important icon">
@@ -44,19 +44,22 @@
         </p>
       </div>
     </div>
-    
-  </div>
-  <div class="divide-y divide-gray-500 mt-5 pt-3">
-    <div v-html="email_body_html">
-      {{ email_body_html }}
-    </div>
-    <div v-if="email_attachments !== null" class="mt-8 pt-3">
+   
+    <div class="divide-y divide-gray-500 mt-5 pt-3">
 
-      <div v-for="(file, index) in email_attachments" :key="index" @click="attachmentClicked($event, file.name)" class="flex bg-white mb-4 border rounded-lg w-48 h-10 items-center truncate cursor-pointer">
-        <p class="font-bold px-3 py-5 w-40">{{ file.name }}</p>
+      <iframe class="w-full h-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;">
+        Your browser is not compatible!
+      </iframe>
+
+      <div v-if="email_attachments !== null" class="mt-8 pt-3">
+
+        <div v-for="(file, index) in email_attachments" :key="index" @click="attachmentClicked($event, file.name)" class="flex bg-white mb-4 border rounded-lg w-48 h-10 items-center truncate cursor-pointer">
+          <p class="font-bold px-3 py-5 w-40">{{ file.name }}</p>
+        </div>
       </div>
     </div>
   </div>
+  
 
   <div v-if="email_body_html && !show_reply" id="email_actions" class="flex mt-10 pt-2">
     <div class="m-2">
