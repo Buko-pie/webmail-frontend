@@ -451,19 +451,19 @@ class DataController extends Controller {
                 break;
 
             case 2: //Mark as important
-                
+                $response = LaravelGmail::message()->batchImportant($request['dataIDs']);
                 break;
 
             case 3: //Mark as not important
-                
+                $response = LaravelGmail::message()->batchRemoveImportant($request['dataIDs']);
                 break;
 
             case 4: //Add star
-                
+                $response = LaravelGmail::message()->batchStar($request['dataIDs']);
                 break;
 
             case 5: //Remove star
-                
+                $response = LaravelGmail::message()->batchRemoveStar($request['dataIDs']);
                 break;
 
             case 6: //Mute - disabled
@@ -628,8 +628,13 @@ class DataController extends Controller {
     {
 
       $validator = Validator::make($request->all(), [
-        'id' => 'required'
+        'id' => 'required',
+        'mode' => 'required|numeric'
       ]);
+
+      // modes
+      // 0 = from apply label
+      // 1 = from save label
 
       if ($validator->fails()) {
         return response()->json([
@@ -637,15 +642,18 @@ class DataController extends Controller {
         ], 400);
       } else {
         $label_arr = [];
-        for($i=0; $i<count($request->labels); $i++) {
-          array_push($label_arr, json_decode($request->labels[$i])->id);
+        if($request->mode == 0) {
+          for($i=0; $i<count($request->labels); $i++) {
+            array_push($label_arr, json_decode($request->labels[$i])->id);
+          }
+        } else if($request->mode == 1) {
+          array_push($label_arr, $request->labels);
         }
-    
         $response = LaravelGmail::message()->batchAddLabel($request['id'], $label_arr);
         $response ? $success = true : $success = false;
     
         return response()->json([
-          'success' => $success
+          'success' => $response
         ], 200);
       }
 

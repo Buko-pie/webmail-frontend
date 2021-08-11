@@ -268,6 +268,38 @@ class Message
     return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
   }
 
+	public function batchImportant($ids)
+  {
+    $this->batchModifyRequest->setAddLabelIds('IMPORTANT');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+	public function batchRemoveImportant($ids)
+  {
+    $this->batchModifyRequest->setRemoveLabelIds('IMPORTANT');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+	public function batchStar($ids)
+  {
+    $this->batchModifyRequest->setAddLabelIds('STARRED');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
+	public function batchRemoveStar($ids)
+  {
+    $this->batchModifyRequest->setRemoveLabelIds('STARRED');
+    $this->batchModifyRequest->setIds($ids);
+
+    return $this->service->users_messages->batchModify('me', $this->batchModifyRequest);
+  }
+
   //function still need tests
   public function batchModifyLabels($ids, $addLabelIds = null, $removeLabelIds = null)
   {

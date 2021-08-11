@@ -562,6 +562,11 @@ export default{
     },
 
     rowSelected(args){
+      this.$store.dispatch("set_actions", {
+        read: args.data.read,
+        important: args.data.important,
+        starred: args.data.starred
+      })
       this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
       
       if(args.rowIndexes){
