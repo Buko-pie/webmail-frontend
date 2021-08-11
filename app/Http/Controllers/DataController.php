@@ -451,19 +451,19 @@ class DataController extends Controller {
                 break;
 
             case 2: //Mark as important
-                
+                $response = LaravelGmail::message()->batchImportant($request['dataIDs']);
                 break;
 
             case 3: //Mark as not important
-                
+                $response = LaravelGmail::message()->batchRemoveImportant($request['dataIDs']);
                 break;
 
             case 4: //Add star
-                
+                $response = LaravelGmail::message()->batchStar($request['dataIDs']);
                 break;
 
             case 5: //Remove star
-                
+                $response = LaravelGmail::message()->batchRemoveStar($request['dataIDs']);
                 break;
 
             case 6: //Mute - disabled

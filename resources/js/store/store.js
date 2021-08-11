@@ -39,6 +39,7 @@ export const store = new Vuex.Store({
     splitter_height: null,
     splitter_pane_0_height: null,
     search: '',
+    actions: {},
 
     //COMPONENTS REF
     headerTemplate: null,
@@ -175,6 +176,10 @@ export const store = new Vuex.Store({
     set_search(state, payload){
       state.search = payload;
     },
+
+    set_actions(state, payload){
+      state.actions = payload;
+    },
   },
 
   getters:{
@@ -302,6 +307,10 @@ export const store = new Vuex.Store({
 
     set_search(state, payload){
       state.commit("set_search", payload);
+    },
+
+    set_actions(state, payload){
+      state.commit("set_actions", payload);
     },
 
     data_toggle({state}, payload){

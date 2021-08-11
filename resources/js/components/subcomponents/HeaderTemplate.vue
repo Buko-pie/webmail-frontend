@@ -69,7 +69,8 @@
         <div class="px-2 flex">
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
-            <ejs-dropdownbutton :items="more_items_selected" :select="moreOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-listview id="items_selected" :dataSource="more_items_selected" :select="moreOptions"></ejs-listview>
           </ejs-tooltip>
         </div>
       </div>
@@ -142,16 +143,7 @@ export default Vue.extend({
       more_items:[  
         { id: 0, text: "Mark all as read" }
       ],
-      more_items_selected: [
-        { id: 0, text: "Mark as read" },
-        { id: 1, text: "Mark as unread" },
-        { id: 2, text: "Mark as important" },
-        { id: 3, text: "Mark as not important" },
-        { id: 4, text: "Add star" },
-        { id: 5, text: "Remove star" },
-        // { id: 6, text: "Mute" },
-        // { id: 7, text: "Forward as attachment" }
-      ],
+      more_items_selected: [],
       snooze_opitons :[
         { id: 0, class: "data", text: "Later today", day_time: "6:00 PM", category: "Snooze until..." },
         { id: 1, class: "data", text: "Tommorow", day_time: moment().add(1,'days').format("ddd") + ", 8:00 AM", category: "Snooze until..." },
@@ -233,6 +225,54 @@ export default Vue.extend({
         event: "refresh_inbox"
       });
       this.loading = true;
+    },
+
+    dropdownAction(args) {
+      console.log(args)
+      if(this.selected_items_dataID.length > 1) {
+        this.$store.dispatch("set_actions", {
+          read: false,
+          important: false,
+          starred: false
+        })
+        this.more_items_selected = [
+          { id: 0, text: "Mark as read" },
+          { id: 1, text: "Mark as unread" },
+          { id: 2, text: "Mark as important" },
+          { id: 3, text: "Mark as not important" },
+          { id: 4, text: "Add star" },
+          { id: 5, text: "Remove star" },
+          // { id: 6, text: "Mute" },
+          // { id: 7, text: "Forward as attachment" }
+        ]
+      } else {
+        let objRead = {}
+        let objImportant = {}
+        let objStarred = {}
+        if(this.$store.state.actions.read) {
+          objRead = { id: 1, text: "Mark as unread" }
+        } else {
+          objRead = { id: 0, text: "Mark as read" }
+        }
+
+        if(this.$store.state.actions.important) {
+          objImportant = { id: 3, text: "Mark as not important" }
+        } else {
+          objImportant = { id: 2, text: "Mark as important" }
+        }
+        
+        if(this.$store.state.actions.starred) {
+          objStarred = { id: 5, text: "Remove star" }
+        } else {
+          objStarred = { id: 4, text: "Add star" }
+        }
+
+        this.more_items_selected = [
+          objRead,
+          objImportant,
+          objStarred
+        ]
+      }
     },
 
     selectedItemsTo(option, dataIDs, route) {
@@ -374,53 +414,53 @@ export default Vue.extend({
     },
 
     moreOptions(args){
-      switch (args.item.id) {
+      switch (args.data.id) {
         case 0:
           //Mark as read
           console.log("Mark as read");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 1:
           //Mark as unread
           console.log("Mark as unread");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 2:
           //Mark as important
           console.log("Mark as important");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 3:
           //Mark as not important
           console.log("Mark as not important");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 4:
           //Add star
           console.log("Add star");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 5:
           //Remove star
           console.log("Remove star");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 6:
           //Mute - disabled
           console.log("Mute");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
         
         case 7:
           //Forward as attachment - disabled
           console.log("Forward as attachment");
-          this.selectedItemsTo(args.item.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
+          this.selectedItemsTo(args.data.id, this.$store.state.selected_items_dataID, this.$store.state.routes);
         break;
       
         default:
