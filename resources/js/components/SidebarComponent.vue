@@ -810,6 +810,7 @@ export default Vue.extend({
         move_to_inbox:        this.url_base + "/move_to_inbox",
         labels:               this.url_base + "/labels",
         labels_add:           this.url_base + "/labels/add",
+        ids:                  this.url_base + "/ids",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);
@@ -1475,8 +1476,14 @@ export default Vue.extend({
           _this.$store.dispatch("set_user_labels", payload.labels);
           _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
 
-          // add label to mail
-          _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
+          if(data.ids?.length > 0) {
+            _this.refreshInbox()
+          } else {
+            // add label to mail
+            if(_this.selected_items_dataID.length > 0) {
+              _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
+            }
+          }
         }).catch(error => {
           console.log(error);
           _this.modalHide();
@@ -1492,15 +1499,37 @@ export default Vue.extend({
       }
     },
 
-    label_options(args){
+    async getIds() {
+      let _this = this
+      await axios.get(this.routes.ids,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id: this.selected_label.id
+        },
+      }).then(function(response){
+        _this.$store.dispatch("set_ids", response.data.ids)
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("Something went wrong", {  timer: 5 });
+      })
+    },
+
+    async label_options(args){
 
       let data = null;
       switch (args.item.text) {
         case "Delete label":
+          await this.getIds()
           data = {
             option: "delete",
             label_id: this.selected_label.id,
             label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
           }
           this.labels_ajax(data);
           break;

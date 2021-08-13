@@ -582,6 +582,9 @@ class DataController extends Controller {
           case 'delete':
             $result = 'delete label';
             $response = LaravelGmail::message()->deleteLabel($content->label_id);
+            if($response && count($content->ids) > 0) {
+              $response = LaravelGmail::message()->batchRemoveLabel($content->ids, $content->label_id);
+            }
             break;
 
           case 'create':
@@ -657,5 +660,19 @@ class DataController extends Controller {
         ], 200);
       }
 
+    }
+
+    public function ids(Request $request) {
+      $inbox = LaravelGmail::message()->getLabel($request->id);
+      $ids = [];
+      if($inbox) {
+        $gmail_data = LaravelGmail::message()->in($inbox->name)->all();
+        foreach ($gmail_data as $value) {
+          $ids[] = $value->id;
+        }
+      }
+      return response()->json([
+        'ids' => $ids
+      ], 200);
     }
 }

@@ -53,6 +53,7 @@ export const store = new Vuex.Store({
     splitter_pane_0_height: null,
     search: '',
     actions: {},
+    ids: [],
 
     //COMPONENTS REF
     headerTemplate: null,
@@ -213,6 +214,10 @@ export const store = new Vuex.Store({
     set_actions(state, payload){
       state.actions = payload;
     },
+
+    set_ids(state, payload){
+      state.ids = payload;
+    }
   },
 
   getters:{
@@ -344,6 +349,10 @@ export const store = new Vuex.Store({
 
     set_actions(state, payload){
       state.commit("set_actions", payload);
+    },
+
+    set_ids(state, payload){
+      state.commit("set_ids", payload);
     },
 
     data_toggle({state}, payload){
