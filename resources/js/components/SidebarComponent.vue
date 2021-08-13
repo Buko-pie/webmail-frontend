@@ -271,8 +271,8 @@
           </div>
 
           <!-- Custom labels -->
-          <div ref="sidebar_custom_labels">
-            <a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <div ref="sidebar_custom_labels" v-if="labels_tree">
+            <!--<a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
               <div class="sidebar_icons">
                 <i  class="fas fa-tag rotate-135 text-lg" 
                     :style="{ color: label.color.backgroundColor }"
@@ -288,7 +288,12 @@
                 </div>
 
               </div>
-            </a>
+            </a> 
+            <div v-for="(labels, index) in labels_tree" :key="index">
+              <p>{{ index }}</p>
+
+            </div>-->
+            <labels-list :items="labels_tree"/>
             
           </div>
 
@@ -581,10 +586,28 @@ Vue.use(VueNotification, {
 });
 
 enableRipple(true);
+const csrf_token = $('meta[name="csrf-token"]').attr('content');
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
-const csrf_token = $('meta[name="csrf-token"]').attr('content');
+const label_item = Vue.component("label-item", require("./subcomponents/LabelItems.vue").default);
+const labels_list = Vue.component("labels-list", require("./subcomponents/LabelList.vue").default);
+
+
+// const labels_list = Vue.component("labels-list", {
+//   props:{
+//     items: { type: Object, required: true }
+//   },
+//   functional: true,
+//   render: function(createElement, { props, children }){ 
+//     console.log(props.items)
+    
+//     return Object.keys(props.items).map((item)=>createElement('label-item',{ props: {item} }));
+//   },
+//   mounted(){
+//     console.log(this.items);
+//   }
+// });
 
 
 function formatDate(data) {
@@ -635,6 +658,7 @@ function isExistSubLabel(new_label, parent_label, user_labels){
 
   return false;
 }
+
 
 export default Vue.extend({
   name: "SidebarComponent",
@@ -830,14 +854,11 @@ export default Vue.extend({
     },
 
     user_labels(){
-      let labels = this.$store.state.user_labels;
-      this.labels_hover = [];
-      if(labels){
-        labels.forEach(label => {
-          this.labels_hover.push(false)
-        });
-      }
-      return labels;
+      return this.$store.state.user_labels;
+    },
+    
+    labels_tree(){
+      return this.$store.state.labels_tree;
     },
 
     labels_locations(){
@@ -869,7 +890,10 @@ export default Vue.extend({
     },
   },
 
-  components:{},
+  components:{
+    labels_list,
+    label_item,
+  },
 
   created(){
     console.log("Sidebar component created");
@@ -1297,7 +1321,7 @@ export default Vue.extend({
         }).then(function (response) {
           console.log(response);
           _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
-          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
           _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
           _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
           

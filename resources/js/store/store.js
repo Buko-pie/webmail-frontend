@@ -7,15 +7,15 @@ Vue.use(Vuex);
 Vue.config.devtools = true
 
 function assign(obj, keyPath, value) {
-  let lastKeyIndex = keyPath.length-1;
-
- keyPath.forEach(path => {
-   if (!(path in obj)){
-     obj[path] = {}
-   }
-   obj = obj[path];
- });
- // obj[keyPath[lastKeyIndex]] = value;
+  keyPath.forEach(path => {
+    if (!(path in obj)){
+      obj[path] = {_prop: value}
+    }else{
+      obj = obj[path];
+    }
+    
+  });
+  obj[keyPath[keyPath.length-1]] = {_prop: value};
 }
 
 export const store = new Vuex.Store({
@@ -107,21 +107,28 @@ export const store = new Vuex.Store({
       let labelKey = [];
       let tree = {};
       
-      //Labels dictionary
+      //Labels dictionary Note: still need to revise to ids only, no other properties
       payload.forEach(label => {
-        labelKey[label.id] = {name: label.text, color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" }};
+        labelKey[label.id] = {
+          name: label.text, 
+          color: label.color.backgroundColor !== "#000000" ? label.color : { backgroundColor: "#d1d5db", textColor: "#000000" },
+          messagesUnread: label.messagesUnread,
+        };
         let labels = label.text.split("/");
-        
-        console.log(labels);
-        
+        let value = {
+          id: label.id,
+          text: label.text,
+        }
         if(labels.length > 1){
-          assign(tree, labels, 'JWPlayer');
-        }else{
-          tree[label.text] = {};
+          
+          assign(tree, labels, value);
+        }else{ 
+          tree[label.text] = {_prop: value};
         }
       });
 
       console.log(tree);
+      console.log(labelKey);
       state.labels_tree = tree;
       state.user_labels_keyed = labelKey;
       state.user_labels = payload;
@@ -363,6 +370,25 @@ export const store = new Vuex.Store({
       if(payload){
 
         return axios.get(state.routes.set_many_route, {
+          params: payload,
+          headers:{
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + state.csrf_token,
+            "X-CSRF-TOKEN": state.csrf_token
+          }
+        }).then((response) => {
+          return response;
+        }).catch(error => {
+          return error;
+        });
+      }else{
+        return "Error Empty payload";
+      }
+    },
+
+    goToLabel({state}, payload){
+      if(payload){
+        return axios.get(state.routes.data_route, {
           params: payload,
           headers:{
             "Content-Type": "application/json",
