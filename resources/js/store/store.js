@@ -128,8 +128,6 @@ export const store = new Vuex.Store({
         }
       });
 
-      console.log(tree);
-      console.log(labelKey);
       state.labels_tree = tree;
       state.user_labels_keyed = labelKey;
       state.user_labels = payload;
@@ -368,7 +366,7 @@ export const store = new Vuex.Store({
         }).then((response) => {
           return response;
         }).catch(error => {
-          return error;
+          throw error;
         });
       }else{
         return "Error Empty payload";
@@ -388,7 +386,7 @@ export const store = new Vuex.Store({
         }).then((response) => {
           return response;
         }).catch(error => {
-          return error;
+          throw error;
         });
       }else{
         return "Error Empty payload";
@@ -405,9 +403,16 @@ export const store = new Vuex.Store({
             "X-CSRF-TOKEN": state.csrf_token
           }
         }).then((response) => {
-          return response;
+          if(response.data.empty){
+            state.email_batch = null;
+            state.inbox_items = 0;
+            state.inbox_total = 0;
+            state.current_inbox = {name: payload.inbox, id: payload.label_id, type: 1};
+          }else{
+            return response;
+          }
         }).catch(error => {
-          return error;
+          throw error;
         });
       }else{
         return "Error Empty payload";

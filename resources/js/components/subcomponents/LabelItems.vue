@@ -10,7 +10,7 @@
         </div>
         <p class="sidebar_text">{{ label }}</p>
         <div class="flex ml-auto items-center justify-center text-center">
-          <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+          <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
 
           <div v-if="user_labels_keyed[item._prop.id].messagesUnread > 0" v-show="!hovered" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
             <p>{{ user_labels_keyed[item._prop.id].messagesUnread }}</p>
@@ -33,7 +33,7 @@
       </div>
       <p class="sidebar_text">{{ label }}</p>
       <div class="flex ml-auto items-center justify-center text-center">
-        <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+        <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
 
         <div v-if="user_labels_keyed[item._prop.id].messagesUnread > 0" v-show="!hovered" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
           <p>{{ user_labels_keyed[item._prop.id].messagesUnread }}</p>
@@ -87,6 +87,10 @@ export default Vue.extend({
     }
   },
   computed:{
+    ref_sidebar(){
+      return this.$store.state.sidebar;
+    },
+
     ref_headerTemplate(){
       return this.$store.state.headerTemplate;
     },
@@ -103,6 +107,7 @@ export default Vue.extend({
       return this.$store.state.user_labels_keyed;
     },
   },
+
   methods:{
     isParent(item, label){
       if(Object.keys(item).length > 1 && label !== "id"){
@@ -116,8 +121,12 @@ export default Vue.extend({
       this.parentClicked = id;
     },
 
+    selectLabel(label){
+      this.ref_sidebar.selected_label = label;
+    },
+
     label_options(args){
-      console.log(args)
+      this.ref_sidebar.label_options(args);
     },
 
     goToLabel(label_name, label_id){
@@ -134,11 +143,12 @@ export default Vue.extend({
         this.ref_headerTemplate.loading = true;
         this.$store.dispatch("goToLabel", params).then((response) => {
           console.log(response);
-          _this.$store.dispatch("set_current_inbox", {name: label_name, id: label_id, type: 1});
-          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
-          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-
+          if(response){
+              _this.$store.dispatch("set_current_inbox", {name: label_name, id: label_id, type: 1});
+              _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+              _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+              _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          }
           _this.ref_headerTemplate.show_loading = false;
           _this.ref_headerTemplate.loading = false;
           _this.$eventHub.$emit("page_change");

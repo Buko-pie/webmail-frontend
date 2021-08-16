@@ -80,6 +80,8 @@ export default{
       email_count: null,
       routes: null,
       selected_item_unread: 0,
+      selected_item_starred: 0,
+      selected_item_important: 0,
       selected_items_count: 0,
       inbox_height: null,
       has_nextPage: true,
@@ -586,10 +588,22 @@ export default{
           if(!value.read){
             this.selected_item_unread++;
           }
+          if(value.starred){
+            this.selected_item_starred++;
+          }
+          if(value.important){
+            this.selected_item_important++;
+          }
         });
       }else{
         if(!args.data.read){
           this.selected_item_unread++;
+        }
+        if(value.starred){
+          this.selected_item_starred++;
+        }
+        if(value.important){
+          this.selected_item_important++;
         }
       }
 

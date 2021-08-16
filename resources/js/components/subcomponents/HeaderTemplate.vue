@@ -166,6 +166,10 @@ export default Vue.extend({
       this.$store.dispatch("set_headerTemplate", this);
     },
 
+    ref_inboxDisplay(){
+      return this.$store.state.inboxDisplay;
+    },
+
     message(){
       return this.$store.state.message;
     },
@@ -203,7 +207,7 @@ export default Vue.extend({
     },
 
     selected_all(){
-      return this.selected_items === this.inbox_items;
+      return (this.selected_items === this.inbox_items && this.inbox_items > 0);
     },
 
     selected(){
