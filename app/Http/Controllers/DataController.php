@@ -80,11 +80,13 @@ class DataController extends Controller {
 
                 } else if ($request['option'] == 'labeled') {
                   //get labeled emails
-                  $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take($items)->preload()->all();
                   $inbox = LaravelGmail::message()->getLabel($request['label_id'] );
-
-                  $inbox_items_length = count($gmail_data);
-                  
+                  if($inbox->messagesTotal > 0){
+                    $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take($items)->preload()->all();
+                    $inbox_items_length = count($gmail_data);
+                  }else{
+                    return response()->json(['inbox' => $inbox, 'empty' => true]);
+                  }
                 } else if($request['inbox'] == 'All') {
                   $gmail_data = $check_empty;
                   if(count($check_empty) > 0) {
