@@ -670,6 +670,7 @@ export default Vue.extend({
   data() {
     return {
       search: '',
+      labeled_arr: [],
       user_labels_temporary: [],
       label_selected: false,
       label_selected_array: [],
@@ -1593,20 +1594,43 @@ export default Vue.extend({
     },
 
     selected(args) {
-      console.log(args)
-      if(args.isChecked) {
-        this.label_selected = true
-        this.label_selected_array.push(args.data)
-      } else {
+      if(!args.isChecked) {
         const pos = this.label_selected_array.findIndex( element => {
           if (element.id === args.data.id) {
             return true
           }
         })
         this.label_selected_array.splice(pos,1)
-        this.label_selected_array.length > 0 ? this.label_selected = true : this.label_selected = false
+      } else {
+        this.label_selected_array.push(args.data)
       }
-      console.log(this.label_selected_array)
+
+      this.label_selected = true
+      let a = this.labeled_arr.sort((a, b) => {
+        let fa = a.id.toLowerCase(),
+            fb = b.id.toLowerCase();
+        if (fa < fb) {
+            return -1;
+        }
+        if (fa > fb) {
+            return 1;
+        }
+        return 0;
+      })
+      let b = this.label_selected_array.sort((a, b) => {
+        let fa = a.id.toLowerCase(),
+            fb = b.id.toLowerCase();
+        if (fa < fb) {
+            return -1;
+        }
+        if (fa > fb) {
+            return 1;
+        }
+        return 0;
+      })
+      if(JSON.stringify(a) === JSON.stringify(b)) {
+        this.label_selected = false
+      }
     },
   },
 
@@ -1674,6 +1698,13 @@ export default Vue.extend({
 
       const result = this.user_labels.filter(word => word.text.includes(this.search))
       this.user_labels_temporary = result
+
+      this.user_labels_temporary.findIndex( el => {
+        if(el.isChecked === true) {
+          this.labeled_arr.push(el)
+          this.label_selected_array.push(el)
+        }
+      })
     });
   }
 });
