@@ -599,10 +599,10 @@ export default{
         if(!args.data.read){
           this.selected_item_unread++;
         }
-        if(value.starred){
+        if(args.data.starred){
           this.selected_item_starred++;
         }
-        if(value.important){
+        if(args.data.important){
           this.selected_item_important++;
         }
       }
