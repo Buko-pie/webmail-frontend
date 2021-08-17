@@ -44,6 +44,10 @@ Route::post('/labels', [DataController::class, 'labels'])->name('labels');
 Route::get('/labels/add', [DataController::class, 'labels_add'])->name('labels_add');
 Route::get('/ids', [DataController::class, 'ids'])->name('ids');
 
+Route::get('/emailView', function () {
+  return view('EmailView');
+});
+
 Route::get('/gmailAPItest', function () {
   return view('gmailAPItest');
 });
