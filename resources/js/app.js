@@ -1,5 +1,6 @@
 const bootstrap = require('./bootstrap');
 import Vue from 'vue';
+import VueRouter from 'vue-router';
 import axios from 'axios';
 import { store } from "./store/store";
 import Vueditor from 'vueditor'
@@ -10,6 +11,7 @@ import 'vueditor/dist/style/vueditor.min.css'
 const sidebar = Vue.component("sidebar-component", require("./components/SidebarComponent.vue").default);
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);
+const emailFullView = Vue.component("email-full-view", require("./components/EmailFullView.vue").default);
 
 const editor_config = {
   spellcheck: true,
@@ -67,7 +69,9 @@ const editor_config = {
   uploadUrl: ""
 };
 
+
 Vue.use(Vueditor, editor_config);
+Vue.use(VueRouter);
 
 const app = new Vue({
   el: '#app',
@@ -76,6 +80,7 @@ const app = new Vue({
     sidebar,
     navbar_buttons,
     searchbar,
+    emailFullView
   },
   methods:{
     toggle_sidebar(){

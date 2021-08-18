@@ -18,7 +18,7 @@
         </span>
       </p>
 
-      <ejs-button ref="" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
+      <ejs-button ref="" @click.native="emailView" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
     </div>
     
     <div class="flex">
@@ -168,6 +168,7 @@
 
 <script>
 import Vue from "vue";
+import VueRouter from 'vue-router'
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
@@ -192,6 +193,8 @@ function validateEmails(emailArray){
   return results;
 }
 
+const emailFullView = Vue.component("email-full-view", require("../EmailFullView.vue").default);
+Vue.use(VueRouter)
 Vue.use(ButtonPlugin);
 Vue.use(VueNotification, {
   timer: 20
@@ -662,6 +665,21 @@ export default Vue.extend({
           this.$notification.error("somthing went wrong", {  timer: 5 });
           break;
       }
+    },
+
+    emailView(){
+      let router = new VueRouter({
+        routes: [
+          {
+            path: "/emailView",
+            component: emailFullView,
+            props: { newsletterPopup: false }
+          }
+        ]
+      });
+      let routeData = router.resolve({name: this.routes.emailView, query: {data: "someData"}});
+
+      window.open(routeData.href, "_blank");
     }
   }
 });
