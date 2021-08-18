@@ -18,7 +18,7 @@
         </span>
       </p>
 
-      <ejs-button ref="" @click.native="emailView" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
+      <ejs-button ref="" v-if="in_inbox" @click.native="emailView" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
     </div>
     
     <div class="flex">
@@ -64,17 +64,17 @@
   <div v-if="email_body_html && !show_reply" id="email_actions" class="flex mt-10 pt-2">
     <div class="m-2">
       <div @click="replyEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center"><i class="fas fa-reply pr-2"></i> Reply</p>
+        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-reply pr-2"></i> Reply</p>
       </div>
     </div>
     <div class="m-2">
       <div @click="forwardEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
+        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
       </div>
     </div>
   </div>
 
-  <div v-if="show_reply" id="email_action_compose" class="grid grid-cols-4 gap-3 mt-6 pt-3">
+  <div v-if="show_reply" id="email_action_compose" class="grid grid-cols-4 gap-3 mt-6 pt-3 pb-3">
     <div :class="[ show_attachment ? 'col-span-3' : 'col-span-4']">
       <div class="w-full">
         <div class="flex w-full">
@@ -193,7 +193,7 @@ function validateEmails(emailArray){
   return results;
 }
 
-const emailFullView = Vue.component("email-full-view", require("../EmailFullView.vue").default);
+// const emailFullView = Vue.component("email-full-view", require("../EmailFullView.vue").default);
 Vue.use(VueRouter)
 Vue.use(ButtonPlugin);
 Vue.use(VueNotification, {
@@ -208,6 +208,7 @@ export default Vue.extend({
       csrf_token: null,
       user_email: null,
       headers: null,
+      in_inbox: true,
       is_important: false,
       is_starred: false,
       email_action: null,
@@ -265,6 +266,10 @@ export default Vue.extend({
 
     ref_sidebar(){
       return this.$store.state.sidebar;
+    },
+
+    ref_emailView_full(){
+      return this.$store.state.emailView_full;
     },
 
     current_inbox(){
@@ -333,8 +338,12 @@ export default Vue.extend({
 
   methods:{
     scrollToEnd(){    	
-      var container = this.ref_sidebar.$el.querySelector("#splitter .pane_1");
-      container.scrollTop = container.scrollHeight;
+      if(this.in_inbox){
+        var container = this.ref_sidebar.$el.querySelector("#splitter .pane_1");
+        container.scrollTop = container.scrollHeight;
+      }else{
+        window.scrollTo(0,document.body.scrollHeight);
+      }
     },
 
     attachmentClicked(event, file){
@@ -668,18 +677,18 @@ export default Vue.extend({
     },
 
     emailView(){
-      let router = new VueRouter({
-        routes: [
-          {
-            path: "/emailView",
-            component: emailFullView,
-            props: { newsletterPopup: false }
-          }
-        ]
-      });
-      let routeData = router.resolve({name: this.routes.emailView, query: {data: "someData"}});
+      // let router = new VueRouter({
+      //   routes: [
+      //     {
+      //       path: "/emailView",
+      //       component: emailFullView,
+      //       props: { newsletterPopup: false }
+      //     }
+      //   ]
+      // });
+      // let routeData = router.resolve({name: this.routes.emailView, query: {data: "someData"}});
 
-      window.open(routeData.href, "_blank");
+      window.open(this.routes.emailView + this.email_data.email_id, "_blank", "location=yes,height=570,width=520,scrollbars=yes,status=yes");
     }
   }
 });

@@ -60,6 +60,7 @@ export const store = new Vuex.Store({
     headerTemplate: null,
     inboxDisplay: null,
     sidebar: null,
+    emailView_full: null,
   },
 
   mutations:{
@@ -206,6 +207,10 @@ export const store = new Vuex.Store({
       state.sidebar = payload;
     },
 
+    set_emailView_full(state, payload){
+      state.emailView_full = payload;
+    },
+
     set_search(state, payload){
       state.search = payload;
     },
@@ -344,6 +349,10 @@ export const store = new Vuex.Store({
 
     set_sidebar(state, payload){
       state.commit("set_sidebar", payload);
+    },
+
+    set_emailView_full(state, payload){
+      state.commit("set_emailView_full", payload);
     },
 
     set_search(state, payload){

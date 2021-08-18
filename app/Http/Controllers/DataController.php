@@ -699,4 +699,79 @@ class DataController extends Controller {
         'ids' => $ids
       ], 200);
     }
+
+    public function emailView(String $id, Request $request)
+    {
+      $user = LaravelGmail::user();
+      $email = LaravelGmail::message()->get($request['id']);
+      $labels = LaravelGmail::message()->listLabels()->labels;
+      $labels = array_slice($labels, 14);
+      $user_labels = [];
+
+      foreach ($labels as $label) {
+        $label_data = LaravelGmail::message()->getLabel($label->id);
+
+        $user_labels[] = [
+          'id'                    => $label_data->id,
+          'text'                  => $label_data->name,
+          'type'                  => $label_data->type,
+          'labelListVisibility'   => $label_data->labelListVisibility,
+          'messageListVisibility' => $label_data->messageListVisibility,
+          'messagesTotal'         => $label_data->messagesTotal,
+          'messagesUnread'        => $label_data->messagesUnread,
+          'color'                 => $label_data->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
+          'isChecked'             => false
+        ];
+      }
+
+      $signature = [];
+      //regex for getting sender signature
+      preg_match(
+        '/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', 
+        $email->getHeader('ARC-Authentication-Results'), 
+        $signature
+      );
+      $email_labels = $email->getLabels();
+
+      $email_data = [
+        'email_id'   => $email->getId(),
+        'read'       => !in_array('UNREAD', $email_labels),
+        'from'       => $email->getFrom(),
+        'to'         => $email->getTo()[0],
+        'reply_to'   => $email->getHeader("In-Reply-To"),
+        'cc'         => $email->getHeader("Cc"),
+        'bcc'        => $email->getHeader("Bcc"),
+        'arc_auth'   => substr($signature[0], 1), //error here on sent emails
+        'subject'    => $email->getSubject(),
+        'date'       => $email->getDate(),
+        'recipients' => $email->getTo(),
+        'headers'    => $email->getHeaders(),
+        'labels'     => $email_labels,
+        'threadId'   => $email->getThreadId(),
+      ];
+      $bodyHtml = $email->getHtmlBody();
+      $attachments_files = [];
+      $files = Storage::disk('storage_attachment')->files($user . '/opened');
+      
+      if (isset($files)) {
+        $file = new Filesystem;
+        $file->cleanDirectory(storage_path('app/public/attachments/' . $user . '/opened'));
+      }
+      if ($email->hasAttachments()) {
+        $attachments = $email->getAttachments();
+        foreach ($attachments as $attachment) {
+            $attachment->saveAttachmentTo($path = $user . '/opened', $filename = null, $disk = 'storage_attachment');
+            $attachments_files[] = $attachment->filename;
+        }
+      }
+
+      $data = [
+        'bodyHtml'          => $bodyHtml,
+        'attachments_files' => $attachments_files,
+        'email_data'        => $email_data,
+        'labels'            => $user_labels,
+      ];
+
+      return view('EmailView')->with(['data' => $data]);
+    }
 }

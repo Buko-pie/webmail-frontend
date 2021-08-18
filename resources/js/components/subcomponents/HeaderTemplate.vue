@@ -1,6 +1,6 @@
 <template>
   <div ref="header_template" class="flex relative items-center h-14" :start="start">
-    <div e-mappinguid="grid-column0">
+    <div v-if="in_inbox" e-mappinguid="grid-column0">
       <div class="e-checkbox-wrapper e-css z-40">
         <input class="e-checkselectall e-focus" type="checkbox">
         <span class="e-frame e-icons e-uncheck"></span>
@@ -69,7 +69,7 @@
         <div class="px-2 flex">
           <!-- Button More  -->
           <ejs-tooltip content="More" position="BottomCenter">
-            <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+            <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected" iconCss="fas fa-ellipsis-v" cssClass="e-round e-caret-hide"></ejs-dropdownbutton>
             <ejs-listview id="items_selected" :dataSource="more_items_selected" :select="moreOptions"></ejs-listview>
           </ejs-tooltip>
         </div>
@@ -127,6 +127,7 @@ export default Vue.extend({
       data:{},
       show_loading: true,
       loading: true,
+      in_inbox: true,
       items_selected: false,
       items_unread_selected: false,
       read_tgl_button_tt_content: "",
