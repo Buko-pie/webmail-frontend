@@ -352,7 +352,7 @@
         </div>
       </div>
       <div>
-        <ejs-listview id="lbl_options" ref="lbl_options" :fields="fields" :select="selectLabelOps" :dataSource="label_selected ? labels_options_apply : labels_options"></ejs-listview>
+        <ejs-listview id="lbl_options" ref="lbl_options" :fields="fields" :select="selectLabelOps" :dataSource="labels_options"></ejs-listview>
       </div>
     </div>
   </div>
@@ -383,7 +383,7 @@
         <ejs-listview id="moveTo_options_1" ref="moveTo_options_1" :select="selectMoveToOps" :dataSource="moveTo_options" :fields="fields"></ejs-listview>
       </div>
       <div>
-        <ejs-listview id="moveTo_options_2" ref="moveTo_options_2" :select="selectMoveToOps" :dataSource="label_selected ? labels_options_apply : labels_options" :fields="fields"></ejs-listview>
+        <ejs-listview id="moveTo_options_2" ref="moveTo_options_2" :select="selectMoveToOps" :dataSource="labels_options" :fields="fields"></ejs-listview>
       </div>
     </div>
   </div>
@@ -671,6 +671,9 @@ export default Vue.extend({
     return {
       search: '',
       labeled_arr: [],
+      unchecked_arr: [],
+      saveResult: false,
+      removeResult: false,
       user_labels_temporary: [],
       label_selected: false,
       label_selected_array: [],
@@ -726,11 +729,8 @@ export default Vue.extend({
 
       labels_options:[
         {id: 0, text: "Create new"}, 
-        {id: 1, text: "Manage labels"}
-      ],
-
-      labels_options_apply: [
-        {id: 0, text: "Apply"}
+        {id: 1, text: "Manage labels"},
+        {id: 2, text: "Apply"},
       ],
 
       moveTo_options:[
@@ -811,6 +811,7 @@ export default Vue.extend({
         move_to_inbox:        this.url_base + "/move_to_inbox",
         labels:               this.url_base + "/labels",
         labels_add:           this.url_base + "/labels/add",
+        labels_remove:        this.url_base + "/labels/remove",
         ids:                  this.url_base + "/ids",
         emailView:            this.url_base + "/emailView",
       };
@@ -1008,10 +1009,19 @@ export default Vue.extend({
     },
 
     modalShow(args){
+      console.log(this.selected_items_dataID)
       if(args){
         this.$store.dispatch("set_dropdown_menu_opened", null);
       }
       this.$modal.show('new_label_modal');
+    },
+
+    selectReset(){
+      // if(this.saveResult) {
+      //   this.$store.dispatch("set_selected_items_dataID", [])
+      // }
+      // this.saveResult = false
+      this.$store.dispatch("set_selected_items_dataID", [])
     },
 
     modalShow_editLabel(){
@@ -1379,22 +1389,39 @@ export default Vue.extend({
       }
     },
 
-    selectLabelOps(args){
+    async selectLabelOps(args){
       console.log(this.$refs.lbl_options);
       this.dropdownHideLabel();
       this.$refs.lbl_options.selectItem();
       if(args.data.text === "Create new"){
         this.modalShow();
       } else if(args.data.text === "Apply") { // Apply button
-        console.log(this.label_selected_array)
+        // resets the and unchecked_arr
+        this.unchecked_arr = []
+        this.user_labels_temporary.forEach(element => {
+          if(!element.isChecked) {
+            this.unchecked_arr.push(element.id)
+          }
+        });
+
         // set labels
-        this.saveLabels(this.selected_items_dataID, this.label_selected_array,0)
+        await this.saveLabels(this.selected_items_dataID, this.label_selected_array,0)
+        // remove labels
+        await this.removeLabels(this.selected_items_dataID, this.unchecked_arr)
+
+        if(this.saveResult && this.removeResult) {
+          this.refreshInbox()
+          this.$notification.success("Label updated", {  timer: 5 })
+        } else {
+          this.$notification.error("Something went wrong", {  timer: 5 })
+        }
       }
     },
 
-    saveLabels(labelsId,labelsArr,mode) {
+    async saveLabels(labelsId,labelsArr,mode) {
+      this.saveResult = false
       let _this = this
-      axios.get(this.routes.labels_add, {
+      await axios.get(this.routes.labels_add, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + csrf_token,
@@ -1407,8 +1434,29 @@ export default Vue.extend({
         }
       }).then(function (response) {
         console.log(response.data.success)
-        _this.refreshInbox()
-        response.data.success ? _this.$notification.success("Label added", {  timer: 5 }) : _this.$notification.error("Something went wrong", { timer: 5 })
+        _this.saveResult = true
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    async removeLabels(id,labels) {
+      this.removeResult = false
+      let _this = this
+      await axios.get(this.routes.labels_remove, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id,
+          labels
+        }
+      }).then(function (response) {
+        console.log(response.data)
+        _this.removeResult = true
       }).catch(error => {
         console.log(error);
         this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -1460,17 +1508,17 @@ export default Vue.extend({
       });
     },
 
-    labels_ajax(data){
+    async labels_ajax(data){
       this.modalHide();
       if(data){
         let _this = this;
-        axios.post(this.routes.labels, data, {
+        await axios.post(this.routes.labels, data, {
         headers:{
             "Content-Type": "multipart/mixed",
             "Authorization": "Bearer " + csrf_token,
             "X-CSRF-TOKEN": csrf_token
           }
-        }).then(function (response) {
+        }).then(async function (response) {
           let payload = response.data;
           console.log(payload);
 
@@ -1483,13 +1531,17 @@ export default Vue.extend({
           } else {
             // add label to mail
             if(_this.selected_items_dataID.length > 0) {
-              _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
+              await _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
+              if(_this.saveResult) {
+                _this.refreshInbox()
+              }
             }
           }
         }).catch(error => {
           console.log(error);
           _this.modalHide();
           _this.$notification.error("somthing went wrong", {  timer: 5 });
+          return error
         });
 
         this.new_lbl_txt = null;
@@ -1595,6 +1647,11 @@ export default Vue.extend({
     },
 
     selected(args) {
+      const i = this.user_labels_temporary.findIndex(element => {
+        if(element.id === args.data.id) {
+          return true
+        }
+      })
       if(!args.isChecked) {
         const pos = this.label_selected_array.findIndex( element => {
           if (element.id === args.data.id) {
@@ -1602,35 +1659,10 @@ export default Vue.extend({
           }
         })
         this.label_selected_array.splice(pos,1)
+        this.user_labels_temporary[i].isChecked = false
       } else {
         this.label_selected_array.push(args.data)
-      }
-
-      this.label_selected = true
-      let a = this.labeled_arr.sort((a, b) => {
-        let fa = a.id.toLowerCase(),
-            fb = b.id.toLowerCase();
-        if (fa < fb) {
-            return -1;
-        }
-        if (fa > fb) {
-            return 1;
-        }
-        return 0;
-      })
-      let b = this.label_selected_array.sort((a, b) => {
-        let fa = a.id.toLowerCase(),
-            fb = b.id.toLowerCase();
-        if (fa < fb) {
-            return -1;
-        }
-        if (fa > fb) {
-            return 1;
-        }
-        return 0;
-      })
-      if(JSON.stringify(a) === JSON.stringify(b)) {
-        this.label_selected = false
+        this.user_labels_temporary[i].isChecked = true
       }
     },
   },
