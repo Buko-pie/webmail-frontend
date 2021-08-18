@@ -54,6 +54,7 @@ export const store = new Vuex.Store({
     search: '',
     actions: {},
     ids: [],
+    rowSelected: [],
 
     //COMPONENTS REF
     headerTemplate: null,
@@ -220,7 +221,11 @@ export const store = new Vuex.Store({
 
     set_ids(state, payload){
       state.ids = payload;
-    }
+    },
+
+    set_rowSelected(state, payload){
+      state.rowSelected = payload;
+    },
   },
 
   getters:{
@@ -360,6 +365,10 @@ export const store = new Vuex.Store({
 
     set_ids(state, payload){
       state.commit("set_ids", payload);
+    },
+
+    set_rowSelected(state, payload){
+      state.commit("set_rowSelected", payload);
     },
 
     data_toggle({state}, payload){

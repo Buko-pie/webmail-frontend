@@ -73,6 +73,7 @@ export default{
 
   data(){
     return{
+      current_selected: [],
       searchOptions: { operator: 'contains', key: '', ignoreCase: true },
       csrf_token: null,
       index: 0,
@@ -564,6 +565,8 @@ export default{
     },
 
     rowSelected(args){
+      this.current_selected = args.rowIndexes
+      this.$store.dispatch("set_rowSelected", this.current_selected)
       this.$store.dispatch("set_actions", {
         read: args.data.read,
         important: args.data.important,
@@ -623,8 +626,18 @@ export default{
       });
     },
 
-    rowDeselected(args){
-      this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
+    async removeCommon(first, second) {
+      const spreaded = await [...first, ...second];
+      return spreaded.filter(async(el) => {
+        return await !(first.includes(el) && second.includes(el))
+      })
+    },
+
+    async rowDeselected(args){
+      const first = await this.current_selected
+      const second = await args.rowIndexes
+      await this.$store.dispatch("set_rowSelected", this.removeCommon(first, second))
+      await this.$store.dispatch("set_selected_items_dataID", this.$refs.grid.ej2Instances.getSelectedRecords().map(e => e.id));
 
       if(args.rowIndexes){
         this.selected_items_count = this.selected_items_count - args.rowIndexes.length;

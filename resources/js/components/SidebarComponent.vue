@@ -784,6 +784,14 @@ export default Vue.extend({
   },
 
   computed:{
+    rowSelected() {
+      return this.$store.state.rowSelected
+    },
+
+    rowDeselected() {
+      return this.$store.state.rowDeselected
+    },
+
     ref_headerTemplate(){
       return this.$store.state.headerTemplate;
     },
@@ -1009,7 +1017,9 @@ export default Vue.extend({
     },
 
     modalShow(args){
-      console.log(this.selected_items_dataID)
+      if(this.rowSelected.length === 0) {
+        this.$store.dispatch("set_selected_items_dataID", [])
+      }
       if(args){
         this.$store.dispatch("set_dropdown_menu_opened", null);
       }
