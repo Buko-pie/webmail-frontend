@@ -813,7 +813,7 @@ export default Vue.extend({
         labels_add:           this.url_base + "/labels/add",
         labels_remove:        this.url_base + "/labels/remove",
         ids:                  this.url_base + "/ids",
-        emailView:            this.url_base + "/emailView",
+        emailView:            this.url_base + "/emailView/",
       };
       console.log(routes);
       this.$store.dispatch("set_routes", routes);

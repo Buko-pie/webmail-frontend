@@ -228,7 +228,7 @@ export default{
         _this.$store.dispatch("set_email_batch", formatDate(payload.repackaged_data));
         _this.$store.dispatch("set_inbox_items", payload.inbox_items_length);
         _this.$store.dispatch("set_inbox_total", payload.inbox_info.messagesTotal);
-        _this.$store.dispatch("set_user_labels", payload.labels)
+        _this.$store.dispatch("set_user_labels", payload.labels);
         
         _this.$eventHub.$emit("page_change");
 
