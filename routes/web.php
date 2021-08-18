@@ -42,6 +42,7 @@ Route::get('/delete_mail_forever', [DataController::class, 'delete_mail_forever'
 Route::get('/move_to_inbox', [DataController::class, 'move_to_inbox'])->name('move_to_inbox');
 Route::post('/labels', [DataController::class, 'labels'])->name('labels');
 Route::get('/labels/add', [DataController::class, 'labels_add'])->name('labels_add');
+Route::get('/labels/remove', [DataController::class, 'labels_remove'])->name('labels_remove');
 Route::get('/ids', [DataController::class, 'ids'])->name('ids');
 
 Route::get('/gmailAPItest', function () {

@@ -664,6 +664,28 @@ class DataController extends Controller {
 
     }
 
+    public function labels_remove(Request $request)
+    {
+
+      $validator = Validator::make($request->all(), [
+        'id' => 'required',
+      ]);
+
+      if ($validator->fails()) {
+        return response()->json([
+          'success' => false
+        ], 400);
+      } else {
+        $response = LaravelGmail::message()->batchRemoveLabel($request->id, $request->labels);
+        $response ? $success = true : $success = false;
+    
+        return response()->json([
+          'success' => $response,
+        ], 200);
+      }
+
+    }
+
     public function ids(Request $request) {
       $inbox = LaravelGmail::message()->getLabel($request->id);
       $ids = [];
