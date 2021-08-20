@@ -47,7 +47,7 @@
    
     <div class="divide-y divide-gray-500 mt-5 pt-3">
 
-      <iframe class="w-full h-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;">
+      <iframe class="w-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:100%;width:100%;border:none;overflow:hidden;">
         Your browser is not compatible!
       </iframe>
 
@@ -60,7 +60,6 @@
     </div>
   </div>
   
-
   <div v-if="email_body_html && !show_reply" id="email_actions" class="flex mt-10 pt-2">
     <div class="m-2">
       <div @click="replyEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
@@ -173,6 +172,7 @@ import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
 
+
 function formatDate(date) {
   let new_date = moment(date).format("LLL");
   return new_date;
@@ -194,16 +194,20 @@ function validateEmails(emailArray){
 }
 
 // const emailFullView = Vue.component("email-full-view", require("../EmailFullView.vue").default);
-Vue.use(VueRouter)
 Vue.use(ButtonPlugin);
+// Vue.use(WindowPortal);
 Vue.use(VueNotification, {
   timer: 20
 });
 
 export default Vue.extend({
   name: "EmailViewTemplate",
+  components:{
+    
+  },
   data(){
     return{
+      open: false,
       routes: null,
       csrf_token: null,
       user_email: null,
@@ -334,6 +338,15 @@ export default Vue.extend({
     user_labels_keyed(){
       return this.$store.state.user_labels_keyed;
     },
+
+    viewEmailFull:{
+      get(){
+        return this.$store.state.viewEmailFull;
+      },
+      set(new_data){
+        return this.$store.dispatch("set_viewEmailFull", new_data);
+      }
+    }
   },
 
   methods:{
@@ -677,19 +690,8 @@ export default Vue.extend({
     },
 
     emailView(){
-      // let router = new VueRouter({
-      //   routes: [
-      //     {
-      //       path: "/emailView",
-      //       component: emailFullView,
-      //       props: { newsletterPopup: false }
-      //     }
-      //   ]
-      // });
-      // let routeData = router.resolve({name: this.routes.emailView, query: {data: "someData"}});
-
-      window.open(this.routes.emailView + this.email_data.email_id, "_blank", "location=yes,height=570,width=520,scrollbars=yes,status=yes");
-    }
+      this.viewEmailFull = true;
+    },
   }
 });
 </script>

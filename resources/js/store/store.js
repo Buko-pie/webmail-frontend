@@ -55,6 +55,7 @@ export const store = new Vuex.Store({
     actions: {},
     ids: [],
     rowSelected: [],
+    viewEmailFull: false,
 
     //COMPONENTS REF
     headerTemplate: null,
@@ -226,6 +227,10 @@ export const store = new Vuex.Store({
     set_rowSelected(state, payload){
       state.rowSelected = payload;
     },
+
+    set_viewEmailFull(state, payload){
+      state.viewEmailFull = payload;
+    }
   },
 
   getters:{
@@ -369,6 +374,10 @@ export const store = new Vuex.Store({
 
     set_rowSelected(state, payload){
       state.commit("set_rowSelected", payload);
+    },
+
+    set_viewEmailFull(state, payload){
+      state.commit("set_viewEmailFull", payload);
     },
 
     data_toggle({state}, payload){

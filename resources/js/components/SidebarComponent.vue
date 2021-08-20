@@ -543,7 +543,11 @@
         </tbody>
       </table>
     </div>
-  </div>  
+  </div>
+  
+  <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
+    <email-full-view/>
+  </WindowPortal>
 </div>
 </template>
 
@@ -554,6 +558,7 @@ import moment from "moment";
 import VModal from "vue-js-modal";
 import ClickOutside from 'vue-click-outside';
 import AvatarCropper from "vue-avatar-cropper";
+import WindowPortal from "./VueWindowPortal.vue";
 // import myUpload from "vue-image-crop-upload/upload-2.vue";
 import $ from "jquery";
 
@@ -900,15 +905,30 @@ export default Vue.extend({
     dropdown_menu_opened(){
       return this.$store.state.dropdown_menu_opened;
     },
+
+    viewEmailFull:{
+      get(){
+        return this.$store.state.viewEmailFull;
+      },
+      set(new_data){
+        return this.$store.dispatch("set_viewEmailFull", new_data);
+      }
+    }
   },
 
   components:{
     labels_list,
     label_item,
+    WindowPortal,
+    email_view_component,
   },
 
   created(){
     console.log("Sidebar component created");
+  },
+
+  beforeMount(){
+    window.addEventListener('unload', this.page_event);
   },
 
   mounted(){
@@ -928,7 +948,15 @@ export default Vue.extend({
     this.custom_labels_temp = this.custom_labels
   },
 
+  beforeDestroy(){
+    window.removeEventListener('unload', this.page_event);
+  },
+
   methods: {
+    page_event(){
+      this.$refs.portal_viewEmailFull.closePortal();
+    },
+
     mouseHover_labelOpts(){
       this.hover_label_opt = true;
     },
@@ -1675,6 +1703,10 @@ export default Vue.extend({
         this.user_labels_temporary[i].isChecked = true
       }
     },
+    
+    emailViewClosed(args){
+      this.viewEmailFull = false;
+    }
   },
 
   directives: {

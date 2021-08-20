@@ -369,22 +369,31 @@ class DataController extends Controller {
                     //read email
                     if ($value) {
                         $email->markAsRead();
-                        $signature = [];
-                        //regex for getting sender signature
-                        preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getHeader('ARC-Authentication-Results'), $signature);
+                        $email_labels = $email->getLabels();
+                        $arc_auth = "";
+                        if(in_array('SENT', $email_labels)){
+                          $arc_auth = "gmail.com";
+                        }else{
+                          $signature = [];
+                          //regex for getting sender signature
+                          preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getHeader('ARC-Authentication-Results'), $signature);
+                          $arc_auth = substr($signature[0], 1);
+                        }
+                        
                         $email_data = [
                             'email_id'   => $email->getId(),
+                            'read'       => !in_array('UNREAD', $email_labels),
                             'from'       => $email->getFrom(),
                             'to'         => $email->getTo()[0],
                             'reply_to'   => $email->getHeader("In-Reply-To"),
                             'cc'         => $email->getHeader("Cc"),
                             'bcc'        => $email->getHeader("Bcc"),
-                            'arc_auth'   => substr($signature[0], 1), //error here on sent emails
+                            'arc_auth'   => $arc_auth,
                             'subject'    => $email->getSubject(),
                             'date'       => $email->getDate(),
                             'recipients' => $email->getTo(),
                             'headers'    => $email->getHeaders(),
-                            'labels'     => $email->getLabels(),
+                            'labels'     => $email_labels,
                             'threadId'   => $email->getThreadId(),
                         ];
 

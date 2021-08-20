@@ -13,10 +13,6 @@ const email_view_component = Vue.component("email-view-component", require("./su
 export default Vue.extend({
   name: "EmailFullView",
 
-  props:{
-    data: { type: Object, required: true }
-  },
-
   components:{
     header_template,
     email_view_component,
@@ -24,22 +20,15 @@ export default Vue.extend({
 
   computed:{
     start(){
-      this.$store.dispatch("set_emailView_full", this);
-      this.$store.dispatch("set_user_labels", this.data.labels)
-      this.$store.dispatch("set_email_data", this.data.email_data);
-      this.$store.dispatch("set_email_html_body", this.data.bodyHtml);
+      
+    },
 
-      if(this.data.attachments_files.length > 0){
-        let files = [];
-
-        this.data.attachments_files.forEach(file => {
-          files.push({
-            name: file,
-            icon: fileIcons.getClassWithColor(file)
-          })
-        });
-
-        this.$store.dispatch("set_email_attachments", files);
+    selected_email_rowData:{
+      get(){
+        console.log(this.$store.state.selected_email_rowData);
+        return this.$store.state.selected_email_rowData;
+      },set(new_data){
+        return this.$store.dispatch('set_selected_email_rowData', new_data);
       }
     },
 
@@ -57,9 +46,9 @@ export default Vue.extend({
     this.$refs.header_comp.items_selected = true;
     this.$refs.header_comp.in_inbox = false;
     this.$refs.emailView_comp.in_inbox = false;
-    this.$refs.header_comp.read_tgl_button_tt_content = !this.data.email_data.read ? "Mark as read" : "Mark as unread";
-    this.$refs.header_comp.read_tgl_button_icon = !this.data.email_data.read ? "fas fa-envelope-open-text" : "fas fa-envelope";
-    console.log(this.data);
+    this.$refs.header_comp.read_tgl_button_tt_content = !this.selected_email_rowData.read ? "Mark as read" : "Mark as unread";
+    this.$refs.header_comp.read_tgl_button_icon = !this.selected_email_rowData.read ? "fas fa-envelope-open-text" : "fas fa-envelope";
+
   }
 })
 </script>
