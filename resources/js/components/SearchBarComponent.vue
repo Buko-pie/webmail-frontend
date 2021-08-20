@@ -173,8 +173,8 @@ export default Vue.extend({
     },
     searchInput() {
       this.$store.dispatch("set_search", this.search)
-      this.$eventHub.$emit("refresh_inbox", {
-        event: "refresh_inbox"
+      this.$eventHub.$emit("search_inbox", {
+        event: "search_inbox"
       });
     }
   }

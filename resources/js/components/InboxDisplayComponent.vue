@@ -74,7 +74,7 @@ export default{
   data(){
     return{
       current_selected: [],
-      searchOptions: { operator: 'contains', key: '', ignoreCase: true },
+      searchOptions: { fields: ['plain_text','message','labels','receiver','sender'], operator: 'contains', key: '', ignoreCase: true },
       csrf_token: null,
       index: 0,
       max_pages: null,
@@ -796,8 +796,6 @@ export default{
     //Refresh Inbox
     this.$eventHub.$on("refresh_inbox", (e)=>{
       console.log("refresh_inbox");
-      //sets the search text
-      this.$refs.grid.ej2Instances.searchSettings.key = this.$store.state.search;
 
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
@@ -824,6 +822,12 @@ export default{
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
       });
+    });
+
+    //Search Inbox
+    this.$eventHub.$on("search_inbox", (e)=>{
+      //sets the search text
+      this.$refs.grid.search(this.$store.state.search)
     });
 
     //Next Page
