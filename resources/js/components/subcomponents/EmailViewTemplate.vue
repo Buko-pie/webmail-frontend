@@ -47,7 +47,7 @@
    
     <div class="divide-y divide-gray-500 mt-5 pt-3">
 
-      <iframe class="w-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:100%;width:100%;border:none;overflow:hidden;">
+      <iframe class="w-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:100%;width:100%;border:none;overflow:hidden;min-height:50px;">
         Your browser is not compatible!
       </iframe>
 
@@ -371,6 +371,7 @@ export default Vue.extend({
     },
 
     replyEmail(){
+      console.log("bruh");
       let _this = this;
       this.show_reply = !this.show_reply;
       this.email_action = "reply_email";

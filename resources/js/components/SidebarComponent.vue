@@ -544,10 +544,23 @@
       </table>
     </div>
   </div>
+  <!--
+  <portal to="destination">
+    <email-full-view/>
+  </portal>
   
   <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
+    <portal-target name="destination">
+      
+    </portal-target>
+  </WindowPortal> 
+  -->
+  
+  <!-- -->
+  <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
     <email-full-view/>
-  </WindowPortal>
+  </WindowPortal> 
+  
 </div>
 </template>
 
@@ -572,6 +585,7 @@ import { VueTagsInput } from "@johmun/vue-tags-input";
 import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
 import VueNotification from "@kugatsu/vuenotification";
 import { DataManager, Query } from "@syncfusion/ej2-data";
+import PortalVue from "portal-vue";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -586,6 +600,7 @@ Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
 Vue.use(CheckBoxPlugin);
+Vue.use(PortalVue);
 Vue.use(VueNotification, {
   timer: 20
 });
