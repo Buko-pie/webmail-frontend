@@ -51,6 +51,7 @@
         "gsap": "^3.7.1",
         "jquery": "^3.6.0",
         "moment": "^2.29.1",
+        "portal-vue": "^2.1.7",
         "pretty-file-icons": "^2.2.1",
         "vue": "^2.6.14",
         "vue-avatar-cropper": "^2.0.9",
