@@ -556,7 +556,7 @@
   </WindowPortal> 
   -->
   
-  <!-- -->
+  <!---->
   <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
     <email-full-view/>
   </WindowPortal> 
