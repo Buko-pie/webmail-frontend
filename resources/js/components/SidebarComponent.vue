@@ -340,8 +340,8 @@
       'z-index': dropdown_zIndex
     }"
   >
-  <div class="grid grid-cols-1 divide-y">
-    <div>
+    <div class="grid grid-cols-1 divide-y">
+      <div>
         <p>Label as:</p>
         <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
           <input id="searchbar_label" ref='textboxEle' @keyup='searchInput' :value="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">

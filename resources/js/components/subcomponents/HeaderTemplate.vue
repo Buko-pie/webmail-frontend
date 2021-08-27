@@ -124,7 +124,6 @@ export default Vue.extend({
   name: "HeaderTemplate",
   data(){
     return{
-      data:{},
       show_loading: true,
       loading: true,
       in_inbox: true,
