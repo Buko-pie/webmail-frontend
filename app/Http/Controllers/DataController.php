@@ -95,6 +95,18 @@ class DataController extends Controller {
                   $inbox = LaravelGmail::message()->getProfile();
 
                   $inbox_items_length = count($gmail_data);
+                } else if($request['option'] == 'search') {
+                  //get emails through inbox/folders
+                  $gmail_data = $check_empty;
+                  if(count($check_empty) > 0) {
+                    $gmail_data = LaravelGmail::message()->raw('in:'.$request['inbox'].' '.$request['query'])->all();
+                    if(count($gmail_data) > 0) {
+                      $gmail_data = LaravelGmail::message()->raw('in:'.$request['inbox'].' '.$request['query'])->preload()->all();
+                    }
+                  }
+                  $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+
+                  $inbox_items_length = count($gmail_data);
                 } else {
                   //get emails through inbox/folders
                   $gmail_data = $check_empty;
@@ -108,42 +120,44 @@ class DataController extends Controller {
 
                 $custom_labels = [];
                 
-                foreach ($gmail_data as $index => $data) {
-                  // $labelsLen = count($data->getLabels());
-                  // $custom_label_tags = "";
-                  // for($i=0; $i<$labelsLen; $i++) {
-                  //   if($data->getLabels()[$i] !== 'UNREAD' && $data->getLabels()[$i] !== 'CATEGORY_UPDATES' && $data->getLabels()[$i] !== 'INBOX') { 
-                  //     array_push($custom_labels, $data->getLabels()[$i]);
-                  //     $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
-                  //   }
-                  // }
-                    $email_labels = $data->getLabels();
-                    array_push($repackaged_data, [
-                        'id'              => $data->id,
-                        'index'           => $index,
-                        'sender'          => $data->getFromName(),
-                        'receiver'        => $user,
-                        'message'         => $data->getSubject(),
-                        'plain_text'      => $data->getPlainTextBody(),
-                        'starred'         => in_array('STARRED', $email_labels),
-                        'important'       => in_array('IMPORTANT', $email_labels),
-                        'read'            => !in_array('UNREAD', $email_labels),
-                        'deleted'         => in_array('TRASH', $email_labels),
-                        'labels'          => $email_labels,
-                        'has_attachment'  => $data->hasAttachments(),
-                        'created_at'      => $data->getDate(),
-                    ]);
+                if(count($gmail_data) > 0) {
+                  foreach ($gmail_data as $index => $data) {
+                    // $labelsLen = count($data->getLabels());
+                    // $custom_label_tags = "";
+                    // for($i=0; $i<$labelsLen; $i++) {
+                    //   if($data->getLabels()[$i] !== 'UNREAD' && $data->getLabels()[$i] !== 'CATEGORY_UPDATES' && $data->getLabels()[$i] !== 'INBOX') { 
+                    //     array_push($custom_labels, $data->getLabels()[$i]);
+                    //     $custom_label_tags = $custom_label_tags .$data->getLabels()[$i] . ' '; 
+                    //   }
+                    // }
+                      $email_labels = $data->getLabels();
+                      array_push($repackaged_data, [
+                          'id'              => $data->id,
+                          'index'           => $index,
+                          'sender'          => $data->getFromName(),
+                          'receiver'        => $user,
+                          'message'         => $data->getSubject(),
+                          'plain_text'      => $data->getPlainTextBody(),
+                          'starred'         => in_array('STARRED', $email_labels),
+                          'important'       => in_array('IMPORTANT', $email_labels),
+                          'read'            => !in_array('UNREAD', $email_labels),
+                          'deleted'         => in_array('TRASH', $email_labels),
+                          'labels'          => $email_labels,
+                          'has_attachment'  => $data->hasAttachments(),
+                          'created_at'      => $data->getDate(),
+                      ]);
+                  }
                 }
 
                 return response()->json([
-                    'gmail_data'         => $gmail_data,
-                    'repackaged_data'    => $repackaged_data,
-                    'has_nextPage'       => $gmail_data->hasNextPage(),
-                    'inbox_items_length' => $inbox_items_length,
-                    'labels'             => $user_labels,
-                    'labels_all'         => $all_labels,
-                    'labels_2'           => $labels,
-                    'inbox_info'         => $inbox,
+                  'gmail_data'         => $gmail_data,
+                  'repackaged_data'    => $repackaged_data,
+                  'has_nextPage'       => $gmail_data->hasNextPage(),
+                  'inbox_items_length' => $inbox_items_length,
+                  'labels'             => $user_labels,
+                  'labels_all'         => $all_labels,
+                  'labels_2'           => $labels,
+                  'inbox_info'         => $inbox,
                 ], 200);
 
             }else {

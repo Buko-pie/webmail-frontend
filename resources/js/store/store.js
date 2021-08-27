@@ -52,6 +52,8 @@ export const store = new Vuex.Store({
     splitter_height: null,
     splitter_pane_0_height: null,
     search: '',
+    searchCommand: '',
+    searchOptions: { fields: ['plain_text','message','labels','receiver','sender'], operator: 'contains', key: '', ignoreCase: true },
     actions: {},
     ids: [],
     rowSelected: [],
@@ -216,6 +218,14 @@ export const store = new Vuex.Store({
       state.search = payload;
     },
 
+    set_search_command(state, payload){
+      state.searchCommand = payload;
+    },
+
+    set_searchOptions(state, payload){
+      state.searchOptions.fields = payload;
+    },
+
     set_actions(state, payload){
       state.actions = payload;
     },
@@ -364,6 +374,14 @@ export const store = new Vuex.Store({
       state.commit("set_search", payload);
     },
 
+    set_search_command(state, payload){
+      state.commit("set_search_command", payload);
+    },
+
+    set_searchOptions(state, payload){
+      state.commit("set_searchOptions", payload);
+    },
+    
     set_actions(state, payload){
       state.commit("set_actions", payload);
     },
