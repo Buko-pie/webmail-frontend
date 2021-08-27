@@ -13,19 +13,19 @@
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
-        <input id="filter_from" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_from" v-model="fromText" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Filter by Receiver -->
       <div class="flex flex-wrap content-center"><p class="text-sm">To</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[2].is_focused }">
-        <input id="filter_to" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_to" v-model="toText" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Filter by Subject -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Subject</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[3].is_focused }">
-        <input id="filter_subject" @focus="inputFocus(3)" @blur="inputBlur(3)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_subject" v-model="subjectText" @focus="inputFocus(3)" @blur="inputBlur(3)" class="e-input e-textbox" type="text" placeholder="">
       </div>
       
       <!-- including words -->
@@ -74,7 +74,7 @@
 
       <div class="col-span-5 flex justify-end">
         <ejs-button class="mr-3">Create Filter</ejs-button>
-        <ejs-button :isPrimary="true">Search</ejs-button>
+        <ejs-button :isPrimary="true" @click.native="searchBtn">Search</ejs-button>
       </div>
     </div>
   </div>
@@ -99,6 +99,9 @@ export default Vue.extend({
   name: "SearchBarComponent",
   data() {
     return {
+      fromText: '',
+      toText: '',
+      subjectText: '',
       search: '',
       is_focused: false,
       show_filters: false,
@@ -176,6 +179,31 @@ export default Vue.extend({
       this.$eventHub.$emit("search_inbox", {
         event: "search_inbox"
       });
+      console.log(this.search)
+    },
+    searchBtn() {
+      this.showFilters()
+      if(this.fromText.length > 0) {
+        if(this.fromText.split(' ').length > 1) {
+          this.search = `from:(${this.fromText})`
+        } else {
+          this.search = `from:${this.fromText}`
+        }
+      } else if(this.toText.length > 0) {
+        if(this.toText.split(' ').length > 1) {
+          this.search = `to:(${this.toText})`
+        } else {
+          this.search = `to:${this.toText}`
+        }
+      } else {
+        this.search = ''
+      }
+
+      if(this.search.length > 0) {
+        const command = this.search.split(':')[0]
+        this.$store.dispatch("set_search_command", command)
+      }
+      this.searchInput()
     }
   }
 });

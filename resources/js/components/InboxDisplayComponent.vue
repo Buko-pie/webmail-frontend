@@ -19,6 +19,7 @@
       :rowDeselected="rowDeselected"
       :data="routes"
       :searchSettings="searchOptions"
+      :pageSettings="pageSettings"
     >
       <e-columns>
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
@@ -73,8 +74,10 @@ export default{
 
   data(){
     return{
+      pageSettings: {
+        pageSize: 120
+      },
       current_selected: [],
-      searchOptions: { fields: ['plain_text','message','labels','receiver','sender'], operator: 'contains', key: '', ignoreCase: true },
       csrf_token: null,
       index: 0,
       max_pages: null,
@@ -270,6 +273,10 @@ export default{
     current_inbox(){
       return this.$store.state.current_inbox;
     },
+
+    searchOptions() {
+      return this.$store.state.searchOptions
+    }
   },
 
   mounted(){
@@ -825,9 +832,62 @@ export default{
     });
 
     //Search Inbox
-    this.$eventHub.$on("search_inbox", (e)=>{
+    this.$eventHub.$on("search_inbox", async (e)=>{
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
       //sets the search text
-      this.$refs.grid.search(this.$store.state.search)
+      let searchQuery = ""
+      if(this.$store.state.search !== "") {
+        searchQuery = this.$store.state.search.split(":")
+        if(searchQuery.length > 1) {
+          searchQuery = searchQuery[1].replace(/[()]/g, '')
+        }
+      }
+      // this.$refs.grid.search(searchQuery)
+      if(this.$store.state.searchCommand === "from") {
+        this.$store.dispatch("set_searchOptions", ['sender'])
+      } else if(this.$store.state.searchCommand === "to") {
+        this.$store.dispatch("set_searchOptions", ['receiver'])
+      }
+
+      if(Array.isArray(searchQuery)) {
+        searchQuery = searchQuery[0]
+      }
+
+      await axios.get(this.routes.data_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          inbox: this.$store.state.current_inbox.name,
+          option: "search",
+          query: searchQuery
+        }
+      }).then(function (response) {
+        let payload = response.data;
+        console.log(response);
+        console.log("ref_headerTemplate");
+        console.log(_this.ref_headerTemplate.loading);
+        _this.ref_headerTemplate.show_loading = false;
+        _this.ref_headerTemplate.loading = false;
+        // _this.$store.dispatch("set_max_page", Math.ceil(payload.inbox_items_length / 50));
+        _this.$store.dispatch("set_email_batch", formatDate(payload.repackaged_data));
+        _this.$store.dispatch("set_inbox_items", payload.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", payload.inbox_info.messagesTotal);
+        // _this.$store.dispatch("set_user_labels", payload.labels);
+        
+        _this.$eventHub.$emit("page_change");
+
+        _this.has_nextPage = payload.has_nextPage;
+        if(!payload.has_nextPage){
+          _this.$eventHub.$emit("disable_nxtBtn", true);
+        }
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
     });
 
     //Next Page
