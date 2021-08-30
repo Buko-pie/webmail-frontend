@@ -195,13 +195,20 @@ export default Vue.extend({
         } else {
           this.search = `to:${this.toText}`
         }
+      } else if(this.subjectText.length > 0) {
+        if(this.subjectText.split(' ').length > 1) {
+          this.search = `subject:(${this.subjectText})`
+        } else {
+          this.search = `subject:${this.subjectText}`
+        }
       } else {
         this.search = ''
       }
 
       if(this.search.length > 0) {
-        const command = this.search.split(':')[0]
-        this.$store.dispatch("set_search_command", command)
+        // const command = this.search.split(':')[0]
+        // this.$store.dispatch("set_search_command", command)
+        this.$store.dispatch("set_search_command", this.search)
       }
       this.searchInput()
     }

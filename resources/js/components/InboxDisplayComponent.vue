@@ -838,10 +838,11 @@ export default{
       //sets the search text
       let searchQuery = ""
       if(this.$store.state.search !== "") {
-        searchQuery = this.$store.state.search.split(":")
-        if(searchQuery.length > 1) {
-          searchQuery = searchQuery[1].replace(/[()]/g, '')
-        }
+        searchQuery = this.$store.state.search
+        // searchQuery = this.$store.state.search.split(":")
+        // if(searchQuery.length > 1) {
+        //   searchQuery = searchQuery[1].replace(/[()]/g, '')
+        // }
       }
       // this.$refs.grid.search(searchQuery)
       if(this.$store.state.searchCommand === "from") {
@@ -853,6 +854,8 @@ export default{
       if(Array.isArray(searchQuery)) {
         searchQuery = searchQuery[0]
       }
+
+      console.log('query ---', searchQuery)
 
       await axios.get(this.routes.data_route, {
         headers: {
