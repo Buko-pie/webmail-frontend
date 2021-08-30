@@ -42,7 +42,7 @@
         "@syncfusion/ej2-vue-lists": "^19.2.49",
         "@syncfusion/ej2-vue-navigations": "^19.2.51",
         "@syncfusion/ej2-vue-notifications": "^19.2.44",
-        "@syncfusion/ej2-vue-popups": "^19.2.48",
+        "@syncfusion/ej2-vue-popups": "^19.2.56",
         "@syncfusion/ej2-vue-richtexteditor": "^19.2.51",
         "@syncfusion/ej2-vue-splitbuttons": "^19.2.44",
         "codemirror": "^5.62.2",
