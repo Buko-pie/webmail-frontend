@@ -181,3 +181,16 @@
   z-index: 900 !important;
   margin: 0 8px;
 }
+
+#overlay_dialog .e-dlg-header-content { 
+  padding: 0px 0px; 
+}
+
+#overlay_dialog .e-dlg-header-content .e-dlg-header { 
+  width: 100%;
+}
+
+#overlay_dialog button {
+  padding: 2px 5px;
+  height: 1.2rem;
+}

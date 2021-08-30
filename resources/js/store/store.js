@@ -58,6 +58,7 @@ export const store = new Vuex.Store({
     ids: [],
     rowSelected: [],
     viewEmailFull: false,
+    current_subject: "New Message",
 
     //COMPONENTS REF
     headerTemplate: null,
@@ -240,6 +241,10 @@ export const store = new Vuex.Store({
 
     set_viewEmailFull(state, payload){
       state.viewEmailFull = payload;
+    },
+
+    set_current_subject(state, payload){
+      state.current_subject = payload;
     }
   },
 
@@ -396,6 +401,10 @@ export const store = new Vuex.Store({
 
     set_viewEmailFull(state, payload){
       state.commit("set_viewEmailFull", payload);
+    },
+
+    set_current_subject(state, payload){
+      state.commit("set_current_subject", payload);
     },
 
     data_toggle({state}, payload){

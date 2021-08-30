@@ -560,7 +560,19 @@
   <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
     <email-full-view/>
   </WindowPortal> 
-  
+
+  <ejs-dialog
+    id="overlay_dialog"
+    ref="overlay_dialog"
+    width="600px"
+    height="600px"
+    :header="overlay_header"
+    :content="overlay_body"
+    :showCloseIcon="false"
+    :position="{ X: 'right', Y: 'bottom'}" 
+    :isModal="false"
+  /><!-- overlay_x overlay_y-->
+
 </div>
 </template>
 
@@ -586,6 +598,7 @@ import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
 import VueNotification from "@kugatsu/vuenotification";
 import { DataManager, Query } from "@syncfusion/ej2-data";
 import PortalVue from "portal-vue";
+import { DialogPlugin } from "@syncfusion/ej2-vue-popups";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -601,6 +614,7 @@ Vue.use(VueTagsInput);
 Vue.use(UploaderPlugin);
 Vue.use(CheckBoxPlugin);
 Vue.use(PortalVue);
+Vue.use(DialogPlugin);
 Vue.use(VueNotification, {
   timer: 20
 });
@@ -612,6 +626,8 @@ const email_view_component = Vue.component("email-view-component", require("./su
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const label_item = Vue.component("label-item", require("./subcomponents/LabelItems.vue").default);
 const labels_list = Vue.component("labels-list", require("./subcomponents/LabelList.vue").default);
+const overlay_header = Vue.component("overlay-header", require("./subcomponents/OverlayHeader.vue").default);
+const overlay_body = Vue.component("overaly-body", require("./subcomponents/OverlayBody.vue").default);
 
 
 // const labels_list = Vue.component("labels-list", {
@@ -796,10 +812,20 @@ export default Vue.extend({
         return{ template: email_view_component}
       },
 
+      overlay_header(){
+        return{ template: overlay_header}
+      },
+
+      overlay_body(){
+        return{ template: overlay_body}
+      },
+
       attachment_path: null,
 
       dropElement: '.control-fluid',
       email_date_display: null,
+      overlay_x: 100,
+      overlay_y: 937,
     }
   },
 
@@ -939,11 +965,18 @@ export default Vue.extend({
   },
 
   created(){
+    
+
     console.log("Sidebar component created");
+  },
+
+  destroyed() {
+   
   },
 
   beforeMount(){
     window.addEventListener('unload', this.page_event);
+    window.addEventListener("resize", this.window_changed);
   },
 
   mounted(){
@@ -965,11 +998,20 @@ export default Vue.extend({
 
   beforeDestroy(){
     window.removeEventListener('unload', this.page_event);
+    window.removeEventListener("resize", this.window_changed);
   },
 
   methods: {
     page_event(){
       this.$refs.portal_viewEmailFull.closePortal();
+    },
+
+    window_changed(){
+      console.log(window.innerHeight);
+      console.log(window.innerWidth);
+      this.overlay_y = window.innerHeight - 100;
+      this.overlay_x = window.innerWidth - 100;
+      this.$refs.overlay_dialog.refreshPosition();
     },
 
     mouseHover_labelOpts(){
