@@ -1,12 +1,24 @@
 <template>
-  <div class="flex w-full p-2 bg-gray-700">
+  <div :start="start" class="flex w-full p-2 bg-gray-700">
     <p class="text-white font-semibold text-sm">{{ current_subject }}</p>
-    <ejs-button 
-      class="ml-auto text-xs"
-      @click.native="close_overlay"
-    >
-    x
-    </ejs-button>
+    <div class="ml-auto flex">
+      <ejs-button 
+        class="bg-gray-700 shadow-none hover:bg-gray-400"
+        iconCss="text-white fas fa-window-minimize"
+      >
+      </ejs-button>
+      <ejs-button 
+        class="bg-gray-700 shadow-none hover:bg-gray-400"
+        iconCss="text-white text-sm far fa-window-maximize"
+      >
+      </ejs-button>
+      <ejs-button 
+        class="bg-gray-700 shadow-none hover:bg-gray-400"
+        iconCss="text-white text-sm far fa-window-close"
+        @click.native="close_overlay"
+      >
+      </ejs-button>
+    </div>
   </div>
 </template>
 <script>
@@ -18,6 +30,14 @@ export default Vue.extend({
   name: "OverlayHeader",
   data() {},
   computed:{
+    start(){
+      this.$store.dispatch("add_overlays", this);
+    },
+
+    overlay_index(){
+      return this.$store.state.overlays.length;
+    },
+
     ref_sidebar(){
       return this.$store.state.sidebar;
     },

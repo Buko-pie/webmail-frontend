@@ -556,23 +556,27 @@
   </WindowPortal> 
   -->
   
-  <!---->
+  <!-- -->
   <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
     <email-full-view/>
   </WindowPortal> 
-
-  <ejs-dialog
-    id="overlay_dialog"
-    ref="overlay_dialog"
-    width="600px"
-    height="600px"
-    :header="overlay_header"
-    :content="overlay_body"
-    :showCloseIcon="false"
-    :position="{ X: 'right', Y: 'bottom'}" 
-    :isModal="false"
-  /><!-- overlay_x overlay_y-->
-
+  
+  <div v-for="(overlay, index) in overlays" :key="index">
+    <Overlay :index="index"/>
+    <!-- 
+    <ejs-dialog
+      :id="'overlay_dialog_' + index"
+      class="overlay_dialog"
+      ref="overlay_dialog"
+      width="600px"
+      height="600px"
+      :header="overlay_header"
+      :content="overlay_body"
+      :showCloseIcon="false"
+      :position="{ X: 'right', Y: 'bottom'}" 
+      :isModal="false"
+    />overlay_x overlay_y-->
+  </div>
 </div>
 </template>
 
@@ -581,7 +585,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VModal from "vue-js-modal";
-import ClickOutside from 'vue-click-outside';
+import ClickOutside from "vue-click-outside";
 import AvatarCropper from "vue-avatar-cropper";
 import WindowPortal from "./VueWindowPortal.vue";
 // import myUpload from "vue-image-crop-upload/upload-2.vue";
@@ -626,6 +630,7 @@ const email_view_component = Vue.component("email-view-component", require("./su
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
 const label_item = Vue.component("label-item", require("./subcomponents/LabelItems.vue").default);
 const labels_list = Vue.component("labels-list", require("./subcomponents/LabelList.vue").default);
+const overlay = Vue.component("Overlay", require("./subcomponents/Overlay.vue").default);
 const overlay_header = Vue.component("overlay-header", require("./subcomponents/OverlayHeader.vue").default);
 const overlay_body = Vue.component("overaly-body", require("./subcomponents/OverlayBody.vue").default);
 
@@ -705,6 +710,7 @@ export default Vue.extend({
 
   data() {
     return {
+      overlays: [],
       search: '',
       labeled_arr: [],
       unchecked_arr: [],
@@ -962,6 +968,7 @@ export default Vue.extend({
     label_item,
     WindowPortal,
     email_view_component,
+    overlay
   },
 
   created(){
@@ -1011,7 +1018,9 @@ export default Vue.extend({
       console.log(window.innerWidth);
       this.overlay_y = window.innerHeight - 100;
       this.overlay_x = window.innerWidth - 100;
-      this.$refs.overlay_dialog.refreshPosition();
+      // this.$refs.overlay_dialog.forEach(overlay => {
+      //   overlay.refreshPosition();
+      // });
     },
 
     mouseHover_labelOpts(){
@@ -1361,7 +1370,11 @@ export default Vue.extend({
 
     //Compose new email
     composeNew(args){
-      this.$modal.show("compose_new_modal");
+      //Need to implement multiple compose overlays
+      if(this.overlays.length < 1){
+        this.overlays.push(0);
+      }
+      // this.$modal.show("compose_new_modal");
     },
 
     attachmentUpload(args){

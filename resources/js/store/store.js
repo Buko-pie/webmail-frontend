@@ -65,6 +65,9 @@ export const store = new Vuex.Store({
     inboxDisplay: null,
     sidebar: null,
     emailView_full: null,
+    overlays: [],
+    overlay_header: null,
+    overlay_body: null,
   },
 
   mutations:{
@@ -213,6 +216,18 @@ export const store = new Vuex.Store({
 
     set_emailView_full(state, payload){
       state.emailView_full = payload;
+    },
+
+    add_overlays(state, payload){
+      state.overlays.push(payload);
+    },
+
+    set_overlay_header(state, payload){
+      state.overlay_header = payload;
+    },
+
+    set_overlay_body(state, payload){
+      state.overlay_body = payload;
     },
 
     set_search(state, payload){
@@ -373,6 +388,18 @@ export const store = new Vuex.Store({
 
     set_emailView_full(state, payload){
       state.commit("set_emailView_full", payload);
+    },
+
+    add_overlays(state, payload){
+      state.commit("add_overlays", payload);
+    },
+
+    set_overlay_header(state, payload){
+      state.commit("set_overlay_header", payload);
+    },
+
+    set_overlay_body(state, payload){
+      state.commit("set_overlay_body", payload);
     },
 
     set_search(state, payload){

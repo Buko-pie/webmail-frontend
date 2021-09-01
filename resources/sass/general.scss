@@ -156,3 +156,17 @@ em.specs {
   user-select: none;
   white-space: nowrap;
 }
+
+.vue-tags-input {
+  max-width: 100% !important;
+  width: 100% !important;
+  position: relative !important;
+  background-color: #fff !important;
+}
+
+.centered-axis-xy {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
