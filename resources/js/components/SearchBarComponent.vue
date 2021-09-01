@@ -183,26 +183,27 @@ export default Vue.extend({
     },
     searchBtn() {
       this.showFilters()
+      this.search = ""
       if(this.fromText.length > 0) {
         if(this.fromText.split(' ').length > 1) {
           this.search = `from:(${this.fromText})`
         } else {
           this.search = `from:${this.fromText}`
         }
-      } else if(this.toText.length > 0) {
+      }
+      if(this.toText.length > 0) {
         if(this.toText.split(' ').length > 1) {
-          this.search = `to:(${this.toText})`
+          this.search = `${this.search} to:(${this.toText})`
         } else {
-          this.search = `to:${this.toText}`
+          this.search = `${this.search} to:${this.toText}`
         }
-      } else if(this.subjectText.length > 0) {
+      }
+      if(this.subjectText.length > 0) {
         if(this.subjectText.split(' ').length > 1) {
-          this.search = `subject:(${this.subjectText})`
+          this.search = `${this.search} subject:(${this.subjectText})`
         } else {
-          this.search = `subject:${this.subjectText}`
+          this.search = `${this.search} subject:${this.subjectText}`
         }
-      } else {
-        this.search = ''
       }
 
       if(this.search.length > 0) {
