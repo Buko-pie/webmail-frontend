@@ -175,27 +175,44 @@ export default Vue.extend({
       
     },
     searchInput() {
+      let a = this.search.split(' ')
+      let command = ""
+      let query = ""
+      a.forEach((element,index) => {
+        let extracted_command = this.search.split(':')
+        if(extracted_command[0] === "in" || extracted_command[0] === "label") {
+          command = extracted_command[0]
+          query = extracted_command[1]
+        }
+      });
       this.$store.dispatch("set_search", this.search)
       this.$eventHub.$emit("search_inbox", {
-        event: "search_inbox"
+        event: "search_inbox",
+        command,
+        query
       });
       console.log(this.search)
     },
     searchBtn() {
       this.showFilters()
       this.search = ""
+      let command = ""
       if(this.fromText.length > 0) {
         if(this.fromText.split(' ').length > 1) {
           this.search = `from:(${this.fromText})`
+          command = `OR in:drafts from:(${this.fromText})`
         } else {
           this.search = `from:${this.fromText}`
+          command = `OR in:drafts from:${this.fromText}`
         }
       }
       if(this.toText.length > 0) {
         if(this.toText.split(' ').length > 1) {
           this.search = `${this.search} to:(${this.toText})`
+          command = `${this.search} OR in:sent to:(${this.toText})`
         } else {
-          this.search = `${this.search} to:${this.toText}`
+          this.search = `${this.search} OR in:sent to:${this.toText}`
+          command = `${this.search} to:${this.toText}`
         }
       }
       if(this.subjectText.length > 0) {
