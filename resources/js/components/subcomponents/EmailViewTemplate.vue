@@ -47,7 +47,7 @@
    
     <div class="divide-y divide-gray-500 mt-5 pt-3">
 
-      <iframe class="w-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:100%;width:100%;border:none;overflow:hidden;min-height:50px;">
+      <iframe class="w-full" :srcdoc="email_body_html" frameborder="0" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+20+"px";}(this));' style="display:block;width:100%;border:none;overflow:hidden;min-height:50px;">
         Your browser is not compatible!
       </iframe>
 
@@ -79,7 +79,7 @@
         <div class="flex w-full">
           <div class="w-full">
             <div class="flex items-center w-full">
-              <a class="text-sm text-gray-500">To:</a>
+              <ejs-dropdownbutton :items="items" :select="select_opts" cssClass="flex items-center justify-items-center">To:</ejs-dropdownbutton>
               <vue-tags-input
                 class="tags-no-broders"
                 v-model="email_address_tag"
@@ -93,6 +93,13 @@
                 @before-saving-tag="email_address_tags_edit"
                 @tags-changed="email_address_tags_new"
               />
+            </div>
+
+            <div v-if="change_subj" class="flex px-2 items-center justify-items-center border-b border-gray-300">
+              <a class="text-sm text-gray-500">Subject:</a>
+              <div class="p-2 w-full">
+                <input type="text" class="focus:outline-none w-full" v-model="email_subject">
+              </div>
             </div>
 
             <div v-if="add_cc" class="flex items-center">
@@ -141,7 +148,7 @@
         <div class="flex w-full mt-3">
           <ejs-button @click.native="sendReply" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           <ejs-button @click.native="show_attachment = !show_attachment"><i class="fas fa-paperclip"></i></ejs-button>
-          <ejs-button @click.native="replyEmail" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
+          <ejs-button @click.native="show_reply = false; change_subj = false;" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
         </div>
       </div>
     </div>
@@ -216,6 +223,8 @@ export default Vue.extend({
       is_important: false,
       is_starred: false,
       email_action: null,
+      email_subject: null,
+      change_subj: false,
       show_reply: false,
       show_attachment: false,
       email_date_display: null,
@@ -240,6 +249,12 @@ export default Vue.extend({
         { id: 1, text: "Forward" },
         { id: 2, text: "Delete this message" },
         { id: 3, text: "Mark as unread" }
+      ],
+      items:[
+        { text: "Reply",  iconCss: "fas fa-reply" },
+        { text: "Forward", iconCss: "fas fa-arrow-right" },
+        { text: "Edit Subject" },
+        { text: "Pop out reply" },
       ]
     };
   },
@@ -306,6 +321,7 @@ export default Vue.extend({
         let data = this.$store.state.selected_email_data
 
         if(data !== null){
+          this.email_subject = data.subject;
           this.email_date_display = formatDate(data.date);
           this.time_duration = moment(data.date, "YYYYMMDDhhmmss").fromNow();
         }
@@ -314,8 +330,7 @@ export default Vue.extend({
       },
       set(new_data){
         return this.$store.dispatch('set_email_data', new_data);
-      }
-      
+      },
     },
 
     email_rowData(){
@@ -373,11 +388,13 @@ export default Vue.extend({
     replyEmail(){
       console.log("bruh");
       let _this = this;
-      this.show_reply = !this.show_reply;
+      this.show_reply = true;
       this.email_action = "reply_email";
       this.add_cc = false;
       this.add_bcc = false;
       let data = this.email_data;
+      let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
+      this.change_subj = false;
 
       if(data !== null){
 
@@ -400,7 +417,17 @@ export default Vue.extend({
         }
 
       }
+
+      let reply_log = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"'>" + from_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
       
+      setTimeout(() => this.$refs.reply_content.setContent(reply_log), 200);
+
       setTimeout(function() {
         _this.scrollToEnd();
       }, 0);
@@ -409,7 +436,7 @@ export default Vue.extend({
 
     forwardEmail(){
       let _this = this;
-      this.show_reply = !this.show_reply;
+      this.show_reply = true;
       this.email_action = "forward_email";
       this.add_cc = false;
       this.add_bcc = false;
@@ -417,18 +444,17 @@ export default Vue.extend({
       this.email_addresses = null;
       let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
       let to_email = this.email_data.to.email ? this.email_data.to.email : this.email_data.to.name;
-
-      console.log(this.email_data.from.name);
-      console.log(from_email);
+      this.change_subj = false;
 
       let forward_msg_template = "<div><br></div><div><br></div>" +
-        "<div>On " + moment().format("LLLL") + " < " + this.user_email + " > wrote:</div>" +
+        "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>> wrote:</div>" +
+        "<div class='gmail_quote'>" +
+        "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
         "<div>---------- Forwarded message ---------</div>" +
-        "<div>From: &lt;" + from_email + "&gt;</div>" +
+        "<div>From: &lt;<a href='mailto:" + from_email +"'>" + from_email + "</a>&gt;</div>" +
         "<div>Date: " + moment(this.email_data.date).format("llll") + "</div>" +
-        "<div>To: &lt;" + to_email + "&gt;</div>"
-
-      console.log( forward_msg_template);
+        "<div>Subject: " + this.email_data.subject + "</div>" +
+        "<div>To: &lt;<a href='mailto:" + to_email +"'>" + to_email + "</a>&gt;</div>"
 
       if(this.email_data.cc !== null){
         let cc_email = this.email_data.cc;
@@ -439,7 +465,7 @@ export default Vue.extend({
         forward_msg_template = forward_msg_template + "<div>Cc: " + cc_email + "</div>"
       }
 
-      forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html;
+      forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html +"</blockquote></div>";
       setTimeout(() => this.$refs.reply_content.setContent(forward_msg_template), 200);
       
       setTimeout(function() {
@@ -551,13 +577,21 @@ export default Vue.extend({
         bcc: this.bcc_addresses,
         message: this.$refs.reply_content.getContent(),
         attachments: attachments,
+        change_subj: this.change_subj,
+        subject: this.email_subject,
       }
 
       axios.post(this.routes.send_mail, data)
           .then((response) => {
-            let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Forwarded";
+            let message = "";
+            if(_this.change_subj){
+              message = "Email Sent";
+            }else{
+              message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Forwarded";
+            }
             _this.$notification.success(message, {  timer: 5 });
             this.show_reply = false;
+            this.change_subj = false;
           }).catch(error => {
             console.log(error);
             _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -693,6 +727,32 @@ export default Vue.extend({
     emailView(){
       this.viewEmailFull = true;
     },
+
+
+    select_opts(args){
+      console.log(args);
+      switch (args.item.text) {
+        case "Reply":
+          this.replyEmail();
+          break;
+
+        case "Forward":
+          this.forwardEmail();
+          break;
+        
+        case "Edit Subject":
+          this.change_subj = true;
+          break;
+
+        case "Reply":
+          
+          break;
+      
+        default:
+          console.error("somthing went wrong: drp_down select");
+          break;
+      }
+    }
   }
 });
 </script>

@@ -224,6 +224,10 @@ class DataController extends Controller {
           $mail->bcc($content->bcc);
         }
 
+        if(isset($content->subject) && $content->change_subj){
+          $mail->subject($content->subject);
+        }
+
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
             $attachment = $file;
@@ -252,6 +256,10 @@ class DataController extends Controller {
 
         if(isset($content->bcc)){
           $mail->bcc($content->bcc);
+        }
+
+        if(isset($content->subject) && $content->change_subj){
+          $mail_subject = $content->subject;
         }
 
         if(isset($content->attachments)){
