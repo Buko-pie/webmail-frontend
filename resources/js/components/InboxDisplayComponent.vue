@@ -835,6 +835,15 @@ export default{
     this.$eventHub.$on("search_inbox", async (e)=>{
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
+
+      let command = `in:${this.$store.state.current_inbox.name}`
+
+      console.log('COMMAND IS IN OR LABEL', e.command === "in")
+
+      if(e.command === "in" || e.command === "label") {
+        command = `${e.command}:${e.query}`
+      }
+
       //sets the search text
       let searchQuery = ""
       if(this.$store.state.search !== "") {
@@ -855,7 +864,7 @@ export default{
         searchQuery = searchQuery[0]
       }
 
-      console.log('query ---', searchQuery)
+      console.log(`query --- ${command} ${searchQuery}`)
 
       await axios.get(this.routes.data_route, {
         headers: {
@@ -865,6 +874,7 @@ export default{
         },
         params: {
           inbox: this.$store.state.current_inbox.name,
+          command,
           option: "search",
           query: searchQuery
         }
