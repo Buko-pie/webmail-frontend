@@ -99,9 +99,9 @@ class DataController extends Controller {
                   //get emails through inbox/folders
                   $gmail_data = $check_empty;
                   if(count($check_empty) > 0) {
-                    $gmail_data = LaravelGmail::message()->raw('in:'.$request['inbox'].' '.$request['query'])->all();
+                    $gmail_data = LaravelGmail::message()->raw($request['command'].' '.$request['query'])->all();
                     if(count($gmail_data) > 0) {
-                      $gmail_data = LaravelGmail::message()->raw('in:'.$request['inbox'].' '.$request['query'])->preload()->all();
+                      $gmail_data = LaravelGmail::message()->raw($request['command'].' '.$request['query'])->preload()->all();
                     }
                   }
                   $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
