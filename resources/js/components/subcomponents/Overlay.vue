@@ -87,7 +87,7 @@
           </div>
         </div>
         <div class="flex flex-1" :style="{height: text_edit_h + 'px'}">
-          <Vueditor class="w-full border-0 border-b border-gray-300" ref="vueditor"></Vueditor>
+          <Vueditor class="w-full border-0 border-b border-gray-300" ref="vueditor_cont"></Vueditor>
         </div>
         <div v-if="show_attachment">
           <div class="border-b border-t w-full p-3 mt-5">
@@ -351,7 +351,7 @@ export default Vue.extend({
         cc: this.cc_addresses,
         bcc: this.bcc_addresses,
         subject: this.email_subject,
-        message: this.$refs.vueditor.getContent(),
+        message: this.$refs.vueditor_cont.getContent(),
         attachments: attachments,
       }
 

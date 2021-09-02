@@ -562,7 +562,7 @@
   </WindowPortal> 
   
   <div v-for="(overlay, index) in overlays" :key="index">
-    <Overlay :index="index"/>
+    <Overlay :index="index" ref="overlay_comps"/>
     <!-- 
     <ejs-dialog
       :id="'overlay_dialog_' + index"

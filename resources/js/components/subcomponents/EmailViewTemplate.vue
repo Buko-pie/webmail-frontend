@@ -143,12 +143,12 @@
           </div>
         </div>
 
-        <Vueditor ref="reply_content" class="w-full"></Vueditor>
+        <Vueditor ref="vueditor" class="w-full"></Vueditor>
 
         <div class="flex w-full mt-3">
           <ejs-button @click.native="sendReply" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           <ejs-button @click.native="show_attachment = !show_attachment"><i class="fas fa-paperclip"></i></ejs-button>
-          <ejs-button @click.native="show_reply = false; change_subj = false;" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
+          <ejs-button @click.native="trash_reply" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
         </div>
       </div>
     </div>
@@ -227,6 +227,8 @@ export default Vue.extend({
       change_subj: false,
       show_reply: false,
       show_attachment: false,
+      reply_address: null,
+      reply_content: null,
       email_date_display: null,
       email_address_tag: "",
       email_address_tags: [],
@@ -399,26 +401,26 @@ export default Vue.extend({
       if(data !== null){
 
         if(this.current_inbox.name === "SENT"){
-          let reply_address = data.to.email ? data.to.email : data.to.name;
-          this.email_addresses = [reply_address];
+          this.reply_address = data.to.email ? data.to.email : data.to.name;
+          this.email_addresses = [this.reply_address];
 
           this.email_address_tags = [{
-            text: reply_address,
+            text: this.reply_address,
             classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
           }];
         }else{
-          let reply_address = data.from.email ? data.from.email : data.from.name;
-          this.email_addresses = [reply_address];
+          this.reply_address = data.from.email ? data.from.email : data.from.name;
+          this.email_addresses = [this.reply_address];
 
           this.email_address_tags = [{
-            text: reply_address,
+            text: this.reply_address,
             classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
           }];
         }
 
       }
 
-      let reply_log = "<div><br></div><div><br></div>" +
+      this.reply_content = "<div><br></div><div><br></div>" +
         "<div class='gmail_quote'>" +
           "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"'>" + from_email + "</a>> wrote:</div>" +
           "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
@@ -426,7 +428,9 @@ export default Vue.extend({
           "</blockquote>" +  
         "</div>";
       
-      setTimeout(() => this.$refs.reply_content.setContent(reply_log), 200);
+      setTimeout(()=>{
+        this.$refs.vueditor.setContent(this.reply_content);
+      }, 200);
 
       setTimeout(function() {
         _this.scrollToEnd();
@@ -445,8 +449,9 @@ export default Vue.extend({
       let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
       let to_email = this.email_data.to.email ? this.email_data.to.email : this.email_data.to.name;
       this.change_subj = false;
+      this.reply_address = null;
 
-      let forward_msg_template = "<div><br></div><div><br></div>" +
+      this.reply_content = "<div><br></div><div><br></div>" +
         "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>> wrote:</div>" +
         "<div class='gmail_quote'>" +
         "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
@@ -462,15 +467,23 @@ export default Vue.extend({
         cc_email = cc_email.replace(/</g, "&lt;");
         cc_email = cc_email.replace(/>/g, "&gt;");
 
-        forward_msg_template = forward_msg_template + "<div>Cc: " + cc_email + "</div>"
+        this.reply_content = this.reply_content + "<div>Cc: " + cc_email + "</div>"
       }
 
-      forward_msg_template = forward_msg_template + "<div><br></div><div><br></div>" + this.email_body_html +"</blockquote></div>";
-      setTimeout(() => this.$refs.reply_content.setContent(forward_msg_template), 200);
+      this.reply_content = this.reply_content + "<div><br></div><div><br></div>" + this.email_body_html +"</blockquote></div>";
+      setTimeout(() => this.$refs.vueditor.setContent(this.reply_content), 200);
       
       setTimeout(function() {
         _this.scrollToEnd();
       }, 0);
+    },
+
+    trash_reply(){
+      this.$refs.vueditor.setContent("");
+      this.reply_content = null;
+      this.change_subj = false;
+      this.email_subject = null;
+      this.show_reply = false;
     },
 
     email_address_tags_add_class(args){
@@ -575,7 +588,7 @@ export default Vue.extend({
         addresses: this.email_addresses,
         cc: this.cc_addresses,
         bcc: this.bcc_addresses,
-        message: this.$refs.reply_content.getContent(),
+        message: this.$refs.vueditor.getContent(),
         attachments: attachments,
         change_subj: this.change_subj,
         subject: this.email_subject,
@@ -744,7 +757,36 @@ export default Vue.extend({
           this.change_subj = true;
           break;
 
-        case "Reply":
+        case "Pop out reply":
+          let _this = this;
+          let reply_content = this.reply_content;
+          let email_subject = this.email_subject;
+          this.ref_sidebar.composeNew();
+          this.$refs.vueditor.setContent("");
+          this.change_subj = false;
+          this.email_subject = null;
+          this.reply_content = null;
+          this.show_reply = false;
+          
+          setTimeout(function() {
+            console.log(_this.ref_sidebar.$refs.overlay_comps);
+            let overlay = _this.ref_sidebar.$refs.overlay_comps[0];
+
+            overlay.email_subject = email_subject;
+            // overlay.$refs.vueditor_cont.setContent(_this.reply_content);
+            setTimeout(() => overlay.$refs.vueditor_cont.setContent(reply_content), 100);
+            if(_this.reply_address){
+
+              overlay.email_addresses = [_this.reply_address];
+              
+              overlay.email_address_tags = [{
+                text: _this.reply_address,
+                classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+              }];
+            }
+            
+            
+          }, 0);
           
           break;
       
