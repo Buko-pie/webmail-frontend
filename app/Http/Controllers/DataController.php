@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
 use Validator;
-
 // use App\DummyData;
 use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use App\Dacastro4\LaravelGmail\Services\Message\Mail;
