@@ -56,7 +56,6 @@ class DataController extends Controller {
                     //   $emails->next();
                     //   $inbox_items_length = $inbox_items_length + count($emails);
                     // }
-
                     // return response()->json([
                     //     'labels' => $labels,
                     //     'inbox' => $inbox,
