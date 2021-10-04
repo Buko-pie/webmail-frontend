@@ -93,21 +93,23 @@
           <div class="border-b border-t w-full p-3 mt-5">
             <p class="text-base font-bold"><i class="fas fa-paperclip"></i> Attchments</p>
           </div>
-          <ejs-uploader
-            ref="ejs_uploader_reply"
-            id="ejs_uploader_reply"
-            name="UploadFiles"
-            maxFileSize=26214400
-            :asyncSettings="attachment_path"
-            :uploading="attachmentUpload"
-            :removing="removingAttachment"
-            :sequentialUpload='true'
-            :autoUpload='true'>
-          </ejs-uploader>
+          <div class="max-h-24 overflow-y-scroll">
+            <ejs-uploader
+                ref="ejs_uploader_reply"
+                id="ejs_uploader_reply"
+                name="UploadFiles"
+                maxFileSize=26214400
+                :asyncSettings="attachment_path"
+                :uploading="attachmentUpload"
+                :removing="removingAttachment"
+                :sequentialUpload='true'
+                :autoUpload='true'
+            />
+          </div>
         </div>
-        <div class="flex w-full mt-3">
+        <div class="absolute bottom-1 flex w-full mt-3">
           <ejs-button @click.native="sendReply" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
-          <ejs-button @click.native="show_attachment = !show_attachment; text_edit_h = show_attachment ? text_edit_h - 132 : text_edit_h + 132;"><i class="fas fa-paperclip"></i></ejs-button>
+          <ejs-button @click.native="show_attachment = !show_attachment; text_edit_h = show_attachment ? text_edit_h - 155 : text_edit_h + 155;"><i class="fas fa-paperclip"></i></ejs-button>
           <ejs-button @click.native="close_overlay" class="ml-auto bg-red-600 text-white"><i class="fas fa-trash"></i></ejs-button>
         </div>
       </div>
