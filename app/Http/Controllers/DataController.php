@@ -195,9 +195,7 @@ class DataController extends Controller {
 
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
-            $attachment = $file;
-
-            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$file->filename);
             $mail->attach($path);
           }
         }
@@ -228,9 +226,7 @@ class DataController extends Controller {
 
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
-            $attachment = $file;
-            
-            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$file->filename);
             $mail->attach($path);
           }
         }
@@ -262,9 +258,7 @@ class DataController extends Controller {
 
         if(isset($content->attachments)){
           foreach ($content->attachments as $index => $file) {
-            $attachment = json_decode($file);
-            
-            $path = Storage::disk('storage_attachment')->path($user.'/'.$attachment->filename);
+            $path = Storage::disk('storage_attachment')->path($user.'/'.$file->filename);
             $mail->attach($path);
           }
         }

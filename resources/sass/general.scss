@@ -174,3 +174,16 @@ em.specs {
 .gmail_quote{
   display: block;
 }
+
+.e-upload .e-upload-files .e-upload-file-list, .e-bigger.e-small .e-upload .e-upload-files .e-upload-file-list {
+    font-family: inherit;
+    font-size: 14px;
+    height: 5rem !important;
+    line-height: normal;
+    min-height: 90px;
+    position: relative;
+}
+
+.e-upload {
+    border: 0px !important;
+}
