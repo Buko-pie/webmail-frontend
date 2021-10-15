@@ -875,7 +875,7 @@ export default Vue.extend({
         ids:                  this.url_base + "/ids",
         emailView:            this.url_base + "/emailView/",
       };
-      console.log(routes);
+
       this.$store.dispatch("set_routes", routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
       this.$store.dispatch("set_user_email", this.gmail_user);
@@ -988,7 +988,7 @@ export default Vue.extend({
 
   mounted(){
     console.log("Sidebar component mounted");
-    console.log(this.gmail_user);
+
     
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
@@ -1014,8 +1014,6 @@ export default Vue.extend({
     },
 
     window_changed(){
-      console.log(window.innerHeight);
-      console.log(window.innerWidth);
       this.overlay_y = window.innerHeight - 100;
       this.overlay_x = window.innerWidth - 100;
       // this.$refs.overlay_dialog.forEach(overlay => {
@@ -1316,7 +1314,6 @@ export default Vue.extend({
         }else if(isExistLabel(this.new_lbl_name, this.labels_locations)){
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
-          console.log(this.new_lbl_name);
           let _this = this;
           let new_lbl_name = this.new_lbl_name;
 
@@ -1397,7 +1394,7 @@ export default Vue.extend({
     },
 
     goToInbox(inbox_name, inbox_id){
-      console.log(inbox_name);
+
       let _this = this;
 
       _this.ref_headerTemplate.show_loading = true;
@@ -1411,7 +1408,7 @@ export default Vue.extend({
           option: null
         }
       }).then(function (response) {
-        console.log(response);
+
         _this.$store.dispatch("set_current_inbox", {name: inbox_name, id: inbox_id, type: 0});
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
         _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
@@ -1421,7 +1418,7 @@ export default Vue.extend({
         _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("page_change");
       }).catch(error => {
-        console.log(error);
+
         this.$notification.error("somthing went wrong", {  timer: 5 });
       });
     },
@@ -1440,7 +1437,7 @@ export default Vue.extend({
             option: "labeled"
           }
         }).then(function (response) {
-          console.log(response);
+
           _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
           _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
           _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
@@ -1450,7 +1447,7 @@ export default Vue.extend({
           _this.ref_headerTemplate.loading = false;
           _this.$eventHub.$emit("page_change");
         }).catch(error => {
-          console.log(error);
+
           this.$notification.error("somthing went wrong", {  timer: 5 });
         });
       }
@@ -1489,7 +1486,7 @@ export default Vue.extend({
           _this.$eventHub.$emit("refresh_inbox", {
             event: "refresh_inbox"
           });
-          console.log(response);
+
         }).catch(error => {
           console.log(error);
           _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -1609,7 +1606,7 @@ export default Vue.extend({
         }
       }).then(function (response) {
         _this.refreshInbox();
-        console.log(response);
+
       }).catch(error => {
         console.log(error);
         _this.$notification.error("somthing went wrong", {  timer: 5 });
@@ -1635,7 +1632,7 @@ export default Vue.extend({
           _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
 
           if(data.ids?.length > 0) {
-            _this.refreshInbox()
+            _this.goToInbox('INBOX', 'INBOX');
           } else {
             // add label to mail
             if(_this.selected_items_dataID.length > 0) {
