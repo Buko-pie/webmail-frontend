@@ -1694,13 +1694,7 @@ export default Vue.extend({
 
         case "Edit label":
           let labels = this.selected_label.text.split("/")
-          this.parent_label_edit = this.user_labels;
-
-          this.parent_label_edit.forEach((label, index) => {
-            if(label.text === this.selected_label.text){
-              this.parent_label_edit.splice(index, 1);
-            }
-          });
+          this.parent_label_edit = [];
 
           if(labels.length > 1){
             this.nested_label = true;
@@ -1720,17 +1714,23 @@ export default Vue.extend({
                 parent_label = parent_label + label;
               }
             });
-            console.log(sub_label);
-            console.log(parent_label);
+            // console.log(sub_label);
+            // console.log(parent_label);
 
             this.new_lbl_name = sub_label;
             this.selected_parent = parent_label;
-            this.modalShow_editLabel();
           }else{
             this.new_lbl_name = this.selected_label.text;
-            this.modalShow_editLabel();
           }
-          
+
+          //removes labels equal to itself and its parent label
+          this.user_labels.forEach((label, index) => {
+            if(!label.text.includes(this.selected_label.text) && !label.text.includes(this.selected_parent)){
+              this.parent_label_edit.push(label);
+            }
+          });
+
+          this.modalShow_editLabel();
           break;
       
         default:
