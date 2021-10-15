@@ -1625,7 +1625,6 @@ export default Vue.extend({
           }
         }).then(async function (response) {
           let payload = response.data;
-          console.log(payload);
 
           _this.modalHide();
           _this.$store.dispatch("set_user_labels", payload.labels);
