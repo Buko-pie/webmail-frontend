@@ -1725,7 +1725,7 @@ export default Vue.extend({
 
           //removes labels equal to itself and its parent label
           this.user_labels.forEach((label, index) => {
-            if(!label.text.includes(this.selected_label.text) && !label.text.includes(this.selected_parent)){
+            if(!label.text.includes(this.selected_label.text) && label.text !== this.selected_parent){
               this.parent_label_edit.push(label);
             }
           });
