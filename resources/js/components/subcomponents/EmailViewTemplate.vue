@@ -52,6 +52,15 @@
       </iframe>
 
       <div v-if="email_attachments !== null" class="mt-8 pt-3">
+        <div v-if="email_attachments.length > 1" class="flex"> 
+          <b>{{ email_attachments.length}} Attachments</b>
+
+          <ejs-tooltip content="Download all attachments" position="BottomCenter" class="ml-auto">
+            <div @click="downloadAllAttachments" class="flex bg-white p-2 border rounded-lg cursor-pointer">
+              <i class="fas fa-download"></i>
+            </div>
+          </ejs-tooltip>
+        </div>
 
         <div v-for="(file, index) in email_attachments" :key="index" @click="attachmentClicked($event, file.name)" class="flex bg-white mb-4 border rounded-lg w-48 h-10 items-center truncate cursor-pointer">
           <p class="font-bold px-3 py-5 w-40">{{ file.name }}</p>
@@ -178,6 +187,7 @@ import VueRouter from 'vue-router'
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
+import { TooltipPlugin } from "@syncfusion/ej2-vue-popups";
 
 
 function formatDate(date) {
@@ -201,6 +211,7 @@ function validateEmails(emailArray){
 }
 
 // const emailFullView = Vue.component("email-full-view", require("../EmailFullView.vue").default);
+Vue.use(TooltipPlugin);
 Vue.use(ButtonPlugin);
 // Vue.use(WindowPortal);
 Vue.use(VueNotification, {
@@ -383,6 +394,23 @@ export default Vue.extend({
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', file);
+      document.body.appendChild(link);
+      link.click()
+    },
+
+    downloadAllAttachments(event){
+      let files = [];
+      this.email_attachments.forEach(file => {
+        files.push(file.name)
+      });
+
+      let arrStr = encodeURIComponent(JSON.stringify(files));
+      console.log(arrStr);
+      let zip_name = (this.email_data.subject.replace(/[^A-Z0-9]/ig, "")).toLowerCase();
+      const url = this.routes.download_attachment + "?all=true&zip_name=" + zip_name + "&file=" + arrStr;
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', zip_name + ".zip");
       document.body.appendChild(link);
       link.click()
     },

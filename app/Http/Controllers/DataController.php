@@ -11,6 +11,7 @@ use Validator;
 use App\Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use App\Dacastro4\LaravelGmail\Services\Message\Mail;
 use App\Dacastro4\LaravelGmail\Services\Message\Attachment;
+use ZipArchive;
 
 class DataController extends Controller {
 
@@ -343,7 +344,33 @@ class DataController extends Controller {
             return response()->json("Empty filename query", 400);
         }
 
-        $subpath = 'app/public/attachments/' . $user . '/opened/' . $request['file'];
+        if($request['all'] == true){
+          $user_storage_path = 'app\\public\\attachments\\' . $user . '\\opened\\';
+          $files = json_decode($request['file']);
+          foreach ($files as $file) {
+            $paths[] = storage_path($user_storage_path . $file);
+          }
+          
+          $zip = new ZipArchive();
+          $zip_path = storage_path($user_storage_path . $request['zip_name'] . '.zip');
+
+          if($zip->open($zip_path, ZipArchive::CREATE) === true){
+            // Add File in ZipArchive
+            foreach($files as $index => $file){
+              if(!$zip->addFile($paths[$index], basename($file))){
+                return response()->json('Could not add file to ZIP: ' . $file, 400);
+              }
+            }
+            // Close ZipArchive
+            $zip->close();
+            return response()->download($zip_path);
+          }else{
+            return response()->json('Could not open ZIP file', 400);
+          }
+          
+        }
+
+        $subpath = 'app\\public\\attachments\\' . $user . '\\opened\\' . $request['file'];
         $path = storage_path($subpath);
 
         if (!file_exists($path)) {
