@@ -16,7 +16,7 @@ use ZipArchive;
 class DataController extends Controller {
 
     public function get_data(Request $request) {
-        $items = $request->items ?? 100;
+        $items = $request->items ?? 50;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
             $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
@@ -79,9 +79,10 @@ class DataController extends Controller {
 
                 } else if ($request['option'] == 'labeled') {
                   //get labeled emails
-                  $inbox = LaravelGmail::message()->getLabel($request['label_id'] );
+                  $inbox_name = str_replace(' ', '-', strtolower($request['inbox']));
+                  $inbox = LaravelGmail::message()->getLabel($request['label_id']);
                   if($inbox->messagesTotal > 0){
-                    $gmail_data = LaravelGmail::message()->labeled($request['inbox'])->take($items)->preload()->all();
+                    $gmail_data = LaravelGmail::message()->labeled($inbox_name)->take($items)->preload()->all();
                     $inbox_items_length = count($gmail_data);
                   }else{
                     return response()->json(['inbox' => $inbox, 'empty' => true]);
@@ -415,10 +416,18 @@ class DataController extends Controller {
                         if(in_array('SENT', $email_labels)){
                           $arc_auth = "gmail.com";
                         }else{
-                          $signature = [];
-                          //regex for getting sender signature
-                          preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getHeader('ARC-Authentication-Results'), $signature);
-                          $arc_auth = substr($signature[0], 1);
+                          $arc_auth = $email->getHeader('ARC-Authentication-Results');
+                          if(empty($arc_auth)){
+                            //if arc auth is empty get sender address
+                            $signature = [];
+                            preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getFrom()['email'], $signature);
+                            $arc_auth = substr($signature[0], 1);
+                          }else{
+                            $signature = [];
+                            //regex for getting sender signature
+                            preg_match('/@(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/', $email->getHeader('ARC-Authentication-Results'), $signature);
+                            $arc_auth = substr($signature[0], 1);
+                          }
                         }
                         
                         $email_data = [

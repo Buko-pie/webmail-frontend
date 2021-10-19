@@ -25,7 +25,7 @@
         <e-column headerText="" :headerTemplate="header_template" :columns="custom_column"></e-column>
       </e-columns>
     </ejs-grid>
-    <ejs-pager id="inbox_pager" ref="inbox_pager" :template="pagination_template"> </ejs-pager>
+    <inbox-pagination id="inbox_pager" ref="inbox_pager"> </inbox-pagination>
   </div>
 </template>
 

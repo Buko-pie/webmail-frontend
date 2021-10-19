@@ -14,6 +14,7 @@ const sidebar = Vue.component("sidebar-component", require("./components/Sidebar
 const navbar_buttons = Vue.component("navbar-buttons", require("./components/NavbarBtnsComponent.vue").default);
 const searchbar = Vue.component("searchbar-component", require("./components/SearchBarComponent.vue").default);
 const emailFullView = Vue.component("email-full-view", require("./components/EmailFullView.vue").default);
+const inboxPagination = Vue.component("inbox-pagination", require("./components/subcomponents/PaginationTemplate.vue").default);
 // const WindowPortal = Vue.component("WindowPortal", require("vue-window-portal").default);
 
 const editor_config = {
@@ -95,6 +96,7 @@ const app = new Vue({
     navbar_buttons,
     searchbar,
     emailFullView,
+    inboxPagination,
     // WindowPortal
   },
   methods:{
