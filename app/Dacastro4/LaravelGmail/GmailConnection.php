@@ -8,6 +8,7 @@ use Google_Service_Gmail;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
 
 class GmailConnection extends Google_Client
 {
@@ -52,7 +53,7 @@ class GmailConnection extends Google_Client
 	public function checkPreviouslyLoggedIn()
 	{
 		$fileName = $this->getFileName();
-		$file = "gmail/tokens/$fileName.json";
+		$file = "gmail/$this->emailAddress/tokens/$fileName.json";
 		$allowJsonEncrypt = $this->_config['gmail.allow_json_encrypt'];
 
 		if (Storage::disk('local')->exists($file)) {
@@ -148,7 +149,7 @@ class GmailConnection extends Google_Client
 	{
 		$disk = Storage::disk('local');
 		$fileName = $this->getFileName();
-		$file = "gmail/tokens/$fileName.json";
+		$file = "gmail/$this->emailAddress/tokens/$fileName.json";
 		$allowJsonEncrypt = $this->_config['gmail.allow_json_encrypt'];
 		$config['email'] = $this->emailAddress;
 
@@ -190,6 +191,7 @@ class GmailConnection extends Google_Client
 				if($this->haveReadScope()) {
 					$me = $this->getProfile();
 					if (property_exists($me, 'emailAddress')) {
+            session()->put('emailAddress', $me->emailAddress);
 						$this->emailAddress = $me->emailAddress;
 						$accessToken['email'] = $me->emailAddress;
 					}
@@ -242,7 +244,7 @@ class GmailConnection extends Google_Client
 	{
 		$disk = Storage::disk('local');
 		$fileName = $this->getFileName();
-		$file = "gmail/tokens/$fileName.json";
+		$file = "gmail/$this->emailAddress/tokens/$fileName.json";
 
 		$allowJsonEncrypt = $this->_config['gmail.allow_json_encrypt'];
 

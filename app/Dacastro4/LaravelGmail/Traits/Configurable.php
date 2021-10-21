@@ -5,6 +5,7 @@ namespace App\Dacastro4\LaravelGmail\Traits;
 use Google_Service_Gmail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Session;
 
 /**
  * Trait Configurable
@@ -22,10 +23,16 @@ trait Configurable
 	}
 
 	public function config($string = null)
-	{
+	{ 
+    $emailAddress = "";
+    if (Session::has('emailAddress')){
+      $emailAddress = session()->get('emailAddress');
+    }
+   
+
 		$disk = Storage::disk('local');
 		$fileName = $this->getFileName();
-		$file = "gmail/tokens/$fileName.json";
+		$file = "gmail/$emailAddress/tokens/$fileName.json";
 		$allowJsonEncrypt = $this->_config['gmail.allow_json_encrypt'];
 
 		if ($disk->exists($file)) {
