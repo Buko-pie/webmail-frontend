@@ -154,15 +154,19 @@ export default Vue.extend({
     inputFocus(index){
       this.e_inputs[index].is_focused = true;
     },
+
     inputBlur(index){
       this.e_inputs[index].is_focused = false;
     },
+
     icon_button_md(index){
       this.e_buttons[index].is_clicked = true;
     },
+
     icon_button_mu(index){
       setTimeout(() => this.e_buttons[index].is_clicked = false, 500);
     },
+
     showFilters(){
       this.show_filters = !this.show_filters;
       let filters = document.getElementById("filters_opton")
@@ -174,6 +178,7 @@ export default Vue.extend({
       }
       
     },
+
     searchInput() {
       let a = this.search.split(' ')
       let command = ""
@@ -193,6 +198,7 @@ export default Vue.extend({
       });
       console.log(this.search)
     },
+
     searchBtn() {
       this.showFilters()
       this.search = ""
@@ -200,18 +206,18 @@ export default Vue.extend({
       if(this.fromText.length > 0) {
         if(this.fromText.split(' ').length > 1) {
           this.search = `from:(${this.fromText})`
-          command = `OR in:drafts from:(${this.fromText})`
+          command = `in:drafts from:(${this.fromText})`
         } else {
           this.search = `from:${this.fromText}`
-          command = `OR in:drafts from:${this.fromText}`
+          command = `in:drafts from:${this.fromText}`
         }
       }
       if(this.toText.length > 0) {
         if(this.toText.split(' ').length > 1) {
           this.search = `${this.search} to:(${this.toText})`
-          command = `${this.search} OR in:sent to:(${this.toText})`
+          command = `${this.search} in:sent to:(${this.toText})`
         } else {
-          this.search = `${this.search} OR in:sent to:${this.toText}`
+          this.search = `${this.search} in:sent to:${this.toText}`
           command = `${this.search} to:${this.toText}`
         }
       }
