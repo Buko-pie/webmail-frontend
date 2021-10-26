@@ -182,14 +182,14 @@ export default Vue.extend({
     searchInput() {
       let a = this.search.split(' ')
       let command = ""
-      let query = ""
-      a.forEach((element,index) => {
-        let extracted_command = this.search.split(':')
-        if(extracted_command[0] === "in" || extracted_command[0] === "label") {
-          command = extracted_command[0]
-          query = extracted_command[1]
-        }
-      });
+      let query = this.search;
+      // a.forEach((element,index) => {
+      //   let extracted_command = this.search.split(':')
+      //   if(extracted_command[0] === "in" || extracted_command[0] === "label") {
+      //     command = extracted_command[0]
+      //     query = extracted_command[1]
+      //   }
+      // });
       this.$store.dispatch("set_search", this.search)
       this.$eventHub.$emit("search_inbox", {
         event: "search_inbox",
@@ -204,29 +204,35 @@ export default Vue.extend({
       this.search = ""
       let command = ""
       if(this.fromText.length > 0) {
-        if(this.fromText.split(' ').length > 1) {
-          this.search = `from:(${this.fromText})`
-          command = `in:drafts from:(${this.fromText})`
-        } else {
-          this.search = `from:${this.fromText}`
-          command = `in:drafts from:${this.fromText}`
-        }
+        // if(this.fromText.split(' ').length > 1) {
+        //   this.search = `from:(${this.fromText})`
+        //   command = `in:drafts from:(${this.fromText})`
+        // } else {
+        //   this.search = `from:${this.fromText}`
+        //   command = `in:drafts from:${this.fromText}`
+        // }
+        this.search += `from:(${this.fromText}) `;
       }
+
       if(this.toText.length > 0) {
-        if(this.toText.split(' ').length > 1) {
-          this.search = `${this.search} to:(${this.toText})`
-          command = `${this.search} in:sent to:(${this.toText})`
-        } else {
-          this.search = `${this.search} in:sent to:${this.toText}`
-          command = `${this.search} to:${this.toText}`
-        }
+        // if(this.toText.split(' ').length > 1) {
+        //   this.search = `${this.search} to:(${this.toText})`
+        //   command = `${this.search} in:sent to:(${this.toText})`
+        // } else {
+        //   this.search = `${this.search} in:sent to:${this.toText}`
+        //   command = `${this.search} to:${this.toText}`
+        // }
+        this.search += `to:(${this.toText}) `;
       }
+      
       if(this.subjectText.length > 0) {
-        if(this.subjectText.split(' ').length > 1) {
-          this.search = `${this.search} subject:(${this.subjectText})`
-        } else {
-          this.search = `${this.search} subject:${this.subjectText}`
-        }
+        // if(this.subjectText.split(' ').length > 1) {
+        //   this.search = `${this.search} subject:(${this.subjectText})`
+        // } else {
+        //   this.search = `${this.search} subject:${this.subjectText}`
+        // }
+
+        this.search += `subject:(${this.subjectText}) `;
       }
 
       if(this.search.length > 0) {
@@ -234,6 +240,7 @@ export default Vue.extend({
         // this.$store.dispatch("set_search_command", command)
         this.$store.dispatch("set_search_command", this.search)
       }
+      console.log(this.search);
       this.searchInput()
     }
   }
