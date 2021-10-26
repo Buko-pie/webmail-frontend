@@ -31,25 +31,25 @@
       <!-- including words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Has the words</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[4].is_focused }">
-        <input id="filter_include_words" @focus="inputFocus(4)" @blur="inputBlur(4)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_include_words" v-model="includeText" @focus="inputFocus(4)" @blur="inputBlur(4)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- excluding words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Doesn't have</p></div>
       <div class="e-input-group col-span-4 " :class="{ 'e-input-focus': e_inputs[5].is_focused }">
-        <input id="filter_exclude_words" @focus="inputFocus(5)" @blur="inputBlur(5)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_exclude_words" v-model="excludeText" @focus="inputFocus(5)" @blur="inputBlur(5)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Size filter -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Size</p></div>
       <div class="col-span-2">
-        <ejs-dropdownlist id='filter_size_op' :dataSource="size_ops" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist v-model="filterSize_op" id='filter_size_op' :dataSource="size_ops" :fields="data_fields"></ejs-dropdownlist>
       </div>
       <div class="e-input-group col-span-1" :class="{ 'e-input-focus': e_inputs[6].is_focused }">
-        <input id="filter_size" @focus="inputFocus(6)" @blur="inputBlur(6)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_size" v-model="filterSize" @focus="inputFocus(6)" @blur="inputBlur(6)" class="e-input e-textbox" type="text" placeholder="">
       </div>
       <div class="col-span-1">
-        <ejs-dropdownlist id='filter_size_type' :dataSource="size_types" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist id='filter_size_type' v-model="filterSizeMetric" :dataSource="size_types" :fields="data_fields"></ejs-dropdownlist>
       </div>
 
       <!-- Filter By Date -->
@@ -102,18 +102,25 @@ export default Vue.extend({
       fromText: '',
       toText: '',
       subjectText: '',
+      includeText: "",
+      excludeText: "",
+      filterSize: "",
+      filterSize_op: "larger",
+      filterSizeMetric: "M",
       search: '',
+
       is_focused: false,
       show_filters: false,
       has_attachment: false,
+
       size_ops:[
-        {id: 0, option: "greater than"},
-        {id: 1, option: "less than"}
+        {id: "larger", option: "greater than"},
+        {id: "smaller", option: "less than"}
       ],
       size_types:[
-        {id: 0, option: "MB"},
-        {id: 1, option: "KB"},
-        {id: 2, option: "Bytes"}
+        {id: "M", option: "MB"},
+        {id: "K", option: "KB"},
+        {id: "", option: "Bytes"}
       ],
       time_period:[
         {id: 0, option: "1 day"},
@@ -154,15 +161,19 @@ export default Vue.extend({
     inputFocus(index){
       this.e_inputs[index].is_focused = true;
     },
+
     inputBlur(index){
       this.e_inputs[index].is_focused = false;
     },
+
     icon_button_md(index){
       this.e_buttons[index].is_clicked = true;
     },
+
     icon_button_mu(index){
       setTimeout(() => this.e_buttons[index].is_clicked = false, 500);
     },
+
     showFilters(){
       this.show_filters = !this.show_filters;
       let filters = document.getElementById("filters_opton")
@@ -174,17 +185,18 @@ export default Vue.extend({
       }
       
     },
+
     searchInput() {
       let a = this.search.split(' ')
       let command = ""
-      let query = ""
-      a.forEach((element,index) => {
-        let extracted_command = this.search.split(':')
-        if(extracted_command[0] === "in" || extracted_command[0] === "label") {
-          command = extracted_command[0]
-          query = extracted_command[1]
-        }
-      });
+      let query = this.search;
+      // a.forEach((element,index) => {
+      //   let extracted_command = this.search.split(':')
+      //   if(extracted_command[0] === "in" || extracted_command[0] === "label") {
+      //     command = extracted_command[0]
+      //     query = extracted_command[1]
+      //   }
+      // });
       this.$store.dispatch("set_search", this.search)
       this.$eventHub.$emit("search_inbox", {
         event: "search_inbox",
@@ -193,34 +205,53 @@ export default Vue.extend({
       });
       console.log(this.search)
     },
+
     searchBtn() {
       this.showFilters()
       this.search = ""
       let command = ""
       if(this.fromText.length > 0) {
-        if(this.fromText.split(' ').length > 1) {
-          this.search = `from:(${this.fromText})`
-          command = `OR in:drafts from:(${this.fromText})`
-        } else {
-          this.search = `from:${this.fromText}`
-          command = `OR in:drafts from:${this.fromText}`
-        }
+        // if(this.fromText.split(' ').length > 1) {
+        //   this.search = `from:(${this.fromText})`
+        //   command = `in:drafts from:(${this.fromText})`
+        // } else {
+        //   this.search = `from:${this.fromText}`
+        //   command = `in:drafts from:${this.fromText}`
+        // }
+        this.search += `from:(${this.fromText}) `;
       }
+
       if(this.toText.length > 0) {
-        if(this.toText.split(' ').length > 1) {
-          this.search = `${this.search} to:(${this.toText})`
-          command = `${this.search} OR in:sent to:(${this.toText})`
-        } else {
-          this.search = `${this.search} OR in:sent to:${this.toText}`
-          command = `${this.search} to:${this.toText}`
-        }
+        // if(this.toText.split(' ').length > 1) {
+        //   this.search = `${this.search} to:(${this.toText})`
+        //   command = `${this.search} in:sent to:(${this.toText})`
+        // } else {
+        //   this.search = `${this.search} in:sent to:${this.toText}`
+        //   command = `${this.search} to:${this.toText}`
+        // }
+        this.search += `to:(${this.toText}) `;
       }
+      
       if(this.subjectText.length > 0) {
-        if(this.subjectText.split(' ').length > 1) {
-          this.search = `${this.search} subject:(${this.subjectText})`
-        } else {
-          this.search = `${this.search} subject:${this.subjectText}`
-        }
+        // if(this.subjectText.split(' ').length > 1) {
+        //   this.search = `${this.search} subject:(${this.subjectText})`
+        // } else {
+        //   this.search = `${this.search} subject:${this.subjectText}`
+        // }
+
+        this.search += `subject:(${this.subjectText}) `;
+      }
+
+      if(this.includeText.length > 0) {
+        this.search += `${this.includeText} `;
+      }
+
+      if(this.excludeText.length > 0) {
+        this.search += `-${this.excludeText} `;
+      }
+
+      if(this.filterSize.length > 0) {
+        this.search += `${this.filterSize_op}:${this.filterSize}${this.filterSizeMetric} `;
       }
 
       if(this.search.length > 0) {
@@ -228,6 +259,9 @@ export default Vue.extend({
         // this.$store.dispatch("set_search_command", command)
         this.$store.dispatch("set_search_command", this.search)
       }
+
+      
+      console.log(this.search);
       this.searchInput()
     }
   }

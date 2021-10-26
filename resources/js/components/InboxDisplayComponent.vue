@@ -833,6 +833,7 @@ export default{
 
     //Search Inbox
     this.$eventHub.$on("search_inbox", async (e)=>{
+      //May do reworks here (putting this axios request to searchbar comp itself)
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
 
