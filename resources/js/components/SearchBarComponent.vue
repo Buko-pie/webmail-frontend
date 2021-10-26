@@ -31,25 +31,25 @@
       <!-- including words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Has the words</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[4].is_focused }">
-        <input id="filter_include_words" @focus="inputFocus(4)" @blur="inputBlur(4)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_include_words" v-model="includeText" @focus="inputFocus(4)" @blur="inputBlur(4)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- excluding words -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Doesn't have</p></div>
       <div class="e-input-group col-span-4 " :class="{ 'e-input-focus': e_inputs[5].is_focused }">
-        <input id="filter_exclude_words" @focus="inputFocus(5)" @blur="inputBlur(5)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_exclude_words" v-model="excludeText" @focus="inputFocus(5)" @blur="inputBlur(5)" class="e-input e-textbox" type="text" placeholder="">
       </div>
 
       <!-- Size filter -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Size</p></div>
       <div class="col-span-2">
-        <ejs-dropdownlist id='filter_size_op' :dataSource="size_ops" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist v-model="filterSize_op" id='filter_size_op' :dataSource="size_ops" :fields="data_fields"></ejs-dropdownlist>
       </div>
       <div class="e-input-group col-span-1" :class="{ 'e-input-focus': e_inputs[6].is_focused }">
-        <input id="filter_size" @focus="inputFocus(6)" @blur="inputBlur(6)" class="e-input e-textbox" type="text" placeholder="">
+        <input id="filter_size" v-model="filterSize" @focus="inputFocus(6)" @blur="inputBlur(6)" class="e-input e-textbox" type="text" placeholder="">
       </div>
       <div class="col-span-1">
-        <ejs-dropdownlist id='filter_size_type' :dataSource="size_types" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist id='filter_size_type' v-model="filterSizeMetric" :dataSource="size_types" :fields="data_fields"></ejs-dropdownlist>
       </div>
 
       <!-- Filter By Date -->
@@ -102,18 +102,25 @@ export default Vue.extend({
       fromText: '',
       toText: '',
       subjectText: '',
+      includeText: "",
+      excludeText: "",
+      filterSize: "",
+      filterSize_op: "larger",
+      filterSizeMetric: "M",
       search: '',
+
       is_focused: false,
       show_filters: false,
       has_attachment: false,
+
       size_ops:[
-        {id: 0, option: "greater than"},
-        {id: 1, option: "less than"}
+        {id: "larger", option: "greater than"},
+        {id: "smaller", option: "less than"}
       ],
       size_types:[
-        {id: 0, option: "MB"},
-        {id: 1, option: "KB"},
-        {id: 2, option: "Bytes"}
+        {id: "M", option: "MB"},
+        {id: "K", option: "KB"},
+        {id: "", option: "Bytes"}
       ],
       time_period:[
         {id: 0, option: "1 day"},
@@ -235,11 +242,25 @@ export default Vue.extend({
         this.search += `subject:(${this.subjectText}) `;
       }
 
+      if(this.includeText.length > 0) {
+        this.search += `${this.includeText} `;
+      }
+
+      if(this.excludeText.length > 0) {
+        this.search += `-${this.excludeText} `;
+      }
+
+      if(this.filterSize.length > 0) {
+        this.search += `${this.filterSize_op}:${this.filterSize}${this.filterSizeMetric} `;
+      }
+
       if(this.search.length > 0) {
         // const command = this.search.split(':')[0]
         // this.$store.dispatch("set_search_command", command)
         this.$store.dispatch("set_search_command", this.search)
       }
+
+      
       console.log(this.search);
       this.searchInput()
     }
