@@ -55,10 +55,10 @@
       <!-- Filter By Date -->
       <div class="flex flex-wrap content-center"><p class="text-sm">Date within</p></div>
       <div class="col-span-2">
-        <ejs-dropdownlist id='filter_time_period' :dataSource="time_period" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist id='filter_time_period' v-model="dateScale" :dataSource="time_period" :fields="data_fields" :index="0" ></ejs-dropdownlist>
       </div>
       <div class="col-span-2">
-        <ejs-datepicker id="date_picker" :placeholder="'Choose a date'"></ejs-datepicker>
+        <ejs-datepicker id="date_picker" v-model="datePicker" :placeholder="'Choose a date'"></ejs-datepicker>
       </div>
 
       <!-- Filter By Types -->
@@ -83,6 +83,7 @@
 
 <script>
 import Vue from "vue";
+import moment from "moment";
 import { TextBoxPlugin } from '@syncfusion/ej2-vue-inputs';
 import { DropDownListPlugin } from "@syncfusion/ej2-vue-dropdowns";
 import { DatePickerPlugin } from "@syncfusion/ej2-vue-calendars";
@@ -107,6 +108,8 @@ export default Vue.extend({
       filterSize: "",
       filterSize_op: "larger",
       filterSizeMetric: "M",
+      datePicker: null,
+      dateScale: 0,
       search: '',
 
       is_focused: false,
@@ -123,14 +126,14 @@ export default Vue.extend({
         {id: "", option: "Bytes"}
       ],
       time_period:[
-        {id: 0, option: "1 day"},
-        {id: 1, option: "3 days"},
-        {id: 2, option: "1 week"},
-        {id: 3, option: "2 weeks"},
-        {id: 4, option: "1 month"},
-        {id: 5, option: "2 months"},
-        {id: 6, option: "6 months"},
-        {id: 7, option: "1 year"}
+        {id: 0, option: "1 day", period:1, metric:"d"},
+        {id: 1, option: "3 days", period:3, metric:"d"},
+        {id: 2, option: "1 week", period:1, metric:"w"},
+        {id: 3, option: "2 weeks", period:2, metric:"w"},
+        {id: 4, option: "1 month", period:1, metric:"M"},
+        {id: 5, option: "2 months", period:2, metric:"M"},
+        {id: 6, option: "6 months", period:6, metric:"M"},
+        {id: 7, option: "1 year", period:1, metric:"y"}
       ],
       mail_types:[
         {id: 0, option: "Inbox"},
@@ -254,13 +257,19 @@ export default Vue.extend({
         this.search += `${this.filterSize_op}:${this.filterSize}${this.filterSizeMetric} `;
       }
 
+      if(this.datePicker !== null){
+        let after = moment(this.datePicker).subtract(this.time_period[this.dateScale].period, this.time_period[this.dateScale].metric).format("YYYY/MM/DD");
+        let before = moment(this.datePicker).add(this.time_period[this.dateScale].period, this.time_period[this.dateScale].metric).format("YYYY/MM/DD");
+        
+        this.search += `after:${after} before:${before} `;
+      }
+
       if(this.search.length > 0) {
         // const command = this.search.split(':')[0]
         // this.$store.dispatch("set_search_command", command)
         this.$store.dispatch("set_search_command", this.search)
       }
 
-      
       console.log(this.search);
       this.searchInput()
     }
