@@ -61,10 +61,10 @@
         <ejs-datepicker id="date_picker" v-model="datePicker" :placeholder="'Choose a date'"></ejs-datepicker>
       </div>
 
-      <!-- Filter By Types -->
-      <div class="flex flex-wrap content-center"><p class="text-sm">Doesn't have</p></div>
+      <!-- Filter By Inboxes/Labels -->
+      <div class="flex flex-wrap content-center"><p class="text-sm">Search</p></div>
       <div class="col-span-4">
-        <ejs-dropdownlist id='filter_mail_types' :dataSource="mail_types" :fields="data_fields" :index="0" ></ejs-dropdownlist>
+        <ejs-dropdownlist id='filter_mail_types' v-model="searchIn" :dataSource="mail_types" :fields="data_fields" :user_labels="user_labels" ></ejs-dropdownlist>
       </div>
 
       <!-- Filter By Checkbox -->
@@ -110,6 +110,7 @@ export default Vue.extend({
       filterSizeMetric: "M",
       datePicker: null,
       dateScale: 0,
+      searchIn: 0,
       search: '',
 
       is_focused: false,
@@ -136,11 +137,17 @@ export default Vue.extend({
         {id: 7, option: "1 year", period:1, metric:"y"}
       ],
       mail_types:[
-        {id: 0, option: "Inbox"},
-        {id: 1, option: "Starred"},
-        {id: 2, option: "Important"},
-        {id: 3, option: "Sent"},
-        {id: 4, option: "Drafts"},
+        {id: 0, option: "All Mail", op:""},
+        {id: 1, option: "Inbox", op:"in:inbox"},
+        {id: 2, option: "Starred", op:"is:starred"},
+        {id: 3, option: "Important", op:"is:important"},
+        {id: 4, option: "Sent", op:"is:sent"},
+        {id: 5, option: "Drafts", op:"in:drafts"},
+        {id: 6, option: "Spam", op:"in:spam"},
+        {id: 7, option: "Trash", op:"in:trash"},
+        {id: 8, option: "Mail & Spam & Trash", op:"in:anywhere"},
+        {id: 9, option: "Read Mail", op:"is:read"},
+        {id: 10, option: "Unread Mail", op:"is:unread"},
       ],
       e_inputs:[
         {id: 0, is_focused: false, title: 'search'},
@@ -157,6 +164,25 @@ export default Vue.extend({
       ],
       data_fields: {value: "id", text: "option"}
      }
+  },
+  computed:{
+    user_labels(){
+      let labels =  this.$store.state.user_labels;
+      if(labels !== null){
+        labels.forEach(label => {
+          let lbl = label.text.toLowerCase().replace(/\//g, "-");
+          lbl = lbl.replace(/\s/g, "-");
+          this.mail_types.push(
+            {
+              id: this.mail_types.length,
+              option: label.text,
+              op: "label:" + lbl,
+            }
+          )
+        });
+      }
+      return labels
+    }
   },
   mounted(){
   },
@@ -211,8 +237,9 @@ export default Vue.extend({
 
     searchBtn() {
       this.showFilters()
-      this.search = ""
+      this.search = `${this.mail_types[this.searchIn].op} `;
       let command = ""
+
       if(this.fromText.length > 0) {
         // if(this.fromText.split(' ').length > 1) {
         //   this.search = `from:(${this.fromText})`
@@ -242,7 +269,7 @@ export default Vue.extend({
         //   this.search = `${this.search} subject:${this.subjectText}`
         // }
 
-        this.search += `subject:(${this.subjectText}) `;
+        this.search += `subject:${this.subjectText} `;
       }
 
       if(this.includeText.length > 0) {
@@ -270,6 +297,7 @@ export default Vue.extend({
         this.$store.dispatch("set_search_command", this.search)
       }
 
+      this.search = this.search.slice(0, -1);
       console.log(this.search);
       this.searchInput()
     }
