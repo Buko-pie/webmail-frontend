@@ -16,7 +16,7 @@ use ZipArchive;
 class DataController extends Controller {
 
     public function get_data(Request $request) {
-        $items = $request->items ?? 50;
+        $items = $request->items ?? 100;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
             $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
@@ -99,12 +99,13 @@ class DataController extends Controller {
                   //get emails through inbox/folders
                   $gmail_data = $check_empty;
                   if(count($check_empty) > 0) {
-                    $gmail_data = LaravelGmail::message()->raw($request['query'])->preload()->all();
-                    // if(count($gmail_data) > 0) {
-                    //   $gmail_data = LaravelGmail::message()->raw($request['command'].' '.$request['query'])->preload()->all();
-                    // }
+                    $gmail_data = LaravelGmail::message()->raw($request['query'])->all();
+                    if(count($gmail_data) > 0) {
+                      $gmail_data = LaravelGmail::message()->raw($request['query'])->take($items)->preload()->all();
+                    }
                   }
-                  $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+                  // $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+                  $inbox = LaravelGmail::message()->getProfile();
 
                   $inbox_items_length = count($gmail_data);
                 } else {
@@ -160,9 +161,9 @@ class DataController extends Controller {
                   'inbox_info'         => $inbox,
                 ], 200);
 
-            }else {
-              return response()->json(['error_msg' => 'Nothing Found'], 404);
-            }
+          }else {
+            return response()->json(['error_msg' => 'Nothing Found'], 404);
+          }
 
           
         } else {
