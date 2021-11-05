@@ -93,12 +93,17 @@ export default{
       test:["read", "ascending"],
       viewData: [],
       menuItems:[
-        { id: "mark_unread", text: "Mark as unread" },
-        { id: "mark_read", text: "Mark as read" },
-        { id: "delete", text: "Delete" },
+        { id: "reply", text: "Reply", iconCss:"fas fa-reply"},
+        { id: "reply_all", text: "Reply All", iconCss: "fas fa-reply-all"},
+        { id: "forward", text: "Forward", iconCss: "fas fa-arrow-right" },
+        { id: "mark_unread", text: "Mark as unread", iconCss: "fas fa-envelope" },
+        { id: "archive", text: "Archive", iconCss: "fas fa-archive" },
+        { id: "delete", text: "Delete", iconCss: "fas fa-trash" },
+        { id: "mark_read", text: "Mark as read", iconCss: "fas fa-envelope-open-text" },
         { id: "move_to_inbox", text: "Move to Inbox" },
         { id: "delete_forever", text: "Delete Forever" },
-        // { text: "Add Label" }
+        { id: "move_to", text: "Move To", iconCss: "fas fa-file-export" },
+        { id: "label_as", text: "Label as", iconCss: "fas fa-tag rotate-135", items: [{text: "test"}] }
       ],
       select_option: null,
       selected_rows: [],
