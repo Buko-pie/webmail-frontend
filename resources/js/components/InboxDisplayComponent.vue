@@ -155,6 +155,21 @@ export default{
           maxWidth: "120",
           allowSorting: false
         },{
+          //Column - Sender information
+          field: "sender_info",
+          headerText: "",
+          visible: false
+        },{
+          //Column - Carbon copy information
+          field: "cc_info",
+          headerText: "",
+          visible: false
+        },{
+          //Column - Blind carbon copy information
+          field: "bcc_info",
+          headerText: "",
+          visible: false
+        },{
           //Column - Message
           field: "message",
           headerText: "",
@@ -207,6 +222,10 @@ export default{
   computed:{
     ref_headerTemplate(){
       return this.$store.state.headerTemplate;
+    },
+
+    ref_sidebar(){
+      return this.$store.state.sidebar;
     },
 
     start(){
@@ -281,6 +300,12 @@ export default{
 
     searchOptions() {
       return this.$store.state.searchOptions
+    },
+
+    overlay_0(){
+      if(this.ref_sidebar !== null){
+        return this.ref_sidebar.$refs["overlay_0"];
+      }
     }
   },
 
@@ -300,7 +325,12 @@ export default{
     onSelect(args) {
 
       let _this = this;
-      if(args.item.text === "Add Label") {
+      if(args.item.text === "Reply"){
+        this.ref_sidebar.composeNew();
+
+        console.log(this.ref_sidebar.$refs);
+        console.log(this.overlay_0);
+      }else if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
         /////Last construction here on add custom labels context menu
