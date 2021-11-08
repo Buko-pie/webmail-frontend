@@ -561,8 +561,10 @@
     <email-full-view/>
   </WindowPortal> 
   
+  <div ref="overlays_container">
+  </div>
   <div v-for="(overlay, index) in overlays" :key="index">
-    <Overlay :index="index" ref="overlay_comps"/>
+    <Overlay :index="index" :ref="'overlay_' +  index"/>
     <!-- 
     <ejs-dialog
       :id="'overlay_dialog_' + index"
@@ -603,6 +605,7 @@ import VueNotification from "@kugatsu/vuenotification";
 import { DataManager, Query } from "@syncfusion/ej2-data";
 import PortalVue from "portal-vue";
 import { DialogPlugin } from "@syncfusion/ej2-vue-popups";
+import Overlay from "./subcomponents/Overlay.vue";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -633,6 +636,8 @@ const labels_list = Vue.component("labels-list", require("./subcomponents/LabelL
 const overlay = Vue.component("Overlay", require("./subcomponents/Overlay.vue").default);
 const overlay_header = Vue.component("overlay-header", require("./subcomponents/OverlayHeader.vue").default);
 const overlay_body = Vue.component("overaly-body", require("./subcomponents/OverlayBody.vue").default);
+
+var overlayClass = Vue.extend(Overlay);
 
 
 // const labels_list = Vue.component("labels-list", {
@@ -1370,7 +1375,20 @@ export default Vue.extend({
       //Need to implement multiple compose overlays
       if(this.overlays.length < 1){
         this.overlays.push(0);
+
+        var overlayInstance = new overlayClass({
+          propsData: {
+            index: this.overlays.length - 1,
+            routes: this.routes,
+            csrf_token: this.token,
+            user_email: this.gmail_user,
+            ref_sidebar: this,
+          }
+        });
+        overlayInstance.$mount();
+        this.$refs.overlays_container.appendChild(overlayInstance.$el);
       }
+      
       // this.$modal.show("compose_new_modal");
     },
 

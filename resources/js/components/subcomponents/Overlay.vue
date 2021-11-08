@@ -118,6 +118,9 @@
 </template>
 <script>
 import Vue from "vue";
+// import { store } from "../../store/store";
+
+// store.getters.appSettings
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -137,15 +140,17 @@ function validateEmails(emailArray){
 export default Vue.extend({
   name: "Overlay",
   props:{
-    index: { type: Number, required: true }
+    index:        { type: Number },
+    routes:       { type: Object },
+    csrf_token:   { type: String },
+    user_email:   { type: String },
+    ref_sidebar:  { type: Object },
   },
   data(){
     return{
       w: 600,
       h: 568,
       text_edit_h: 440,
-      routes: null,
-      csrf_token: null,
       headers: null,
 
       type: "new_email",
@@ -176,9 +181,10 @@ export default Vue.extend({
 
   computed:{
     start(){
-      this.routes = this.$store.state.routes;
-      this.csrf_token = this.$store.state.csrf_token;
-      this.user_email = this.$store.state.user_email;
+      // this.routes = this.$store.state.routes;
+      // this.csrf_token = this.$store.state.csrf_token;
+      // this.user_email = this.$store.state.user_email;
+      console.log(this.routes);
       this.headers = {
         "Content-Type": "multipart/mixed",
         "Authorization": "Bearer " + this.csrf_token,
@@ -189,9 +195,9 @@ export default Vue.extend({
       this.attachment_path.removeUrl = this.routes.remove_attachment;
     },
 
-     ref_sidebar(){
-      return this.$store.state.sidebar;
-    },
+    // ref_sidebar(){
+    //   return this.$store.state.sidebar;
+    // },
   },
 
   methods:{
@@ -228,6 +234,8 @@ export default Vue.extend({
     },
     close_overlay(){
       this.ref_sidebar.overlays.pop();
+      this.$destroy();
+      this.$el.parentNode.removeChild(this.$el);
     },
 
     ////////////////////////////////////
@@ -361,7 +369,7 @@ export default Vue.extend({
           .then((response) => {
             let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
             _this.$notification.success(message, {  timer: 5 });
-            this.show_reply = false;
+            this.close_overlay();
           }).catch(error => {
             console.log(error);
             _this.$notification.error("somthing went wrong", {  timer: 5 });
