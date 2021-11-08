@@ -66,6 +66,7 @@ export const store = new Vuex.Store({
     sidebar: null,
     emailView_full: null,
     overlays: [],
+    overlays_comp: [],
     overlay_header: null,
     overlay_body: null,
   },
@@ -220,6 +221,10 @@ export const store = new Vuex.Store({
 
     add_overlays(state, payload){
       state.overlays.push(payload);
+    },
+
+    add_overlays_comp(state, payload){
+      state.overlays_comp.push(payload);
     },
 
     set_overlay_header(state, payload){
@@ -392,6 +397,10 @@ export const store = new Vuex.Store({
 
     add_overlays(state, payload){
       state.commit("add_overlays", payload);
+    },
+
+    add_overlays_comp(state, payload){
+      state.commit("add_overlays_comp", payload);
     },
 
     set_overlay_header(state, payload){
