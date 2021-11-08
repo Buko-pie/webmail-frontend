@@ -118,9 +118,7 @@
 </template>
 <script>
 import Vue from "vue";
-// import { store } from "../../store/store";
 
-// store.getters.appSettings
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -139,13 +137,15 @@ function validateEmails(emailArray){
 
 export default Vue.extend({
   name: "Overlay",
-  props:{
-    index:        { type: Number },
-    routes:       { type: Object },
-    csrf_token:   { type: String },
-    user_email:   { type: String },
-    ref_sidebar:  { type: Object },
-  },
+  props:[
+    "ref_sidebar",
+    "index",
+    "routes",
+    "csrf_token",
+    "user_email",
+    "attachment_path",
+    
+  ],
   data(){
     return{
       w: 600,
@@ -172,18 +172,11 @@ export default Vue.extend({
       bcc_address_tags: [],
       bcc_addresses: null,
 
-      attachment_path:{
-        saveUrl: null,
-        removeUrl: null
-      },
     }
   },
 
   computed:{
     start(){
-      // this.routes = this.$store.state.routes;
-      // this.csrf_token = this.$store.state.csrf_token;
-      // this.user_email = this.$store.state.user_email;
       console.log(this.routes);
       this.headers = {
         "Content-Type": "multipart/mixed",
@@ -191,13 +184,7 @@ export default Vue.extend({
         "X-CSRF-TOKEN": this.csrf_token
       }
 
-      this.attachment_path.saveUrl = this.routes.upload_attachment;
-      this.attachment_path.removeUrl = this.routes.remove_attachment;
-    },
-
-    // ref_sidebar(){
-    //   return this.$store.state.sidebar;
-    // },
+    }
   },
 
   methods:{

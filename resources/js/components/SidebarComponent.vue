@@ -563,9 +563,9 @@
   
   <div ref="overlays_container">
   </div>
-  <div v-for="(overlay, index) in overlays" :key="index">
+  <!-- <div v-for="(overlay, index) in overlays" :key="index">
     <Overlay :index="index" :ref="'overlay_' +  index"/>
-    <!-- 
+    
     <ejs-dialog
       :id="'overlay_dialog_' + index"
       class="overlay_dialog"
@@ -577,8 +577,8 @@
       :showCloseIcon="false"
       :position="{ X: 'right', Y: 'bottom'}" 
       :isModal="false"
-    />overlay_x overlay_y-->
-  </div>
+    />overlay_x overlay_y
+  </div>-->
 </div>
 </template>
 
@@ -1378,17 +1378,21 @@ export default Vue.extend({
 
         var overlayInstance = new overlayClass({
           propsData: {
+            ref_sidebar: this,
             index: this.overlays.length - 1,
             routes: this.routes,
             csrf_token: this.token,
             user_email: this.gmail_user,
-            ref_sidebar: this,
+            attachment_path: {
+              saveUrl: this.routes.upload_attachment,
+              removeUrl: this.routes.remove_attachment
+            },
           }
         });
         overlayInstance.$mount();
         this.$refs.overlays_container.appendChild(overlayInstance.$el);
       }
-      
+
       // this.$modal.show("compose_new_modal");
     },
 
