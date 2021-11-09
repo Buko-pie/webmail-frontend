@@ -118,7 +118,7 @@
 </template>
 <script>
 import Vue from "vue";
-
+import moment from "moment";
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -144,7 +144,9 @@ export default Vue.extend({
     "csrf_token",
     "user_email",
     "attachment_path",
-    
+    "email_action",
+    "reply_to_email",
+    "email_body_html"
   ],
   data(){
     return{
@@ -184,6 +186,27 @@ export default Vue.extend({
         "X-CSRF-TOKEN": this.csrf_token
       }
 
+    }
+  },
+
+  mounted(){
+    if(this.email_action === "reply_email" && this.reply_to_email !== null){
+      this.email_address_tags = [{
+        text: this.reply_to_email,
+        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+      }];
+
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.vueditor_cont.setContent(this.reply_content);
+      }, 200);
     }
   },
 

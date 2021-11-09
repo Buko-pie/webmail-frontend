@@ -33,6 +33,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
+import Overlay from "./subcomponents/Overlay.vue";
 import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page, Toolbar, Search } from "@syncfusion/ej2-vue-grids";
 
 const fileIcons = require("file-icons-js");
@@ -43,6 +44,7 @@ let important_template = Vue.component("important-template", require("./subcompo
 let message_template = Vue.component("message-template", require("./subcomponents/MessageTemplate.vue").default);
 let attachment_template = Vue.component("important-template", require("./subcomponents/AttachmentTemplate.vue").default);
 let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
+var overlayClass = Vue.extend(Overlay);
 
 Vue.use(GridPlugin);
 Vue.use(PagerPlugin);
@@ -167,6 +169,11 @@ export default{
         },{
           //Column - Blind carbon copy information
           field: "bcc_info",
+          headerText: "",
+          visible: false
+        },{
+          //Column - html body
+          field: "body",
           headerText: "",
           visible: false
         },{
@@ -299,13 +306,11 @@ export default{
     },
 
     searchOptions() {
-      return this.$store.state.searchOptions
+      return this.$store.state.searchOptions;
     },
 
-    overlay_0(){
-      if(this.ref_sidebar !== null){
-        return this.ref_sidebar.$refs["overlay_0"];
-      }
+    user_email(){
+      return this.$store.state.user_email;
     }
   },
 
@@ -326,10 +331,33 @@ export default{
 
       let _this = this;
       if(args.item.text === "Reply"){
-        this.ref_sidebar.composeNew();
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        console.log(from_email);
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
 
-        console.log(this.ref_sidebar.$refs);
-        console.log(this.overlay_0);
+          var overlayInstance = new overlayClass({
+            propsData: {
+              ref_sidebar: this.ref_sidebar,
+              index: this.ref_sidebar.overlays.length - 1,
+              routes: this.routes,
+              csrf_token: this.csrf_token,
+              user_email: this.user_email,
+              attachment_path: {
+                saveUrl: this.routes.upload_attachment,
+                removeUrl: this.routes.remove_attachment
+              },
+              email_action: "reply_email",
+              reply_to_email: from_email,
+              email_body_html: args.rowInfo.rowData.body,
+              //rework request on email_body_html
+            }
+          });
+ 
+          overlayInstance.$mount();
+          this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
+        }
+        // this.ref_sidebar.composeNew();
       }else if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;

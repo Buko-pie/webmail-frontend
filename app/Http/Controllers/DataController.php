@@ -139,6 +139,7 @@ class DataController extends Controller {
                           'sender_info'     => $data->getFrom(),
                           'cc_info'         => $data->getHeader("Cc"),
                           'bcc_info'        => $data->getHeader("Bcc"),
+                          'body'            => $data->getHtmlBody(),
                           'receiver'        => $user,
                           'message'         => $data->getSubject(),
                           'plain_text'      => $data->getPlainTextBody(),
