@@ -118,6 +118,7 @@
 </template>
 <script>
 import Vue from "vue";
+import moment from "moment";
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -136,16 +137,22 @@ function validateEmails(emailArray){
 
 export default Vue.extend({
   name: "Overlay",
-  props:{
-    index: { type: Number, required: true }
-  },
+  props:[
+    "ref_sidebar",
+    "index",
+    "routes",
+    "csrf_token",
+    "user_email",
+    "attachment_path",
+    "email_action",
+    "reply_to_email",
+    "email_body_html"
+  ],
   data(){
     return{
       w: 600,
       h: 568,
       text_edit_h: 440,
-      routes: null,
-      csrf_token: null,
       headers: null,
 
       type: "new_email",
@@ -167,31 +174,40 @@ export default Vue.extend({
       bcc_address_tags: [],
       bcc_addresses: null,
 
-      attachment_path:{
-        saveUrl: null,
-        removeUrl: null
-      },
     }
   },
 
   computed:{
     start(){
-      this.routes = this.$store.state.routes;
-      this.csrf_token = this.$store.state.csrf_token;
-      this.user_email = this.$store.state.user_email;
+      console.log(this.routes);
       this.headers = {
         "Content-Type": "multipart/mixed",
         "Authorization": "Bearer " + this.csrf_token,
         "X-CSRF-TOKEN": this.csrf_token
       }
 
-      this.attachment_path.saveUrl = this.routes.upload_attachment;
-      this.attachment_path.removeUrl = this.routes.remove_attachment;
-    },
+    }
+  },
 
-     ref_sidebar(){
-      return this.$store.state.sidebar;
-    },
+  mounted(){
+    if(this.email_action === "reply_email" && this.reply_to_email !== null){
+      this.email_address_tags = [{
+        text: this.reply_to_email,
+        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+      }];
+
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.vueditor_cont.setContent(this.reply_content);
+      }, 200);
+    }
   },
 
   methods:{
@@ -228,6 +244,8 @@ export default Vue.extend({
     },
     close_overlay(){
       this.ref_sidebar.overlays.pop();
+      this.$destroy();
+      this.$el.parentNode.removeChild(this.$el);
     },
 
     ////////////////////////////////////
@@ -361,7 +379,7 @@ export default Vue.extend({
           .then((response) => {
             let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
             _this.$notification.success(message, {  timer: 5 });
-            this.show_reply = false;
+            this.close_overlay();
           }).catch(error => {
             console.log(error);
             _this.$notification.error("somthing went wrong", {  timer: 5 });
