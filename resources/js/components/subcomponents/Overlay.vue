@@ -455,7 +455,7 @@ export default Vue.extend({
       }
 
       let data = {
-        option:       this.email_action !== null ? "reply_email" : "new_email",
+        option:       this.email_action === "reply_email" ? "reply_email" : "new_email",
         email_id:     this.email_id,
         addresses:    this.email_addresses,
         cc:           this.cc_addresses,
