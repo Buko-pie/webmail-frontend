@@ -322,7 +322,7 @@ export default{
       this.$emit("change", value);
     },
 
-    createOverlay(email_id, from_email, email_subject, email_action){
+    createOverlay(email_id, from_email, email_subject, email_action, cc_info){
       let _this = this;
       axios.get(this.routes.getHtmlBody, {
         headers: {
@@ -354,6 +354,7 @@ export default{
             email_body_html:  response.data.htmlBody,
             email_date:       response.data.date,
             recipients:       response.data.recipients,
+            cc_info:          cc_info,
           }
         });
 
@@ -377,7 +378,8 @@ export default{
             args.rowInfo.rowData.id,
             from_email,
             args.rowInfo.rowData.message,
-            "reply_email"
+            "reply_email",
+            args.rowInfo.rowData.cc_info
           );
         }
         // this.ref_sidebar.composeNew();
@@ -390,7 +392,21 @@ export default{
             args.rowInfo.rowData.id,
             from_email,
             args.rowInfo.rowData.message,
-            "reply_all_email"
+            "reply_all_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
+      }else if(args.item.text === "Forward"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "forward_email",
+            args.rowInfo.rowData.cc_info
           );
         }
       }else if(args.item.text === "Add Label") {

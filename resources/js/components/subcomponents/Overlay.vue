@@ -150,7 +150,8 @@ export default Vue.extend({
     "email_subject",
     "email_body_html",
     "email_date",
-    "recipients"
+    "recipients",
+    "cc_info"
   ],
   data(){
     return{
@@ -220,6 +221,36 @@ export default Vue.extend({
       this.cc_addresses = recipients_addresses;
 
       this.reply_method();
+    }else if(this.email_action === "forward_email" && this.reply_to_email !== null){
+      if(!this.email_subject.includes("Re: ")){
+        this.email_subject = "Fwd: " + this.email_subject;
+      }else{
+        this.email_subject = this.email_subject.replace(/Re: /g, "Fwd: ");
+      }
+      
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>> wrote:</div>" +
+        "<div class='gmail_quote'>" +
+        "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+        "<div>---------- Forwarded message ---------</div>" +
+        "<div>From: &lt;<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>&gt;</div>" +
+        "<div>Date: " + moment(this.email_date).format("llll") + "</div>" +
+        "<div>Subject: " + this.email_subject.replace(/Re: /g, "") + "</div>" +
+        "<div>To: &lt;<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>&gt;</div>"
+
+      if(this.cc_info !== null){
+        let cc_email = this.cc_info;
+        cc_email = cc_email.replace(/"/g, "");
+        cc_email = cc_email.replace(/</g, "&lt;");
+        cc_email = cc_email.replace(/>/g, "&gt;");
+
+        this.reply_content = this.reply_content + "<div>Cc: " + cc_email + "</div>"
+      }
+
+      this.reply_content = this.reply_content + "<div><br></div><div><br></div>" + this.email_body_html +"</blockquote></div>";
+      setTimeout(()=>{
+        this.$refs.vueditor_cont.setContent(this.reply_content);
+      }, 200);
     }
   },
 
