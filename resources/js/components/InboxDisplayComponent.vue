@@ -321,59 +321,78 @@ export default{
       this.value = value;
       this.$emit("change", value);
     },
+
+    createOverlay(email_id, from_email, email_subject, email_action){
+      let _this = this;
+      axios.get(this.routes.getHtmlBody, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          id: email_id,
+        }
+      }).then(function (response) {
+        var overlayInstance = new overlayClass({
+          propsData: {
+            ref_sidebar:      _this.ref_sidebar,
+            index:            _this.ref_sidebar.overlays.length - 1,
+            routes:           _this.routes,
+            csrf_token:       _this.csrf_token,
+            user_email:       _this.user_email,
+
+            attachment_path: {
+              saveUrl:        _this.routes.upload_attachment,
+              removeUrl:      _this.routes.remove_attachment
+            },
+
+            email_id:         email_id,
+            email_action:     email_action,
+            reply_to_email:   from_email,
+            email_subject:    email_subject,
+            email_body_html:  response.data.htmlBody,
+            email_date:       response.data.date,
+            recipients:       response.data.recipients,
+          }
+        });
+
+        overlayInstance.$mount();
+        _this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
     
     onSelect(args) {
 
       let _this = this;
       if(args.item.text === "Reply"){
         let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
-        console.log(from_email);
         if(this.ref_sidebar.overlays.length < 1){
           this.ref_sidebar.overlays.push(0);
 
-          let _this = this;
-          axios.get(this.routes.getHtmlBody, {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + this.csrf_token,
-              "X-CSRF-TOKEN": this.csrf_token
-            },
-            params: {
-              id: args.rowInfo.rowData.id,
-            }
-          }).then(function (response) {
-            var overlayInstance = new overlayClass({
-              propsData: {
-                ref_sidebar:      _this.ref_sidebar,
-                index:            _this.ref_sidebar.overlays.length - 1,
-                routes:           _this.routes,
-                csrf_token:       _this.csrf_token,
-                user_email:       _this.user_email,
-
-                attachment_path: {
-                  saveUrl:        _this.routes.upload_attachment,
-                  removeUrl:      _this.routes.remove_attachment
-                },
-
-                email_id:         args.rowInfo.rowData.id,
-                email_action:     "reply_email",
-                reply_to_email:   from_email,
-                email_subject:    args.rowInfo.rowData.message,
-                email_body_html:  response.data.htmlBody,
-                email_date:       response.data.date
-              }
-            });
-
-            overlayInstance.$mount();
-            _this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
-          }).catch(error => {
-            console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
- 
-          
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_email"
+          );
         }
         // this.ref_sidebar.composeNew();
+      }else if(args.item.text === "Reply All"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_all_email"
+          );
+        }
       }else if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;

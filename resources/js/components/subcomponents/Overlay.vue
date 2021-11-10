@@ -82,7 +82,7 @@
         </div>
         <div class="flex px-2 items-center justify-items-center border-b border-gray-300">
           <a class="text-sm text-gray-500">Subject:</a>
-          <div class="p-2">
+          <div class="p-2 w-full">
             <input type="text" class="focus:outline-none w-full" v-model="email_subject">
           </div>
         </div>
@@ -149,7 +149,8 @@ export default Vue.extend({
     "reply_to_email",
     "email_subject",
     "email_body_html",
-    "email_date"
+    "email_date",
+    "recipients"
   ],
   data(){
     return{
@@ -188,32 +189,37 @@ export default Vue.extend({
         "Authorization": "Bearer " + this.csrf_token,
         "X-CSRF-TOKEN": this.csrf_token
       }
-      
-      if(!this.email_subject.includes("Re: ")){
-        this.email_subject = "Re: " + this.email_subject;
-      }
     }
   },
 
   mounted(){
+    console.log(this.recipients);
+    console.log(this.user_email);
     if(this.email_action === "reply_email" && this.reply_to_email !== null){
-      this.email_addresses = [this.reply_to_email];
-      this.email_address_tags = [{
-        text: this.reply_to_email,
-        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
-      }];
-
-      this.reply_content = "<div><br></div><div><br></div>" +
-        "<div class='gmail_quote'>" +
-          "<div dir='ltr'>On " + moment(this.email_date).format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
-          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
-            this.email_body_html +
-          "</blockquote>" +  
-        "</div>";
+      this.reply_method();
+    }else if(this.email_action === "reply_all_email" && this.reply_to_email !== null){
       
-      setTimeout(()=>{
-        this.$refs.vueditor_cont.setContent(this.reply_content);
-      }, 200);
+      this.add_cc = true
+      let recipients_addresses = [];
+
+      this.recipients.forEach(address => {
+        let ue = this.user_email.replace(/\./g, "")
+        let ae = address.email.replace(/\./g, "")
+
+        if(ae !== ue){
+          
+          recipients_addresses.push(address.email);
+
+          this.cc_address_tags.push({
+            text: address.email,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          });
+        }
+      });
+
+      this.cc_addresses = recipients_addresses;
+
+      this.reply_method();
     }
   },
 
@@ -325,9 +331,31 @@ export default Vue.extend({
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
     },
 
-    sendReply(){
-      console.log('send reply...');
+    reply_method(){
+      if(!this.email_subject.includes("Re: ")){
+        this.email_subject = "Re: " + this.email_subject;
+      }
 
+      this.email_addresses = [this.reply_to_email];
+      this.email_address_tags = [{
+        text: this.reply_to_email,
+        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+      }];
+
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment(this.email_date).format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.vueditor_cont.setContent(this.reply_content);
+      }, 200);
+    },
+
+    sendReply(){
       let _this = this;
       let invalid_emails = true;
       let invalid_ccs = false;
