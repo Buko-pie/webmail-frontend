@@ -416,7 +416,6 @@ export default Vue.extend({
     },
 
     replyEmail(){
-      console.log("bruh");
       let _this = this;
       this.show_reply = true;
       this.email_action = "reply_email";
