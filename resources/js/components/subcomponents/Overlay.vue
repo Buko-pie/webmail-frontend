@@ -125,6 +125,11 @@ function validateEmail(email) {
   return re.test(email);
 }
 
+function extractEmails(text){
+  const re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
+  return text.match(re);
+}
+
 function validateEmails(emailArray){
   let results = emailArray.some(function(email, index){
     if(!validateEmail(email)){
@@ -194,8 +199,6 @@ export default Vue.extend({
   },
 
   mounted(){
-    console.log(this.recipients);
-    console.log(this.user_email);
     if(this.email_action === "reply_email" && this.reply_to_email !== null){
       this.reply_method();
     }else if(this.email_action === "reply_all_email" && this.reply_to_email !== null){
@@ -217,6 +220,27 @@ export default Vue.extend({
           });
         }
       });
+
+      if(this.cc_info !== null){
+        console.log(this.cc_info);
+        let cc_emails = extractEmails(this.cc_info);
+        console.log(cc_emails);
+
+        cc_emails.forEach(address => {
+          let ue = this.user_email.replace(/\./g, "")
+          let ae = address.replace(/\./g, "")
+
+          if(ae !== ue){
+            
+            recipients_addresses.push(address);
+
+            this.cc_address_tags.push({
+              text: address,
+              classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+            });
+          }
+        });
+      }
 
       this.cc_addresses = recipients_addresses;
 
