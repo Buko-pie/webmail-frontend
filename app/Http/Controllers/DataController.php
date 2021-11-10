@@ -390,8 +390,9 @@ class DataController extends Controller {
       $email_labels = $email->getLabels();
 
       $data = [
-        'htmlBody' => $email->getHtmlBody(),
-        'date'     => $email->getDate(),
+        'htmlBody'    => $email->getHtmlBody(),
+        'date'        => $email->getDate(),
+        'recipients'  => $email->getTo(),
       ];
 
       if(isset($data)){
