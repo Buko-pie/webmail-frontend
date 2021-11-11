@@ -98,9 +98,9 @@
                 :save-on-key="[13, 32]"
                 :allowEditTags="true"
                 placeholder=""
+                @tags-changed="email_address_tags_new"
                 @before-adding-tag="email_address_tags_add_class"
                 @before-saving-tag="email_address_tags_edit"
-                @tags-changed="email_address_tags_new"
               />
             </div>
 
@@ -122,8 +122,8 @@
                 :save-on-key="[13, 32]"
                 :allowEditTags="true"
                 placeholder=""
-                @before-adding-tag="email_address_tags_add_class"
-                @before-saving-tag="email_address_tags_edit"
+                @before-adding-tag="cc_email_address_tags_add_class"
+                @before-saving-tag="cc_email_address_tags_edit"
                 @tags-changed="cc_address_tags_new"
               />
             </div>
@@ -139,8 +139,8 @@
                 :save-on-key="[13, 32]"
                 :allowEditTags="true"
                 placeholder=""
-                @before-adding-tag="email_address_tags_add_class"
-                @before-saving-tag="email_address_tags_edit"
+                @before-adding-tag="bcc_email_address_tags_add_class"
+                @before-saving-tag="bcc_email_address_tags_edit"
                 @tags-changed="bcc_address_tags_new"
               />
             </div>
@@ -516,6 +516,11 @@ export default Vue.extend({
     email_address_tags_add_class(args){
       if(validateEmail(args.tag.text)){
         args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.email_addresses == null){
+              this.email_addresses = [this.email_address_tag];
+        }else{
+              this.email_addresses.push(this.email_address_tag);
+        }
       }else{
         args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
       }
@@ -533,34 +538,88 @@ export default Vue.extend({
       args.saveTag();
     },
 
-    email_address_tags_new(tags){
-      let tags_text = [];
+    cc_email_address_tags_add_class(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.cc_addresses == null){
+              this.cc_addresses = [this.cc_address_tag];
+        }else{
+              this.cc_addresses.push(this.cc_address_tag);
+        }
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
-
-      this.email_addresses = tags_text;
+      args.addTag();
     },
 
-    cc_address_tags_new(tags){
-      let tags_text = [];
+    cc_email_address_tags_edit(args){
+      console.log('edit');
+       console.log(args)
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
-
-      this.cc_addresses = tags_text;
+      args.saveTag();
     },
 
-    bcc_address_tags_new(tags){
-      let tags_text = [];
+    bcc_email_address_tags_add_class(args){
+       console.log('add');
+      console.log(args);
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.bcc_addresses == null){
+              this.bcc_addresses = [this.bcc_address_tag];
+        }else{
+              this.bcc_addresses.push(this.bcc_address_tag);
+        }
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
+      args.addTag();
+    },
 
-      this.bcc_addresses = tags_text;
+    bcc_email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+
+      args.saveTag();
+    },
+
+    email_address_tags_new(){
+      if(this.email_address_tag != '' && validateEmail(this.email_address_tag)){
+        if(this.email_addresses == null){
+              this.email_addresses = [this.email_address_tag];
+        }else{
+              this.email_addresses.push(this.email_address_tag);
+        }
+      }
+    },
+
+    cc_address_tags_new(){
+      if(this.cc_address_tag != '' && validateEmail(this.cc_address_tag)){
+        if(this.cc_addresses == null){
+              this.cc_addresses = [this.cc_address_tag];
+        }else{
+              this.cc_addresses.push(this.cc_address_tag);
+        }
+      }
+    },
+
+    bcc_address_tags_new(){
+      if(this.bcc_address_tag != '' && validateEmail(this.bcc_address_tag)){
+        if(this.bcc_addresses == null){
+              this.bcc_addresses = [this.bcc_address_tag];
+        }else{
+              this.bcc_addresses.push(this.bcc_address_tag);
+        }
+      }
     },
 
     sendReply(){
@@ -576,6 +635,10 @@ export default Vue.extend({
         files = this.$refs.ejs_uploader_reply.getFilesData();
       }
       let attachments = [];
+
+      this.email_address_tags_new();
+      this.cc_address_tags_new();
+      this.bcc_address_tags_new();
 
       if(this.email_addresses !== null){
         invalid_emails = validateEmails(this.email_addresses);
