@@ -482,6 +482,32 @@ export default{
           });
         break;
 
+        case "Archive":// ARCHIVE EMAIL
+          let _this = this;
+          this.ref_headerTemplate.show_loading = false;
+          this.ref_headerTemplate.loading = false;
+
+          axios.get(this.routes.set_many_route, {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer {{ csrf_token() }}"
+            },
+            params: {
+              option: 8,
+              dataIDs: [args.rowInfo.rowData.id],
+              current_inbox_id: this.current_inbox.id
+            }
+          }).then(function (response) {
+            
+            _this.ref_headerTemplate.$refs.refresh_progress.click();
+
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+
+        break;
+
         case "Delete":// DELETE or MOVE TO TRASH
           axios.get(this.$store.state.routes.delete_mail,{
             headers: {
@@ -949,7 +975,7 @@ export default{
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
         _this.ref_headerTemplate.show_loading = false;
-          _this.ref_headerTemplate.loading = false;
+        _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"
         });
