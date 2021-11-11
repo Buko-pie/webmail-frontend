@@ -1420,6 +1420,10 @@ export default Vue.extend({
 
       let _this = this;
 
+      _this.$store.dispatch("set_email_html_body",'');
+      _this.$store.dispatch("set_email_data",'');
+      _this.$store.dispatch("set_email_rowData",'');
+
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
 
@@ -1442,7 +1446,7 @@ export default Vue.extend({
         _this.$eventHub.$emit("page_change");
       }).catch(error => {
 
-        this.$notification.error("somthing went wrong", {  timer: 5 });
+        this.$notification.error("something went wrong", {  timer: 5 });
       });
     },
 
