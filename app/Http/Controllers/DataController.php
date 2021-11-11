@@ -16,7 +16,9 @@ use ZipArchive;
 class DataController extends Controller {
 
     public function get_data(Request $request) {
-        $items = $request->items ?? 100;
+      logger('dataController');
+      logger($request);
+      $items = $request->items ?? 100;
         if (isset($request['inbox'])) {
             $user = LaravelGmail::user();
             $check_empty = LaravelGmail::message()->labeled($request['inbox'])->all();
@@ -31,6 +33,8 @@ class DataController extends Controller {
                 if ($request['option'] == 'first_run') {
                     //GENERAL INBOX
                     $labels = LaravelGmail::message()->listLabels()->labels;
+                    logger('labels');
+                    logger($labels);
                     $all_labels = $labels;
                     $labels = array_slice($labels, 14);
                     $user_labels = [];
@@ -61,8 +65,9 @@ class DataController extends Controller {
                     //     'labels' => $labels,
                     //     'inbox' => $inbox,
                     // ], 200);
-                    $gmail_data = LaravelGmail::message()->in('INBOX')->take($items)->preload()->all();
+                    $gmail_data = LaravelGmail::message()->raw('in:inbox category:primary')->take($items)->preload()->all();
                     $inbox_items_length = count($gmail_data);
+                    
 
                 } else if ($request['option'] == 'get_next_page') {
                   //pagination
@@ -112,9 +117,11 @@ class DataController extends Controller {
                   //get emails through inbox/folders
                   $gmail_data = $check_empty;
                   if(count($check_empty) > 0) {
-                    $gmail_data = LaravelGmail::message()->in($request['inbox'])->take($items)->preload()->all();
+                    $gmail_data = LaravelGmail::message()->raw('in:inbox category:primary')->take($items)->preload()->all();
+                    logger('inbox');
+                    //logger($gmail_data);
                   }
-                  $inbox = LaravelGmail::message()->getLabel($request['inbox'] );
+                  $inbox = LaravelGmail::message()->getLabel($request['inbox']);
 
                   $inbox_items_length = count($gmail_data);
                 }
