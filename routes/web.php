@@ -45,6 +45,7 @@ Route::get('/labels/add', [DataController::class, 'labels_add'])->name('labels_a
 Route::get('/labels/remove', [DataController::class, 'labels_remove'])->name('labels_remove');
 Route::get('/ids', [DataController::class, 'ids'])->name('ids');
 Route::get('/emailView/{id}', [DataController::class, 'emailView'])->name('emailView');
+Route::get('/get_email_htmlBody', [DataController::class, 'get_email_htmlBody'])->name('get_email_htmlBody');
 
 Route::get('/gmailAPItest', function () {
   return view('gmailAPItest');

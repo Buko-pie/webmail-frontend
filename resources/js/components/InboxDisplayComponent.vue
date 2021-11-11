@@ -172,11 +172,6 @@ export default{
           headerText: "",
           visible: false
         },{
-          //Column - html body
-          field: "body",
-          headerText: "",
-          visible: false
-        },{
           //Column - Message
           field: "message",
           headerText: "",
@@ -326,38 +321,94 @@ export default{
       this.value = value;
       this.$emit("change", value);
     },
+
+    createOverlay(email_id, from_email, email_subject, email_action, cc_info){
+      let _this = this;
+      axios.get(this.routes.getHtmlBody, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          id: email_id,
+        }
+      }).then(function (response) {
+        var overlayInstance = new overlayClass({
+          propsData: {
+            ref_sidebar:      _this.ref_sidebar,
+            index:            _this.ref_sidebar.overlays.length - 1,
+            routes:           _this.routes,
+            csrf_token:       _this.csrf_token,
+            user_email:       _this.user_email,
+
+            attachment_path: {
+              saveUrl:        _this.routes.upload_attachment,
+              removeUrl:      _this.routes.remove_attachment
+            },
+
+            email_id:         email_id,
+            email_action:     email_action,
+            reply_to_email:   from_email,
+            email_subject:    email_subject,
+            email_body_html:  response.data.htmlBody,
+            email_date:       response.data.date,
+            recipients:       response.data.recipients,
+            cc_info:          cc_info,
+          }
+        });
+
+        overlayInstance.$mount();
+        _this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
     
     onSelect(args) {
 
       let _this = this;
       if(args.item.text === "Reply"){
         let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
-        console.log(from_email);
         if(this.ref_sidebar.overlays.length < 1){
           this.ref_sidebar.overlays.push(0);
 
-          var overlayInstance = new overlayClass({
-            propsData: {
-              ref_sidebar: this.ref_sidebar,
-              index: this.ref_sidebar.overlays.length - 1,
-              routes: this.routes,
-              csrf_token: this.csrf_token,
-              user_email: this.user_email,
-              attachment_path: {
-                saveUrl: this.routes.upload_attachment,
-                removeUrl: this.routes.remove_attachment
-              },
-              email_action: "reply_email",
-              reply_to_email: from_email,
-              email_body_html: args.rowInfo.rowData.body,
-              //rework request on email_body_html
-            }
-          });
- 
-          overlayInstance.$mount();
-          this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_email",
+            args.rowInfo.rowData.cc_info
+          );
         }
         // this.ref_sidebar.composeNew();
+      }else if(args.item.text === "Reply All"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_all_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
+      }else if(args.item.text === "Forward"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "forward_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
       }else if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
@@ -610,7 +661,9 @@ export default{
       //On Context Menu Open
       console.log(args);
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
-      console.log(contextMenuObj);
+      // console.log(contextMenuObj);
+      
+      
       if(args.rowInfo.rowData){
         if(!args.rowInfo.rowData.read){
           contextMenuObj.showItems(["Mark as read"]);

@@ -879,6 +879,7 @@ export default Vue.extend({
         labels_remove:        this.url_base + "/labels/remove",
         ids:                  this.url_base + "/ids",
         emailView:            this.url_base + "/emailView/",
+        getHtmlBody:          this.url_base + "/get_email_htmlBody/",
       };
 
       this.$store.dispatch("set_routes", routes);

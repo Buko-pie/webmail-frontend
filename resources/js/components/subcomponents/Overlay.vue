@@ -3,7 +3,7 @@
     <div v-if="max_toggle" class="absolute centered-axis-xy h-full w-full bg-black bg-opacity-30" style="z-index: 9998;"></div>
     <div :start="start" class="overlay border-gray-300" :class="[ max_toggle ? 'centered-axis-xy' : 'absolute right-5 bottom-0 border' ]" :style="{width: w}">
       <div class="bg-gray-700 flex p-2">
-        <p class="text-white font-semibold text-sm">{{ (email_subject === "") ? "New Message" : email_subject }}</p>
+        <p class="text-white font-semibold text-sm">{{ (email_subject === null) ? "New Message" : email_subject }}</p>
         
         <div class="ml-auto flex">
           <ejs-button 
@@ -82,7 +82,7 @@
         </div>
         <div class="flex px-2 items-center justify-items-center border-b border-gray-300">
           <a class="text-sm text-gray-500">Subject:</a>
-          <div class="p-2">
+          <div class="p-2 w-full">
             <input type="text" class="focus:outline-none w-full" v-model="email_subject">
           </div>
         </div>
@@ -125,6 +125,11 @@ function validateEmail(email) {
   return re.test(email);
 }
 
+function extractEmails(text){
+  const re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
+  return text.match(re);
+}
+
 function validateEmails(emailArray){
   let results = emailArray.some(function(email, index){
     if(!validateEmail(email)){
@@ -144,9 +149,14 @@ export default Vue.extend({
     "csrf_token",
     "user_email",
     "attachment_path",
+    "email_id",
     "email_action",
     "reply_to_email",
-    "email_body_html"
+    "email_subject",
+    "email_body_html",
+    "email_date",
+    "recipients",
+    "cc_info"
   ],
   data(){
     return{
@@ -156,7 +166,7 @@ export default Vue.extend({
       headers: null,
 
       type: "new_email",
-      email_subject: "",
+      change_subj: false,
 
       show_attachment: false,
       min_toggle: false,
@@ -185,25 +195,83 @@ export default Vue.extend({
         "Authorization": "Bearer " + this.csrf_token,
         "X-CSRF-TOKEN": this.csrf_token
       }
-
     }
   },
 
   mounted(){
     if(this.email_action === "reply_email" && this.reply_to_email !== null){
-      this.email_address_tags = [{
-        text: this.reply_to_email,
-        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
-      }];
-
-      this.reply_content = "<div><br></div><div><br></div>" +
-        "<div class='gmail_quote'>" +
-          "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
-          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
-            this.email_body_html +
-          "</blockquote>" +  
-        "</div>";
+      this.reply_method();
+    }else if(this.email_action === "reply_all_email" && this.reply_to_email !== null){
       
+      this.add_cc = true
+      let recipients_addresses = [];
+
+      this.recipients.forEach(address => {
+        let ue = this.user_email.replace(/\./g, "")
+        let ae = address.email.replace(/\./g, "")
+
+        if(ae !== ue){
+          
+          recipients_addresses.push(address.email);
+
+          this.cc_address_tags.push({
+            text: address.email,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          });
+        }
+      });
+
+      if(this.cc_info !== null){
+        console.log(this.cc_info);
+        let cc_emails = extractEmails(this.cc_info);
+        console.log(cc_emails);
+
+        cc_emails.forEach(address => {
+          let ue = this.user_email.replace(/\./g, "")
+          let ae = address.replace(/\./g, "")
+
+          if(ae !== ue){
+            
+            recipients_addresses.push(address);
+
+            this.cc_address_tags.push({
+              text: address,
+              classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+            });
+          }
+        });
+      }
+
+      this.cc_addresses = recipients_addresses;
+
+      this.reply_method();
+    }else if(this.email_action === "forward_email" && this.reply_to_email !== null){
+      if(!this.email_subject.includes("Re: ")){
+        this.email_subject = "Fwd: " + this.email_subject;
+      }else{
+        this.email_subject = this.email_subject.replace(/Re: /g, "Fwd: ");
+      }
+      
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>> wrote:</div>" +
+        "<div class='gmail_quote'>" +
+        "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+        "<div>---------- Forwarded message ---------</div>" +
+        "<div>From: &lt;<a href='mailto:" + this.user_email +"'>" + this.user_email + "</a>&gt;</div>" +
+        "<div>Date: " + moment(this.email_date).format("llll") + "</div>" +
+        "<div>Subject: " + this.email_subject.replace(/Re: /g, "") + "</div>" +
+        "<div>To: &lt;<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>&gt;</div>"
+
+      if(this.cc_info !== null){
+        let cc_email = this.cc_info;
+        cc_email = cc_email.replace(/"/g, "");
+        cc_email = cc_email.replace(/</g, "&lt;");
+        cc_email = cc_email.replace(/>/g, "&gt;");
+
+        this.reply_content = this.reply_content + "<div>Cc: " + cc_email + "</div>"
+      }
+
+      this.reply_content = this.reply_content + "<div><br></div><div><br></div>" + this.email_body_html +"</blockquote></div>";
       setTimeout(()=>{
         this.$refs.vueditor_cont.setContent(this.reply_content);
       }, 200);
@@ -318,9 +386,31 @@ export default Vue.extend({
       args.currentRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf_token);
     },
 
-    sendReply(){
-      console.log('send reply...');
+    reply_method(){
+      if(!this.email_subject.includes("Re: ")){
+        this.email_subject = "Re: " + this.email_subject;
+      }
 
+      this.email_addresses = [this.reply_to_email];
+      this.email_address_tags = [{
+        text: this.reply_to_email,
+        classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+      }];
+
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment(this.email_date).format("LLLL") + " <<a href='mailto:" + this.reply_to_email +"'>" + this.reply_to_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.vueditor_cont.setContent(this.reply_content);
+      }, 200);
+    },
+
+    sendReply(){
       let _this = this;
       let invalid_emails = true;
       let invalid_ccs = false;
@@ -365,14 +455,15 @@ export default Vue.extend({
       }
 
       let data = {
-        option: this.type,
-        // email_id: this.email_data.email_id,
-        addresses: this.email_addresses,
-        cc: this.cc_addresses,
-        bcc: this.bcc_addresses,
-        subject: this.email_subject,
-        message: this.$refs.vueditor_cont.getContent(),
-        attachments: attachments,
+        option:       this.email_action === "reply_email" ? "reply_email" : "new_email",
+        email_id:     this.email_id,
+        addresses:    this.email_addresses,
+        cc:           this.cc_addresses,
+        bcc:          this.bcc_addresses,
+        subject:      this.email_subject,
+        change_subj:  this.change_subj,
+        message:      this.$refs.vueditor_cont.getContent(),
+        attachments:  attachments,
       }
 
       axios.post(this.routes.send_mail, data)
