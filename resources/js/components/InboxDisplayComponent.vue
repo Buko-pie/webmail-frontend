@@ -322,6 +322,69 @@ export default{
       this.$emit("change", value);
     },
 
+    selectedItemsTo(option, dataIDs, route, args) {
+      let _this = this;
+      this.show_loading = true;
+      this.loading = true;
+
+      if(option === 1) { // mark as read
+        axios.get(route.set_many_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: option,
+            dataIDs: dataIDs,
+            current_inbox_id: this.$store.state.current_inbox.id
+          }
+        }).then(function (response) {
+            _this.$refs.grid.ej2Instances.getSelectedRowIndexes().map(e => {
+              _this.$store.dispatch("modify_email_batch", {
+                index: e,
+                property: "read",
+                value: false
+              });
+            })
+            _this.$refs.grid.ej2Instances.getSelectedRows().map(e => {
+              e.classList.add("font-black")
+            })
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      } else if(option === 0) { //mark as unread
+        axios.get(route.set_many_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: option,
+            dataIDs: dataIDs,
+            current_inbox_id: this.$store.state.current_inbox.id
+          }
+        }).then(function (response) {
+          _this.$refs.grid.ej2Instances.getSelectedRowIndexes().map(e => {
+            _this.$store.dispatch("modify_email_batch", {
+              index: e,
+              property: "read",
+              value: true
+            });
+          })
+          _this.$refs.grid.ej2Instances.getSelectedRows().map(e => {
+            e.classList.remove("font-black")
+          })
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      }
+
+    },
+
     createOverlay(email_id, from_email, email_subject, email_action, cc_info){
       let _this = this;
       axios.get(this.routes.getHtmlBody, {
@@ -419,65 +482,65 @@ export default{
         console.log(this.custom_labels);
       }else if(args.item.text === "Mark as unread"){
         //Mark As Unread
+        this.selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes, args);
+        // axios.get(_this.routes.toggle_route, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     "Authorization": "Bearer " + this.csrf_token,
+        //     "X-CSRF-TOKEN": this.csrf_token
+        //   },
+        //   params: {
+        //     column: "read",
+        //     id: args.rowInfo.rowData.id,
+        //     value: false
+        //   }
+        // }).then(function (response) {
 
-        axios.get(_this.routes.toggle_route, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            column: "read",
-            id: args.rowInfo.rowData.id,
-            value: false
-          }
-        }).then(function (response) {
+        //   // _this.viewData[args.rowInfo.rowIndex].read = false;
 
-          // _this.viewData[args.rowInfo.rowIndex].read = false;
+        //   _this.$store.dispatch("modify_email_batch", {
+        //     index: args.rowInfo.rowIndex,
+        //     property: "read",
+        //     value: false
+        //   });
 
-          _this.$store.dispatch("modify_email_batch", {
-            index: args.rowInfo.rowIndex,
-            property: "read",
-            value: false
-          });
+        //   args.rowInfo.row.classList.add("font-black");
 
-          args.rowInfo.row.classList.add("font-black");
-
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
+        // }).catch(error => {
+        //   console.log(error);
+        //   _this.$notification.error("somthing went wrong", {  timer: 5 });
+        // });
 
       }else if(args.item.text === "Mark as read"){
         //Mark as read
+        this.selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes, args);
+        // axios.get(_this.routes.toggle_route, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     "Authorization": "Bearer " + this.csrf_token,
+        //     "X-CSRF-TOKEN": this.csrf_token
+        //   },
+        //   params: {
+        //     column: "read",
+        //     id: args.rowInfo.rowData.id,
+        //     value: true
+        //   }
+        // }).then(function (response) {
+        //   console.log(response.data);
+        //   // _this.viewData[args.rowInfo.rowIndex].read = true;
 
-        axios.get(_this.routes.toggle_route, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            column: "read",
-            id: args.rowInfo.rowData.id,
-            value: true
-          }
-        }).then(function (response) {
-          console.log(response.data);
-          // _this.viewData[args.rowInfo.rowIndex].read = true;
+        //   _this.$store.dispatch("modify_email_batch", {
+        //     index: args.rowInfo.rowIndex,
+        //     property: "read",
+        //     value: true
+        //   });
 
-          _this.$store.dispatch("modify_email_batch", {
-            index: args.rowInfo.rowIndex,
-            property: "read",
-            value: true
-          });
+        //   args.rowInfo.row.classList.remove("font-black");
 
-          args.rowInfo.row.classList.remove("font-black");
-
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
+        // }).catch(error => {
+        //   console.log(error);
+        //   _this.$notification.error("somthing went wrong", {  timer: 5 });
+        // });
       } else if(args.item.id === "delete") {
         axios.get(this.$store.state.routes.delete_mail,{
           headers: {
@@ -607,7 +670,7 @@ export default{
       //Mark As Read on Email Click
 
       let _this = this;
-      if(args.cellIndex > 3 && args.cellIndex < 8){
+      if(args.cellIndex > 3 && args.cellIndex < 11){
         axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
