@@ -33,6 +33,7 @@
 import Vue from "vue";
 import moment from "moment";
 import VueNotification from "@kugatsu/vuenotification";
+import Overlay from "./subcomponents/Overlay.vue";
 import { GridPlugin, PagerPlugin, ContextMenu, Sort, Edit, Page, Toolbar, Search } from "@syncfusion/ej2-vue-grids";
 
 const fileIcons = require("file-icons-js");
@@ -43,6 +44,7 @@ let important_template = Vue.component("important-template", require("./subcompo
 let message_template = Vue.component("message-template", require("./subcomponents/MessageTemplate.vue").default);
 let attachment_template = Vue.component("important-template", require("./subcomponents/AttachmentTemplate.vue").default);
 let pagination_template = Vue.component("pagerTemplate", require("./subcomponents/PaginationTemplate.vue").default);
+var overlayClass = Vue.extend(Overlay);
 
 Vue.use(GridPlugin);
 Vue.use(PagerPlugin);
@@ -155,6 +157,21 @@ export default{
           maxWidth: "120",
           allowSorting: false
         },{
+          //Column - Sender information
+          field: "sender_info",
+          headerText: "",
+          visible: false
+        },{
+          //Column - Carbon copy information
+          field: "cc_info",
+          headerText: "",
+          visible: false
+        },{
+          //Column - Blind carbon copy information
+          field: "bcc_info",
+          headerText: "",
+          visible: false
+        },{
           //Column - Message
           field: "message",
           headerText: "",
@@ -207,6 +224,10 @@ export default{
   computed:{
     ref_headerTemplate(){
       return this.$store.state.headerTemplate;
+    },
+
+    ref_sidebar(){
+      return this.$store.state.sidebar;
     },
 
     start(){
@@ -280,7 +301,11 @@ export default{
     },
 
     searchOptions() {
-      return this.$store.state.searchOptions
+      return this.$store.state.searchOptions;
+    },
+
+    user_email(){
+      return this.$store.state.user_email;
     }
   },
 
@@ -296,11 +321,95 @@ export default{
       this.value = value;
       this.$emit("change", value);
     },
+
+    createOverlay(email_id, from_email, email_subject, email_action, cc_info){
+      let _this = this;
+      axios.get(this.routes.getHtmlBody, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          id: email_id,
+        }
+      }).then(function (response) {
+        var overlayInstance = new overlayClass({
+          propsData: {
+            ref_sidebar:      _this.ref_sidebar,
+            index:            _this.ref_sidebar.overlays.length - 1,
+            routes:           _this.routes,
+            csrf_token:       _this.csrf_token,
+            user_email:       _this.user_email,
+
+            attachment_path: {
+              saveUrl:        _this.routes.upload_attachment,
+              removeUrl:      _this.routes.remove_attachment
+            },
+
+            email_id:         email_id,
+            email_action:     email_action,
+            reply_to_email:   from_email,
+            email_subject:    email_subject,
+            email_body_html:  response.data.htmlBody,
+            email_date:       response.data.date,
+            recipients:       response.data.recipients,
+            cc_info:          cc_info,
+          }
+        });
+
+        overlayInstance.$mount();
+        _this.ref_sidebar.$refs.overlays_container.appendChild(overlayInstance.$el);
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
     
     onSelect(args) {
 
       let _this = this;
-      if(args.item.text === "Add Label") {
+      if(args.item.text === "Reply"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
+        // this.ref_sidebar.composeNew();
+      }else if(args.item.text === "Reply All"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "reply_all_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
+      }else if(args.item.text === "Forward"){
+        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+        if(this.ref_sidebar.overlays.length < 1){
+          this.ref_sidebar.overlays.push(0);
+
+          this.createOverlay(
+            args.rowInfo.rowData.id,
+            from_email,
+            args.rowInfo.rowData.message,
+            "forward_email",
+            args.rowInfo.rowData.cc_info
+          );
+        }
+      }else if(args.item.text === "Add Label") {
         //Add Label
         let row_data = args.rowInfo.rowData;
         /////Last construction here on add custom labels context menu
@@ -552,7 +661,9 @@ export default{
       //On Context Menu Open
       console.log(args);
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
-      console.log(contextMenuObj);
+      // console.log(contextMenuObj);
+      
+      
       if(args.rowInfo.rowData){
         if(!args.rowInfo.rowData.read){
           contextMenuObj.showItems(["Mark as read"]);

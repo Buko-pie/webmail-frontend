@@ -136,6 +136,9 @@ class DataController extends Controller {
                           'id'              => $data->id,
                           'index'           => $index,
                           'sender'          => $data->getFromName(),
+                          'sender_info'     => $data->getFrom(),
+                          'cc_info'         => $data->getHeader("Cc"),
+                          'bcc_info'        => $data->getHeader("Bcc"),
                           'receiver'        => $user,
                           'message'         => $data->getSubject(),
                           'plain_text'      => $data->getPlainTextBody(),
@@ -380,6 +383,23 @@ class DataController extends Controller {
         }
 
         return response()->download($path);
+    }
+
+    public function get_email_htmlBody(Request $request){
+      $email = LaravelGmail::message()->get($request['id']);
+      $email_labels = $email->getLabels();
+
+      $data = [
+        'htmlBody'    => $email->getHtmlBody(),
+        'date'        => $email->getDate(),
+        'recipients'  => $email->getTo(),
+      ];
+
+      if(isset($data)){
+        return response()->json($data, 200);
+      }else{
+        return response()->json('Body html fetch error', 500);
+      }
     }
 
     public function toggle_data(Request $request) {
