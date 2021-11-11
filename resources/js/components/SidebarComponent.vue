@@ -776,7 +776,7 @@ export default Vue.extend({
 
       labels_options:[
         {id: 0, text: "Create new"}, 
-        {id: 1, text: "Manage labels"},
+        //{id: 1, text: "Manage labels"},
         {id: 2, text: "Apply"},
       ],
 
