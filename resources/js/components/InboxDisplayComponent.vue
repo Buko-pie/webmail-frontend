@@ -322,6 +322,69 @@ export default{
       this.$emit("change", value);
     },
 
+    selectedItemsTo(option, dataIDs, route, args) {
+      let _this = this;
+      this.show_loading = true;
+      this.loading = true;
+
+      if(option === 1) { // mark as read
+        axios.get(route.set_many_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: option,
+            dataIDs: dataIDs,
+            current_inbox_id: this.$store.state.current_inbox.id
+          }
+        }).then(function (response) {
+            _this.$refs.grid.ej2Instances.getSelectedRowIndexes().map(e => {
+              _this.$store.dispatch("modify_email_batch", {
+                index: e,
+                property: "read",
+                value: false
+              });
+            })
+            _this.$refs.grid.ej2Instances.getSelectedRows().map(e => {
+              e.classList.add("font-black")
+            })
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      } else if(option === 0) { //mark as unread
+        axios.get(route.set_many_route, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.csrf_token,
+            "X-CSRF-TOKEN": this.csrf_token
+          },
+          params: {
+            option: option,
+            dataIDs: dataIDs,
+            current_inbox_id: this.$store.state.current_inbox.id
+          }
+        }).then(function (response) {
+          _this.$refs.grid.ej2Instances.getSelectedRowIndexes().map(e => {
+            _this.$store.dispatch("modify_email_batch", {
+              index: e,
+              property: "read",
+              value: true
+            });
+          })
+          _this.$refs.grid.ej2Instances.getSelectedRows().map(e => {
+            e.classList.remove("font-black")
+          })
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+      }
+
+    },
+
     createOverlay(email_id, from_email, email_subject, email_action, cc_info){
       let _this = this;
       axios.get(this.routes.getHtmlBody, {
@@ -369,203 +432,241 @@ export default{
     onSelect(args) {
 
       let _this = this;
-      if(args.item.text === "Reply"){
-        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
-        if(this.ref_sidebar.overlays.length < 1){
-          this.ref_sidebar.overlays.push(0);
+      let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
+      switch (args.item.text) {
+        case "Reply":// REPLY TO EMAIL SENDER
+          if(this.ref_sidebar.overlays.length < 1){
+            this.ref_sidebar.overlays.push(0);
 
-          this.createOverlay(
-            args.rowInfo.rowData.id,
-            from_email,
-            args.rowInfo.rowData.message,
-            "reply_email",
-            args.rowInfo.rowData.cc_info
-          );
-        }
-        // this.ref_sidebar.composeNew();
-      }else if(args.item.text === "Reply All"){
-        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
-        if(this.ref_sidebar.overlays.length < 1){
-          this.ref_sidebar.overlays.push(0);
-
-          this.createOverlay(
-            args.rowInfo.rowData.id,
-            from_email,
-            args.rowInfo.rowData.message,
-            "reply_all_email",
-            args.rowInfo.rowData.cc_info
-          );
-        }
-      }else if(args.item.text === "Forward"){
-        let from_email = args.rowInfo.rowData.sender_info.email !== null ? args.rowInfo.rowData.sender_info.email : args.rowInfo.rowData.sender_info.name;
-        if(this.ref_sidebar.overlays.length < 1){
-          this.ref_sidebar.overlays.push(0);
-
-          this.createOverlay(
-            args.rowInfo.rowData.id,
-            from_email,
-            args.rowInfo.rowData.message,
-            "forward_email",
-            args.rowInfo.rowData.cc_info
-          );
-        }
-      }else if(args.item.text === "Add Label") {
-        //Add Label
-        let row_data = args.rowInfo.rowData;
-        /////Last construction here on add custom labels context menu
-        this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
-        args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
-
-        console.log(this.custom_labels);
-      }else if(args.item.text === "Mark as unread"){
-        //Mark As Unread
-
-        axios.get(_this.routes.toggle_route, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            column: "read",
-            id: args.rowInfo.rowData.id,
-            value: false
+            this.createOverlay(
+              args.rowInfo.rowData.id,
+              from_email,
+              args.rowInfo.rowData.message,
+              "reply_email",
+              args.rowInfo.rowData.cc_info
+            );
           }
-        }).then(function (response) {
+        break;
 
-          // _this.viewData[args.rowInfo.rowIndex].read = false;
+        case "Reply All":// REPLY TO ALL RECIPIENTS IN EMAIL
+          if(this.ref_sidebar.overlays.length < 1){
+            this.ref_sidebar.overlays.push(0);
 
-          _this.$store.dispatch("modify_email_batch", {
-            index: args.rowInfo.rowIndex,
-            property: "read",
-            value: false
+            this.createOverlay(
+              args.rowInfo.rowData.id,
+              from_email,
+              args.rowInfo.rowData.message,
+              "reply_all_email",
+              args.rowInfo.rowData.cc_info
+            );
+          }
+        break;
+
+        case "Forward":// FORWARD EMAIL
+          if(this.ref_sidebar.overlays.length < 1){
+            this.ref_sidebar.overlays.push(0);
+
+            this.createOverlay(
+              args.rowInfo.rowData.id,
+              from_email,
+              args.rowInfo.rowData.message,
+              "forward_email",
+              args.rowInfo.rowData.cc_info
+            );
+          }
+        break;
+
+        case "Add Label":// ADD LABEL
+          let row_data = args.rowInfo.rowData;
+          /////Last construction here on add custom labels context menu
+          this.custom_labels.push({id:this.custom_labels.length , title: "Label_" + this.custom_labels.length});
+          args.rowInfo.rowData.labels.push("Label_" + this.custom_labels.length);
+
+          console.log(this.custom_labels);
+        break;
+
+        case "Mark as unread":// MARK AS UNREAD
+          axios.get(_this.routes.toggle_route, {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + this.csrf_token,
+              "X-CSRF-TOKEN": this.csrf_token
+            },
+            params: {
+              column: "read",
+              id: args.rowInfo.rowData.id,
+              value: false
+            }
+          }).then(function (response) {
+
+            // _this.viewData[args.rowInfo.rowIndex].read = false;
+
+            _this.$store.dispatch("modify_email_batch", {
+              index: args.rowInfo.rowIndex,
+              property: "read",
+              value: false
+            });
+
+            args.rowInfo.row.classList.add("font-black");
+
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+        break;
+
+        case "Mark as read":// MARK AS READ
+          axios.get(_this.routes.toggle_route, {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + this.csrf_token,
+              "X-CSRF-TOKEN": this.csrf_token
+            },
+            params: {
+              column: "read",
+              id: args.rowInfo.rowData.id,
+              value: true
+            }
+          }).then(function (response) {
+            console.log(response.data);
+            // _this.viewData[args.rowInfo.rowIndex].read = true;
+
+            _this.$store.dispatch("modify_email_batch", {
+              index: args.rowInfo.rowIndex,
+              property: "read",
+              value: true
+            });
+
+            args.rowInfo.row.classList.remove("font-black");
+
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+        break;
+
+        case "Archive":// ARCHIVE EMAIL
+          let _this = this;
+          this.ref_headerTemplate.show_loading = false;
+          this.ref_headerTemplate.loading = false;
+
+          axios.get(this.routes.set_many_route, {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer {{ csrf_token() }}"
+            },
+            params: {
+              option: 8,
+              dataIDs: [args.rowInfo.rowData.id],
+              current_inbox_id: this.current_inbox.id
+            }
+          }).then(function (response) {
+            
+            _this.ref_headerTemplate.$refs.refresh_progress.click();
+
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
           });
 
-          args.rowInfo.row.classList.add("font-black");
+        break;
 
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
+        case "Delete":// DELETE or MOVE TO TRASH
+          axios.get(this.$store.state.routes.delete_mail,{
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + this.csrf_token,
+              "X-CSRF-TOKEN": this.csrf_token
+            },
+            params: {
+              id: args.rowInfo.rowData.id,
+              inbox: 'INBOX'
+            }
+          }).then(function (response) {
+            console.log(response);
+            _this.$eventHub.$emit("refresh_inbox", {
+              event: "refresh_inbox"
+            });
 
-      }else if(args.item.text === "Mark as read"){
-        //Mark as read
-
-        axios.get(_this.routes.toggle_route, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            column: "read",
-            id: args.rowInfo.rowData.id,
-            value: true
-          }
-        }).then(function (response) {
-          console.log(response.data);
-          // _this.viewData[args.rowInfo.rowIndex].read = true;
-
-          _this.$store.dispatch("modify_email_batch", {
-            index: args.rowInfo.rowIndex,
-            property: "read",
-            value: true
-          });
-
-          args.rowInfo.row.classList.remove("font-black");
-
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
-      } else if(args.item.id === "delete") {
-        axios.get(this.$store.state.routes.delete_mail,{
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            id: args.rowInfo.rowData.id,
-            inbox: 'INBOX'
-          }
-        }).then(function (response) {
-          console.log(response);
-          _this.$eventHub.$emit("refresh_inbox", {
-            event: "refresh_inbox"
-          });
-
-          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-          
-          _this.$eventHub.$emit("page_change");
-
-          _this.has_nextPage = response.data.has_nextPage;
-          if(!response.data.has_nextPage){
-            _this.$eventHub.$emit("disable_nxtBtn", true);
-          }
-        }).catch(error => {
-          console.log(error);
-          this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
-      } else if(args.item.id === "delete_forever") {
-        axios.get(this.$store.state.routes.delete_mail_forever,{
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            id: args.rowInfo.rowData.id,
-            inbox: 'TRASH'
-          }
-        }).then(function (response) {
-          console.log(response);
-          _this.$eventHub.$emit("refresh_inbox", {
-            event: "refresh_inbox"
-          });
             _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-          
-          _this.$eventHub.$emit("page_change");
+            _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+            
+            _this.$eventHub.$emit("page_change");
 
-          _this.has_nextPage = response.data.has_nextPage;
-          if(!response.data.has_nextPage){
-            _this.$eventHub.$emit("disable_nxtBtn", true);
-          }
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
-      } else if(args.item.id === "move_to_inbox") {
-        axios.get(this.$store.state.routes.move_to_inbox,{
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + this.csrf_token,
-            "X-CSRF-TOKEN": this.csrf_token
-          },
-          params: {
-            id: args.rowInfo.rowData.id,
-            inbox: 'TRASH'
-          }
-        }).then(function (response) {
-          console.log(response);
-          _this.$eventHub.$emit("refresh_inbox", {
-            event: "refresh_inbox"
+            _this.has_nextPage = response.data.has_nextPage;
+            if(!response.data.has_nextPage){
+              _this.$eventHub.$emit("disable_nxtBtn", true);
+            }
+          }).catch(error => {
+            console.log(error);
+            this.$notification.error("somthing went wrong", {  timer: 5 });
           });
-            _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
-          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
-          
-          _this.$eventHub.$emit("page_change");
+        break;
 
-          _this.has_nextPage = response.data.has_nextPage;
-          if(!response.data.has_nextPage){
-            _this.$eventHub.$emit("disable_nxtBtn", true);
-          }
-        }).catch(error => {
-          console.log(error);
-          _this.$notification.error("somthing went wrong", {  timer: 5 });
-        });
+        case "Move to Inbox":// MOVE TO INBOX
+          axios.get(this.$store.state.routes.move_to_inbox,{
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + this.csrf_token,
+              "X-CSRF-TOKEN": this.csrf_token
+            },
+            params: {
+              id: args.rowInfo.rowData.id,
+              inbox: 'TRASH'
+            }
+          }).then(function (response) {
+            console.log(response);
+            _this.$eventHub.$emit("refresh_inbox", {
+              event: "refresh_inbox"
+            });
+              _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+            _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+            
+            _this.$eventHub.$emit("page_change");
+
+            _this.has_nextPage = response.data.has_nextPage;
+            if(!response.data.has_nextPage){
+              _this.$eventHub.$emit("disable_nxtBtn", true);
+            }
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+        break;
+
+        case "Delete Forever":// DELETE FOREVER
+          axios.get(this.$store.state.routes.delete_mail_forever,{
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + this.csrf_token,
+              "X-CSRF-TOKEN": this.csrf_token
+            },
+            params: {
+              id: args.rowInfo.rowData.id,
+              inbox: 'TRASH'
+            }
+          }).then(function (response) {
+            console.log(response);
+            _this.$eventHub.$emit("refresh_inbox", {
+              event: "refresh_inbox"
+            });
+              _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+            _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+            
+            _this.$eventHub.$emit("page_change");
+
+            _this.has_nextPage = response.data.has_nextPage;
+            if(!response.data.has_nextPage){
+              _this.$eventHub.$emit("disable_nxtBtn", true);
+            }
+          }).catch(error => {
+            console.log(error);
+            _this.$notification.error("somthing went wrong", {  timer: 5 });
+          });
+        break;
+      
+        default:
+        break;
       }
     },
 
@@ -607,7 +708,7 @@ export default{
       //Mark As Read on Email Click
 
       let _this = this;
-      if(args.cellIndex > 3 && args.cellIndex < 8){
+      if(args.cellIndex > 3 && args.cellIndex < 11){
         axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
@@ -937,7 +1038,7 @@ export default{
         _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
 
         _this.ref_headerTemplate.show_loading = false;
-          _this.ref_headerTemplate.loading = false;
+        _this.ref_headerTemplate.loading = false;
         _this.$eventHub.$emit("stop_loading", {
           event: "stop_loading"
         });

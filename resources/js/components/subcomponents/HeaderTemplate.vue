@@ -34,7 +34,7 @@
             <ejs-button @click.native="btnArchive" iconCss="fas fa-archive" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
           <!-- Button Report as Spam  -->
-          <ejs-tooltip content="Report as spam" position="BottomCenter">
+          <ejs-tooltip content="Report as spam" position="BottomCenter" v-show="false">
             <ejs-button @click.native="btnReportSpam" iconCss="fas fa-exclamation-triangle" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
           <!-- Button Delete  -->
