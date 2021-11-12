@@ -28,15 +28,15 @@
         </ejs-tooltip>
       </div>
       <div :class="{'hidden': !items_selected}" class="grid grid-cols-3 divide-x">
-        <div class="px-2 flex">
+        <div class="px-2 flex justify-evenly">
           <!-- Button Archive  -->
           <ejs-tooltip content="Archive" position="BottomCenter">
             <ejs-button @click.native="btnArchive" iconCss="fas fa-archive" cssClass="e-round shadow-none" ></ejs-button>
           </ejs-tooltip>
           <!-- Button Report as Spam  -->
-          <ejs-tooltip content="Report as spam" position="BottomCenter" v-show="false">
+          <!-- <ejs-tooltip content="Report as spam" position="BottomCenter" v-show="false">
             <ejs-button @click.native="btnReportSpam" iconCss="fas fa-exclamation-triangle" cssClass="e-round shadow-none" ></ejs-button>
-          </ejs-tooltip>
+          </ejs-tooltip> -->
           <!-- Button Delete  -->
           <ejs-tooltip content="Delete" position="BottomCenter">
             <ejs-button @click.native="btnDelete" iconCss="fas fa-trash-alt" cssClass="e-round shadow-none" ></ejs-button>
