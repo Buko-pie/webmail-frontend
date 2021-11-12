@@ -89,6 +89,7 @@ import { DropDownListPlugin } from "@syncfusion/ej2-vue-dropdowns";
 import { DatePickerPlugin } from "@syncfusion/ej2-vue-calendars";
 import { CheckBoxPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ButtonPlugin } from "@syncfusion/ej2-vue-buttons";
+import {bus} from "../app";
 
 Vue.use(TextBoxPlugin);
 Vue.use(DropDownListPlugin);
@@ -185,6 +186,24 @@ export default Vue.extend({
     }
   },
   mounted(){
+    bus.$on('addFilterToSearch', (data) => {
+      console.log(data)
+      var filter = data.toLowerCase();
+      const isOptions = ['starred', 'important']
+      const inOptions = ['sent', 'draft', 'trash']
+      const categoryOptions = ['social', 'updates', 'forums', 'promotions']
+
+      if(isOptions.includes(filter)){
+        this.search = 'is:'+filter;
+      }else if(inOptions.includes(filter)){
+        this.search = 'in:'+filter;
+      }else if(categoryOptions.includes(filter)){
+        this.search = 'category:'+filter;
+      }else{
+        this.search = '';
+      }
+      
+    })
   },
   methods: {
     inputFocus(index){
