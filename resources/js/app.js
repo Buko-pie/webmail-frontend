@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import axios from 'axios';
 import { store } from "./store/store";
+export const bus = new Vue();
 // import { router } from "./router.js";
 import Vueditor from "vueditor";
 // import WindowPortal from "./components/VueWindowPortal.vue";
