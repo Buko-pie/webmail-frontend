@@ -483,6 +483,7 @@ export default Vue.extend({
     },
 
     getEmails(){
+      this.autocompleteItems = []
       const _this = this
       axios.get(this.routes.getEmails,
       {
@@ -494,9 +495,24 @@ export default Vue.extend({
       }).then(function(response){
 
         const emails = response.data.emails;
+        var results = []
+        
+        // for(var i=0; i<emails.length; i++) {
+        //   for(key in emails[i]) {
+        //     if(emails[i][key].indexOf(_this.email_address_tag)!=-1) {
+        //       results.push(emails[i]);
+        //     }
+        //   }
+        // }
 
-        for (let x in emails) {
-          _this.autocompleteItems.push({text:emails[x]})
+        var address = Object.values(emails)
+
+        console.log(address)
+
+        results = address.filter(element => element.includes(_this.email_address_tag))
+        _this.autocompleteItems = []
+        for (let x in results) {
+          _this.autocompleteItems.push({text:results[x]})
         }
 
       }).catch(error => {
