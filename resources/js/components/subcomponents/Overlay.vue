@@ -38,6 +38,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
@@ -184,6 +186,8 @@ export default Vue.extend({
       bcc_address_tags: [],
       bcc_addresses: null,
 
+      autocompleteItems:[]
+
     }
   },
 
@@ -199,6 +203,7 @@ export default Vue.extend({
   },
 
   mounted(){
+
     if(this.email_action === "reply_email" && this.reply_to_email !== null){
       this.reply_method();
     }else if(this.email_action === "reply_all_email" && this.reply_to_email !== null){
@@ -467,15 +472,38 @@ export default Vue.extend({
       }
 
       axios.post(this.routes.send_mail, data)
-          .then((response) => {
-            let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
-            _this.$notification.success(message, {  timer: 5 });
-            this.close_overlay();
-          }).catch(error => {
-            console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
+      .then((response) => {
+        let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
+        _this.$notification.success(message, {  timer: 5 });
+        this.close_overlay();
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("something went wrong", {  timer: 5 });
+      });
     },
+
+    getEmails(){
+      const _this = this
+      axios.get(this.routes.getEmails,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+      }).then(function(response){
+
+        const emails = response.data.emails;
+
+        for (let x in emails) {
+          _this.autocompleteItems.push({text:emails[x]})
+        }
+
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("Something went wrong", {  timer: 5 });
+      })
+    }
   }
 });
 </script>

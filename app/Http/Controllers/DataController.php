@@ -861,4 +861,22 @@ class DataController extends Controller {
 
       return view('EmailView')->with(['data' => $data]);
     }
+
+    public function getEmails(Request $request){
+      $gmail_data = LaravelGmail::message()->take(100)->preload()->all();
+
+      $all_emails = array();
+      if(count($gmail_data) > 0) {
+        foreach ($gmail_data as $index => $data) {
+          array_push($all_emails, $data->getFromEmail());
+        }
+      }
+      
+
+      // $all_emails = preg_grep('/'.$request['search'].'\s.*/', array_unique($all_emails));
+
+      return response()->json([
+         'emails'=>array_unique($all_emails)
+      ], 200);
+    }
 }
