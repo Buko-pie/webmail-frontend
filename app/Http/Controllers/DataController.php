@@ -214,7 +214,7 @@ class DataController extends Controller {
         }
         
         $mail->send();
-      }else if($content->option == 'reply_email'){
+      }else if($content->option == 'reply_email' || $content->option = 'reply_all_email'){
         $mail = LaravelGmail::message()->get($content->email_id);
         $mail_reference = $mail->getHeader('References');
         $mail_in_reply_to = $mail->getHeader('In-Reply-To');
