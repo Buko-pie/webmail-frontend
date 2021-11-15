@@ -536,6 +536,9 @@ export default Vue.extend({
 
       if(data !== null){
 
+      //initialize addresses
+      this.email_addresses = null;
+      
         if(this.current_inbox.name === "SENT"){
           this.reply_address = data.to.email ? data.to.email : data.to.name;
           this.email_addresses = [this.reply_address];
@@ -559,6 +562,7 @@ export default Vue.extend({
 
           const cc_addresses_split = data.cc.split(",");
           this.cc_addresses = [];
+          this.cc_address_tags = [];
           cc_addresses_split.forEach(element => {
             console.log(element);
             this.cc_addresses.push(element.trim());
