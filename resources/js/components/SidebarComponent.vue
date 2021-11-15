@@ -241,28 +241,28 @@
           </a>
           
           <div v-show="category_toggle">
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('SOCIAL', 'SOCIAL')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-users text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Social</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('UPDATES', 'UPDATES')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-exclamation text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Updates</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('FORUMS', 'FORUMS')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-comments text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Forums</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('PROMOTIONS', 'PROMOTIONS')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-bullhorn text-lg"></i>
               </div>
@@ -606,6 +606,7 @@ import { DataManager, Query } from "@syncfusion/ej2-data";
 import PortalVue from "portal-vue";
 import { DialogPlugin } from "@syncfusion/ej2-vue-popups";
 import Overlay from "./subcomponents/Overlay.vue";
+import {bus} from "../app";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -1420,9 +1421,19 @@ export default Vue.extend({
 
       let _this = this;
 
+      bus.$emit('addFilterToSearch', inbox_name);
+
       _this.$store.dispatch("set_email_html_body",'');
       _this.$store.dispatch("set_email_data",'');
       _this.$store.dispatch("set_email_rowData",'');
+
+      //remove this if category is now working
+      const categoryOptions = ['SOCIAL', 'UPDATES', 'FORUMS', 'PROMOTIONS']
+
+      if(categoryOptions.includes(inbox_name)){
+        return;
+      }
+      /***************************************/
 
       _this.ref_headerTemplate.show_loading = true;
       _this.ref_headerTemplate.loading = true;
