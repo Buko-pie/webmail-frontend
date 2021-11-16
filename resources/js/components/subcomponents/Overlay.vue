@@ -39,7 +39,7 @@
             :allowEditTags="true"
             placeholder=""
             :autocomplete-items="autocompleteItems"
-            @input="getEmails"
+            @input="getEmails(email_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
@@ -61,6 +61,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails(cc_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="cc_address_tags_new"
@@ -77,6 +79,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails(bcc_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="bcc_address_tags_new"
@@ -186,7 +190,8 @@ export default Vue.extend({
       bcc_address_tags: [],
       bcc_addresses: null,
 
-      autocompleteItems:[]
+      autocompleteItems:[],
+      debounce: null,
 
     }
   },
@@ -482,9 +487,12 @@ export default Vue.extend({
       });
     },
 
-    getEmails(){
+    getEmails(value){
       this.autocompleteItems = []
       const _this = this
+
+      clearTimeout(this.debounce);
+      this.debounce = setTimeout(() => {
       axios.get(this.routes.getEmails,
       {
         headers: {
@@ -496,29 +504,20 @@ export default Vue.extend({
 
         const emails = response.data.emails;
         var results = []
-        
-        // for(var i=0; i<emails.length; i++) {
-        //   for(key in emails[i]) {
-        //     if(emails[i][key].indexOf(_this.email_address_tag)!=-1) {
-        //       results.push(emails[i]);
-        //     }
-        //   }
-        // }
 
         var address = Object.values(emails)
 
-        console.log(address)
-
-        results = address.filter(element => element.includes(_this.email_address_tag))
+        results = address.filter(element => element.includes(value))
         _this.autocompleteItems = []
         for (let x in results) {
           _this.autocompleteItems.push({text:results[x]})
         }
 
       }).catch(error => {
-        console.log(error);
         this.$notification.error("Something went wrong", {  timer: 5 });
       })
+
+      }, 600);
     }
   }
 });
