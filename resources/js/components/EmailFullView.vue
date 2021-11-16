@@ -286,12 +286,17 @@
       <div id="email_actions" :class="[ (email_body_html && !show_reply) ? 'block' : 'hidden']" class="flex mt-10 pt-2">
         <div class="m-2">
           <div @click="hideShowCompose(); replyEmail();" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-            <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-reply pr-2"></i> Reply</p>
+            <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-reply pr-2"></i> Reply</p>
+          </div>
+        </div>
+        <div class="m-2"  v-show="show_reply_all == true">
+          <div @click="hideShowCompose(); replyAllEmail();" class="flex bg-white mb-4 border rounded-lg w-25 h-10 cursor-pointer">
+            <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-reply-all pr-2"></i> Reply All</p>
           </div>
         </div>
         <div class="m-2">
           <div @click="hideShowCompose(); forwardEmail();" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-            <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
+            <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
           </div>
         </div>
       </div>
@@ -312,9 +317,9 @@
                     :save-on-key="[13, 32]"
                     :allowEditTags="true"
                     placeholder=""
+                    @tags-changed="email_address_tags_new"
                     @before-adding-tag="email_address_tags_add_class"
                     @before-saving-tag="email_address_tags_edit"
-                    @tags-changed="email_address_tags_new"
                   />
                 </div>
 
@@ -329,8 +334,8 @@
                     :save-on-key="[13, 32]"
                     :allowEditTags="true"
                     placeholder=""
-                    @before-adding-tag="email_address_tags_add_class"
-                    @before-saving-tag="email_address_tags_edit"
+                    @before-adding-tag="cc_email_address_tags_add_class"
+                    @before-saving-tag="cc_email_address_tags_edit"
                     @tags-changed="cc_address_tags_new"
                   />
                 </div>
@@ -346,8 +351,8 @@
                     :save-on-key="[13, 32]"
                     :allowEditTags="true"
                     placeholder=""
-                    @before-adding-tag="email_address_tags_add_class"
-                    @before-saving-tag="email_address_tags_edit"
+                    @before-adding-tag="bcc_email_address_tags_add_class"
+                    @before-saving-tag="bcc_email_address_tags_edit"
                     @tags-changed="bcc_address_tags_new"
                   />
                 </div>
@@ -424,7 +429,7 @@ function formatDate(date) {
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(email);
+  return re.test(email.trim());
 }
 
 function validateEmails(emailArray){
@@ -472,6 +477,7 @@ export default Vue.extend({
       is_starred: false,
       email_action: null,
       show_reply: false,
+      show_reply_all: false,
       show_attachment: false,
       email_date_display: null,
       email_address_tag: "",
@@ -492,9 +498,10 @@ export default Vue.extend({
       time_duration: null,
       emailOpts:[
         { id: 0, text: "Reply" },
-        { id: 1, text: "Forward" },
-        { id: 2, text: "Delete this message" },
-        { id: 3, text: "Mark as unread" }
+        { id: 1, text: "Reply All" },
+        { id: 2, text: "Forward" },
+        { id: 3, text: "Delete this message" },
+        { id: 4, text: "Mark as unread" }
       ],
 
       //Header template data
@@ -615,10 +622,45 @@ export default Vue.extend({
         this.show_reply = false;
         this.email_action = null;
         let data = this.$store.state.selected_email_data
+        console.log('email_data');
+        console.log(data);
 
         if(data !== null){
           this.email_date_display = formatDate(data.date);
           this.time_duration = moment(data.date, "YYYYMMDDhhmmss").fromNow();
+
+          if(data.recipients.length == 1 && data.cc != null){ //1 recipient plus cc emails
+              this.show_reply_all = true;
+          }else if( data.recipients.length == 0 && data.cc != null){ //no recipient, more than 1 cc
+          console.log(data.cc.match(/,/g).length);
+              if(data.cc.match(/,/g).length >= 1)
+                this.show_reply_all = true;
+              }else{
+                this.show_reply_all = false;
+              }
+          }else if(data.recipients.length > 1){ //more than 1 recipient
+              this.show_reply_all = true;
+          }else{
+              this.show_reply_all = false;
+          }
+
+          if(this.show_reply_all){
+              this.emailOpts = [
+                { id: 0, text: "Reply" },
+                { id: 1, text: "Reply All" },
+                { id: 2, text: "Forward" },
+                { id: 3, text: "Delete this message" },
+                { id: 4, text: "Mark as unread" }
+              ];
+
+          }else{
+              this.emailOpts = [
+                { id: 0, text: "Reply" },
+                { id: 2, text: "Forward" },
+                { id: 3, text: "Delete this message" },
+                { id: 4, text: "Mark as unread" }
+              ];
+          
         }
 
         return data;
@@ -737,6 +779,7 @@ export default Vue.extend({
       this.add_cc = false;
       this.add_bcc = false;
       let data = this.email_data;
+      let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
 
       if(data !== null){
 
@@ -760,6 +803,102 @@ export default Vue.extend({
 
       }
       
+      this.reply_content = "<div><br></div><div><br></div>" +
+        "<div class='gmail_quote'>" +
+          "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"'>" + from_email + "</a>> wrote:</div>" +
+          "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+            this.email_body_html +
+          "</blockquote>" +  
+        "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.reply_content.setContent(this.reply_content);
+      }, 200);
+
+      setTimeout(function() {
+        _this.scrollToEnd();
+      }, 0);
+      
+    },
+
+    replyAllEmail(){
+      let _this = this;
+      this.show_reply = true;
+      this.email_action = "reply_all_email";
+      this.add_cc = true;
+      this.add_bcc = true;
+      let data = this.email_data;
+      let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
+      this.change_subj = false;
+
+      if(data !== null){
+
+      //initialize addresses
+      this.email_addresses = null;
+      
+        if(this.current_inbox.name === "SENT"){
+          let reply_address = data.to.email ? data.to.email : data.to.name;
+          this.email_addresses = [reply_address];
+
+          this.email_address_tags = [{
+            text: reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+
+        }else{
+          let reply_address = data.from.email ? data.from.email : data.from.name;
+          this.email_addresses = [reply_address];
+
+          this.email_address_tags = [{
+            text: reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+        }
+        console.log('reply to:');
+        console.log(this.email_addresses);
+
+        if(data.cc != null){
+
+          const cc_addresses_split = data.cc.split(",");
+          this.cc_addresses = [];
+          this.cc_address_tags = [];
+          cc_addresses_split.forEach(element => {
+            console.log(element);
+            this.cc_addresses.push(element.trim());
+
+            this.cc_address_tags.push({
+                  text: element.trim(),
+                  classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+                });
+            });
+          
+          console.log(this.cc_addresses);
+        }    
+      }
+
+      if(data.cc != null){
+          this.reply_content = "<div><br></div><div><br></div>" +
+          "<div class='gmail_quote'>" +
+            "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"?cc="+ data.cc +"'>" + from_email + "</a>> wrote:</div>" +
+            "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+              this.email_body_html +
+            "</blockquote>" +  
+          "</div>";
+      }else{
+          this.reply_content = "<div><br></div><div><br></div>" +
+          "<div class='gmail_quote'>" +
+            "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"'>" + from_email + "</a>> wrote:</div>" +
+            "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+              this.email_body_html +
+            "</blockquote>" +  
+          "</div>";
+      }
+      
+      
+      setTimeout(()=>{
+        this.$refs.reply_content.setContent(this.reply_content);
+      }, 200);
+
       setTimeout(function() {
         _this.scrollToEnd();
       }, 0);
@@ -808,6 +947,11 @@ export default Vue.extend({
     email_address_tags_add_class(args){
       if(validateEmail(args.tag.text)){
         args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.email_addresses == null){
+              this.email_addresses = [this.email_address_tag];
+        }else{
+              this.email_addresses.push(this.email_address_tag);
+        }
       }else{
         args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
       }
@@ -825,34 +969,89 @@ export default Vue.extend({
       args.saveTag();
     },
 
-    email_address_tags_new(tags){
-      let tags_text = [];
+    cc_email_address_tags_add_class(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.cc_addresses == null){
+              this.cc_addresses = [this.cc_address_tag];
+        }else{
+              this.cc_addresses.push(this.cc_address_tag);
+        }
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
-
-      this.email_addresses = tags_text;
+      args.addTag();
     },
 
-    cc_address_tags_new(tags){
-      let tags_text = [];
+    cc_email_address_tags_edit(args){
+      console.log('edit');
+       console.log(args)
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
-
-      this.cc_addresses = tags_text;
+      args.saveTag();
     },
 
-    bcc_address_tags_new(tags){
-      let tags_text = [];
+    bcc_email_address_tags_add_class(args){
+       console.log('add');
+      console.log(args);
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+        if(this.bcc_addresses == null){
+              this.bcc_addresses = [this.bcc_address_tag];
+        }else{
+              this.bcc_addresses.push(this.bcc_address_tag);
+        }
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
 
-      tags.forEach(tag => {
-        tags_text.push(tag.text);
-      });
+      args.addTag();
+    },
 
-      this.bcc_addresses = tags_text;
+    bcc_email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+
+      args.saveTag();
+    },
+
+
+    email_address_tags_new(){
+      if(this.email_address_tag != '' && validateEmail(this.email_address_tag)){
+        if(this.email_addresses == null){
+              this.email_addresses = [this.email_address_tag];
+        }else{
+              this.email_addresses.push(this.email_address_tag);
+        }
+      }
+    },
+
+    cc_address_tags_new(){
+      if(this.cc_address_tag != '' && validateEmail(this.cc_address_tag)){
+        if(this.cc_addresses == null){
+              this.cc_addresses = [this.cc_address_tag];
+        }else{
+              this.cc_addresses.push(this.cc_address_tag);
+        }
+      }
+    },
+
+    bcc_address_tags_new(){
+      if(this.bcc_address_tag != '' && validateEmail(this.bcc_address_tag)){
+        if(this.bcc_addresses == null){
+              this.bcc_addresses = [this.bcc_address_tag];
+        }else{
+              this.bcc_addresses.push(this.bcc_address_tag);
+        }
+      }
     },
 
     sendReply(){
@@ -868,6 +1067,10 @@ export default Vue.extend({
         files = this.$refs.ejs_uploader_reply.getFilesData();
       }
       let attachments = [];
+
+      this.email_address_tags_new();
+      this.cc_address_tags_new();
+      this.bcc_address_tags_new();
 
       if(this.email_addresses !== null){
         invalid_emails = validateEmails(this.email_addresses);
@@ -913,7 +1116,7 @@ export default Vue.extend({
 
       axios.post(this.routes.send_mail, data)
           .then((response) => {
-            let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Forwarded";
+            let message = (_this.email_action === "reply_email" || _this.email_action === "reply_all_email") ? "Reply Sent" : "Email Forwarded";
             _this.$notification.success(message, {  timer: 5 });
             this.show_reply = false;
           }).catch(error => {
@@ -969,7 +1172,7 @@ export default Vue.extend({
         _this.ref_inboxDisplay.soft_refresh();
       }).catch(error => {
         console.log(error);
-        _this.$notification.error("somthing went wrong", {  timer: 5 });
+        _this.$notification.error("something went wrong", {  timer: 5 });
       });
     },
 
@@ -987,7 +1190,7 @@ export default Vue.extend({
         _this.ref_inboxDisplay.soft_refresh();
       }).catch(error => {
         console.log(error);
-        _this.$notification.error("somthing went wrong", {  timer: 5 });
+        _this.$notification.error("something went wrong", {  timer: 5 });
       });
     },
 
@@ -1001,12 +1204,17 @@ export default Vue.extend({
           break;
 
         case 1:
+          //Reply All
+          this.replyAllEmail();
+          break;
+
+        case 2:
           //Forward
           this.hideShowCompose();
           this.forwardEmail();
           break;
 
-        case 2:
+        case 3:
           //Delete this message
           
           let params = {
@@ -1021,11 +1229,11 @@ export default Vue.extend({
             _this.ref_headerTemplate.refreshInbox();
           }).catch(error => {
             console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
+            _this.$notification.error("something went wrong", {  timer: 5 });
           });
           break;
 
-        case 3:
+        case 4:
           //Mark as unread
           let params_ = {
             column: "read",
@@ -1040,12 +1248,12 @@ export default Vue.extend({
             _this.ref_inboxDisplay.soft_refresh();
           }).catch(error => {
             console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
+            _this.$notification.error("something went wrong", {  timer: 5 });
           });
           break;
       
         default:
-          this.$notification.error("somthing went wrong", {  timer: 5 });
+          this.$notification.error("something went wrong", {  timer: 5 });
           break;
       }
     },
