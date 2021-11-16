@@ -72,12 +72,17 @@
   <div v-if="email_body_html && !show_reply" id="email_actions" class="flex mt-10 pt-2">
     <div class="m-2">
       <div @click="replyEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-reply pr-2"></i> Reply</p>
+        <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-reply pr-2"></i> Reply</p>
       </div>
     </div>
-    <div class="m-2">
+  <div class="m-2" v-show="show_reply_all == true">
+      <div @click="replyAllEmail" class="flex bg-white mb-4 border rounded-lg w-25 h-10 cursor-pointer">
+        <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-reply-all pr-2"></i> Reply All</p>
+      </div>
+  </div>
+  <div class="m-2">
       <div @click="forwardEmail" class="flex bg-white mb-4 border rounded-lg w-24 h-10 cursor-pointer">
-        <p class="flex font-bold px-3 py-5 w-40 items-center justify-center text-sm"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
+        <p class="flex font-bold px-3 py-5 w-35 items-center justify-center text-sm"><i class="fas fa-arrow-right pr-2"></i> Forward</p>
       </div>
     </div>
   </div>
@@ -197,7 +202,7 @@ function formatDate(date) {
 
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(email);
+  return re.test(email.trim());
 }
 
 function validateEmails(emailArray){
@@ -237,6 +242,7 @@ export default Vue.extend({
       email_subject: null,
       change_subj: false,
       show_reply: false,
+      show_reply_all: false,
       show_attachment: false,
       reply_address: null,
       reply_content: null,
@@ -259,12 +265,14 @@ export default Vue.extend({
       time_duration: null,
       emailOpts:[
         { id: 0, text: "Reply" },
-        { id: 1, text: "Forward" },
-        { id: 2, text: "Delete this message" },
-        { id: 3, text: "Mark as unread" }
+        { id: 1, text: "Reply All" },
+        { id: 2, text: "Forward" },
+        { id: 3, text: "Delete this message" },
+        { id: 4, text: "Mark as unread" }
       ],
       items:[
         { text: "Reply",  iconCss: "fas fa-reply" },
+        { text: "Reply All",  iconCss: "fas fa-reply-all" },
         { text: "Forward", iconCss: "fas fa-arrow-right" },
         { text: "Edit Subject" },
         { text: "Pop out reply" },
@@ -332,12 +340,63 @@ export default Vue.extend({
         this.show_reply = false;
         this.email_action = null;
         let data = this.$store.state.selected_email_data
+        console.log('email_data');
+        console.log(data);
+        
 
         if(data !== null){
           this.email_subject = data.subject;
           this.email_date_display = formatDate(data.date);
           this.time_duration = moment(data.date, "YYYYMMDDhhmmss").fromNow();
-        }
+          console.log('len-')
+          console.log(data.recipients.length);
+
+          if(data.recipients.length == 1 && data.cc != null){ //1 recipient plus cc emails
+              this.show_reply_all = true;
+          }else if( data.recipients.length == 0 && data.cc != null){ //no recipient, more than 1 cc
+          console.log(data.cc.match(/,/g).length);
+              if(data.cc.match(/,/g).length >= 1)
+                this.show_reply_all = true;
+              }else{
+                this.show_reply_all = false;
+              }
+          }else if(data.recipients.length > 1){ //more than 1 recipient
+              this.show_reply_all = true;
+          }else{
+              this.show_reply_all = false;
+          }
+
+          if(this.show_reply_all){
+              this.emailOpts = [
+                { id: 0, text: "Reply" },
+                { id: 1, text: "Reply All" },
+                { id: 2, text: "Forward" },
+                { id: 3, text: "Delete this message" },
+                { id: 4, text: "Mark as unread" }
+              ];
+
+              this.items = [
+                { text: "Reply",  iconCss: "fas fa-reply" },
+                { text: "Reply All",  iconCss: "fas fa-reply-all" },
+                { text: "Forward", iconCss: "fas fa-arrow-right" },
+                { text: "Edit Subject" },
+                { text: "Pop out reply" },
+              ];
+          }else{
+              this.emailOpts = [
+                { id: 0, text: "Reply" },
+                { id: 2, text: "Forward" },
+                { id: 3, text: "Delete this message" },
+                { id: 4, text: "Mark as unread" }
+              ];
+
+              this.items = [
+                { text: "Reply",  iconCss: "fas fa-reply" },
+                { text: "Forward", iconCss: "fas fa-arrow-right" },
+                { text: "Edit Subject" },
+                { text: "Pop out reply" },
+              ];
+          }
 
         return data;
       },
@@ -454,6 +513,88 @@ export default Vue.extend({
             this.email_body_html +
           "</blockquote>" +  
         "</div>";
+      
+      setTimeout(()=>{
+        this.$refs.vueditor.setContent(this.reply_content);
+      }, 200);
+
+      setTimeout(function() {
+        _this.scrollToEnd();
+      }, 0);
+      
+    },
+
+    replyAllEmail(){
+      let _this = this;
+      this.show_reply = true;
+      this.email_action = "reply_all_email";
+      this.add_cc = true;
+      this.add_bcc = true;
+      let data = this.email_data;
+      let from_email = this.email_data.from.email !== null ? this.email_data.from.email : this.email_data.from.name;
+      this.change_subj = false;
+
+      if(data !== null){
+
+      //initialize addresses
+      this.email_addresses = null;
+      
+        if(this.current_inbox.name === "SENT"){
+          this.reply_address = data.to.email ? data.to.email : data.to.name;
+          this.email_addresses = [this.reply_address];
+
+          this.email_address_tags = [{
+            text: this.reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+
+        }else{
+          this.reply_address = data.from.email ? data.from.email : data.from.name;
+          this.email_addresses = [this.reply_address];
+
+          this.email_address_tags = [{
+            text: this.reply_address,
+            classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+          }];
+        }
+
+        if(data.cc != null){
+
+          const cc_addresses_split = data.cc.split(",");
+          this.cc_addresses = [];
+          this.cc_address_tags = [];
+          cc_addresses_split.forEach(element => {
+            console.log(element);
+            this.cc_addresses.push(element.trim());
+
+            this.cc_address_tags.push({
+                  text: element.trim(),
+                  classes: "bg-pink-500 rounded-full px-3 justify-center items-center"
+                });
+            });
+          
+          console.log(this.cc_addresses);
+        }    
+      }
+
+      if(data.cc != null){
+          this.reply_content = "<div><br></div><div><br></div>" +
+          "<div class='gmail_quote'>" +
+            "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"?cc="+ data.cc +"'>" + from_email + "</a>> wrote:</div>" +
+            "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+              this.email_body_html +
+            "</blockquote>" +  
+          "</div>";
+      }else{
+          this.reply_content = "<div><br></div><div><br></div>" +
+          "<div class='gmail_quote'>" +
+            "<div dir='ltr'>On " + moment().format("LLLL") + " <<a href='mailto:" + from_email +"'>" + from_email + "</a>> wrote:</div>" +
+            "<blockquote  style='margin: 0px 0px 0px 0.8ex;border-left: 1px solid rgb(204, 204, 204);padding-left: 1ex;'>" +
+              this.email_body_html +
+            "</blockquote>" +  
+          "</div>";
+      }
+      
       
       setTimeout(()=>{
         this.$refs.vueditor.setContent(this.reply_content);
@@ -668,6 +809,9 @@ export default Vue.extend({
         });
       }
 
+      console.log("email" + invalid_emails);
+      console.log("cc" + invalid_ccs);
+      console.log("bcc" + invalid_bccs);
       if(invalid_emails || invalid_ccs || invalid_bccs){
         return alert("invalid email exists!");
       }
@@ -686,18 +830,19 @@ export default Vue.extend({
 
       axios.post(this.routes.send_mail, data)
           .then((response) => {
+            console.log(response);
             let message = "";
             if(_this.change_subj){
               message = "Email Sent";
             }else{
-              message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Forwarded";
+              message = (_this.email_action === "reply_email" || _this.email_action === "reply_all_email") ? "Reply Sent" : "Email Forwarded";
             }
             _this.$notification.success(message, {  timer: 5 });
             this.show_reply = false;
             this.change_subj = false;
           }).catch(error => {
             console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
+            _this.$notification.error("something went wrong", {  timer: 5 });
           });
     },
 
@@ -779,11 +924,16 @@ export default Vue.extend({
           break;
 
         case 1:
+          //Reply All
+          this.replyAllEmail();
+          break;
+
+        case 2:
           //Forward
           this.forwardEmail();
           break;
 
-        case 2:
+        case 3:
           //Delete this message
           
           let params = {
@@ -802,7 +952,7 @@ export default Vue.extend({
           });
           break;
 
-        case 3:
+        case 4:
           //Mark as unread
           let params_ = {
             column: "read",
@@ -837,6 +987,10 @@ export default Vue.extend({
       switch (args.item.text) {
         case "Reply":
           this.replyEmail();
+          break;
+
+        case "Reply All":
+          this.replyAllEmail();
           break;
 
         case "Forward":
@@ -881,7 +1035,7 @@ export default Vue.extend({
           break;
       
         default:
-          console.error("somthing went wrong: drp_down select");
+          console.error("something went wrong: drp_down select");
           break;
       }
     }
