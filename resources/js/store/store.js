@@ -47,6 +47,7 @@ export const store = new Vuex.Store({
     selected_item_unread: 0,
     selected_email_html_body: null,
     selected_email_data: null,
+    email_clicked: false,
     selected_email_rowData: null,
     selected_email_attachments: null,
     splitter_height: null,
@@ -165,6 +166,10 @@ export const store = new Vuex.Store({
 
     set_email_data(state, payload){
       state.selected_email_data = payload;
+    },
+
+    set_email_clicked(state, payload){
+      state.email_clicked = payload;
     },
 
     set_email_rowData(state, payload){
@@ -341,6 +346,10 @@ export const store = new Vuex.Store({
 
     set_email_data(state, payload){
       state.commit("set_email_data", payload);
+    },
+
+    set_email_clicked(state, payload){
+      state.commit("set_email_clicked", payload);
     },
 
     set_email_rowData(state, payload){
