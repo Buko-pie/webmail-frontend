@@ -80,6 +80,8 @@ export default{
         pageSize: 120
       },
       current_selected: [],
+      user_labels_temporary: [],
+      search: "",
       csrf_token: null,
       index: 0,
       max_pages: null,
@@ -104,8 +106,8 @@ export default{
         { id: "mark_read", text: "Mark as read", iconCss: "fas fa-envelope-open-text" },
         { id: "move_to_inbox", text: "Move to Inbox" },
         { id: "delete_forever", text: "Delete Forever" },
-        { id: "move_to", text: "Move To", iconCss: "fas fa-file-export" },
-        { id: "label_as", text: "Label as", iconCss: "fas fa-tag rotate-135", items: [{text: "test"}] }
+        { id: "move_to", text: "Move To", iconCss: "fas fa-file-export", items: [{text: "Label as-----------:"}] },
+        { id: "label_as", text: "Label as", iconCss: "fas fa-tag rotate-135", items: [{text: "Label as-----------:"}] }
       ],
       select_option: null,
       selected_rows: [],
@@ -306,7 +308,15 @@ export default{
 
     user_email(){
       return this.$store.state.user_email;
-    }
+    },
+
+    dropdown_btn_lbl(){
+      return this.$store.state.dropdown_btn_lbl;
+    },
+
+    dropdown_btn_mv(){
+      return this.$store.state.dropdown_btn_mv;
+    },
   },
 
   mounted(){
@@ -710,7 +720,7 @@ export default{
 
     contextMenuOpen(args){
       //On Context Menu Open
-      console.log(args);
+      // console.log(args);
       let contextMenuObj = this.$refs.grid.ej2Instances.contextMenuModule.contextMenu;
       // console.log(contextMenuObj);
       
@@ -735,7 +745,51 @@ export default{
       }else{
 
       }
+      this.$store.dispatch("dropdown_btn_lbl_toggle", false);
+      this.$store.dispatch("dropdown_btn_mv_toggle", false);
+      if(args.parentItem !== null && args.parentItem.properties.text === "Label as"){
+        let _this = this;
+        setTimeout(function() {
+          _this.$eventHub.$emit("show_custom_dropdown", {
+            button: "btn_labels",
+            top: args.element.style.top,
+            left: args.element.style.left
+          });
+
+          setTimeout(function() {
+            _this.$store.dispatch("dropdown_btn_lbl_toggle", !_this.dropdown_btn_lbl);
+            _this.$store.dispatch("set_dropdown_menu_opened", "dropdown_btn_lbl_toggle");
+          }, 0);
+          args.element.innerHTML = "";
+        }, 0.1);
+
+      }
+
+      if(args.parentItem !== null && args.parentItem.properties.text === "Move To"){
+        let _this = this;
+        setTimeout(function() {
+          _this.$eventHub.$emit("show_custom_dropdown", {
+            button: "btn_move",
+            top: args.element.style.top,
+            left: args.element.style.left
+          });
+
+          setTimeout(function() {
+            _this.$store.dispatch("dropdown_btn_mv_toggle", !this.dropdown_btn_mv);
+            _this.$store.dispatch("set_dropdown_menu_opened", "dropdown_btn_mv_toggle");
+          }, 0);
+          args.element.innerHTML = "";
+        }, 0.1);
+
+      }
       
+    },
+
+    searchInput(e) {
+      const value = e.target.value
+      this.search = value
+      const result = this.user_labels.filter(word => word.text.includes(this.search))
+      this.user_labels_temporary = result
     },
 
     rowSelected(args){
