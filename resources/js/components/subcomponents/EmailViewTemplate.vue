@@ -1,15 +1,15 @@
 <template>
 <div id="email_html_body" class="p-5" :start="start" :email_rowData="email_rowData">
-  <div v-if="email_data">
+  <div v-if="email_clicked">
     <div class="flex pb-4 items-center">
       <p class="font-bold text-xl">
-        {{ email_data.subject }}
+        {{ email_rowData.message }}
       </p>
       <div @click="importantEmail" class="object-none content-center m-2 cursor-pointer">
         <img :src="[is_important ? '/images/label_important_yellow_20dp.png' : '/images/label_important_black_20dp.png']" alt="important icon">
       </div>
-
-      <p v-for="label_id in email_data.labels" :key="label_id">
+      
+      <p v-for="label_id in email_rowData.labels" :key="label_id">
         <span v-if="user_labels_keyed[label_id]" class="px-2 py-1 mr-2 font-medium text-xs" :style="{ 'color': user_labels_keyed[label_id].color.textColor, 'background-color': user_labels_keyed[label_id].color.backgroundColor}">
           {{ user_labels_keyed[label_id].name }}
         </span>
@@ -24,17 +24,17 @@
     <div class="flex">
       <div>
         <p class="font-bold text-base">
-        {{ email_data.from.name }} 
-          <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span>
+        {{ email_rowData.sender_info.name }} 
+          <span class="text-gray-500 text-sm font-light">{{ email_rowData.sender_info.email ? "&lt;" + email_rowData.sender_info.email + "&gt;" : "" }}</span>
         </p>
         <p>
-          {{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}{{ email_data.cc ? ", " + email_data.cc : ""}}
+          {{ email_rowData.receiver === user_email ? "to me" : "to " + email_rowData.receiver }}{{ email_rowData.cc_info ? ", " + email_rowData.cc_info : ""}}
           <ejs-button ref="btn_email_data" @click.native="btnViewEmailData" iconCss="fas fa-caret-down" cssClass="e-round shadow-none" class=""></ejs-button>
         </p>
         
       </div>
 
-      <div class="ml-auto">
+      <div class="ml-auto" v-if="email_data">
         <p>
           {{ email_date_display }}
           <span>({{ time_duration }})</span>
@@ -344,6 +344,10 @@ export default Vue.extend({
       set(new_data){
         return this.$store.dispatch('set_email_data', new_data);
       },
+    },
+
+    email_clicked() {
+      return this.$store.state.email_clicked
     },
 
     email_rowData(){

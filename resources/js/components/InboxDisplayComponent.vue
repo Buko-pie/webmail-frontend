@@ -486,63 +486,11 @@ export default{
         break;
 
         case "Mark as unread":// MARK AS UNREAD
-          axios.get(_this.routes.toggle_route, {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + this.csrf_token,
-              "X-CSRF-TOKEN": this.csrf_token
-            },
-            params: {
-              column: "read",
-              id: args.rowInfo.rowData.id,
-              value: false
-            }
-          }).then(function (response) {
-
-            // _this.viewData[args.rowInfo.rowIndex].read = false;
-
-            _this.$store.dispatch("modify_email_batch", {
-              index: args.rowInfo.rowIndex,
-              property: "read",
-              value: false
-            });
-
-            args.rowInfo.row.classList.add("font-black");
-
-          }).catch(error => {
-            console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
+          this.selectedItemsTo(1, this.$store.state.selected_items_dataID, this.$store.state.routes, args);
         break;
 
         case "Mark as read":// MARK AS READ
-          axios.get(_this.routes.toggle_route, {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + this.csrf_token,
-              "X-CSRF-TOKEN": this.csrf_token
-            },
-            params: {
-              column: "read",
-              id: args.rowInfo.rowData.id,
-              value: true
-            }
-          }).then(function (response) {
-            console.log(response.data);
-            // _this.viewData[args.rowInfo.rowIndex].read = true;
-
-            _this.$store.dispatch("modify_email_batch", {
-              index: args.rowInfo.rowIndex,
-              property: "read",
-              value: true
-            });
-
-            args.rowInfo.row.classList.remove("font-black");
-
-          }).catch(error => {
-            console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
+          this.selectedItemsTo(0, this.$store.state.selected_items_dataID, this.$store.state.routes, args);
         break;
 
         case "Archive":// ARCHIVE EMAIL
@@ -709,6 +657,8 @@ export default{
 
       let _this = this;
       if(args.cellIndex > 3 && args.cellIndex < 11){
+        this.$store.dispatch("set_email_rowData", args.rowData)
+        this.$store.dispatch("set_email_clicked", true)
         axios.get(_this.routes.toggle_route, {
           headers: {
             "Content-Type": "application/json",
@@ -734,7 +684,7 @@ export default{
           args.row.classList.remove("font-black");
           _this.$store.dispatch("set_email_html_body", response.data.bodyHtml);
           _this.$store.dispatch("set_email_data", response.data.email_data);
-          _this.$store.dispatch("set_email_rowData", args.rowData);
+          // _this.$store.dispatch("set_email_rowData", args.rowData);
 
           if(response.data.attachments_files.length > 0){
             let files = [];
