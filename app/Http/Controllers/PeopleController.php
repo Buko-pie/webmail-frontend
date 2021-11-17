@@ -31,13 +31,19 @@ class PeopleController extends Controller
     if(isset($request['query'])){
       $pageSize = $request->pageSize ?? 50;
       $optParams = array(
-        'query'    => $request->query,
+        'query'    => $request['query'],
         'pageSize' => $pageSize,
         'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
       );
 
-      $result =  LaravelGmail::people()->search($optParams);
-      return response()->json($result, 200);
+      $results =  LaravelGmail::people()->search($optParams);
+
+      $emails = array();
+
+      foreach($results as $result){
+        array_push($emails, $result->person->emailAddresses[0]->value);
+      }
+      return response()->json($emails, 200);
     }else{
       return response()->json("Query Empty", 500);
     }

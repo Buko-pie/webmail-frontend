@@ -38,6 +38,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails(email_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
@@ -59,6 +61,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails(cc_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="cc_address_tags_new"
@@ -75,6 +79,8 @@
             :save-on-key="[13, 32]"
             :allowEditTags="true"
             placeholder=""
+            :autocomplete-items="autocompleteItems"
+            @input="getEmails(bcc_address_tag)"
             @before-adding-tag="email_address_tags_add_class"
             @before-saving-tag="email_address_tags_edit"
             @tags-changed="bcc_address_tags_new"
@@ -184,6 +190,9 @@ export default Vue.extend({
       bcc_address_tags: [],
       bcc_addresses: null,
 
+      autocompleteItems:[],
+      debounce: null,
+
     }
   },
 
@@ -199,6 +208,7 @@ export default Vue.extend({
   },
 
   mounted(){
+
     if(this.email_action === "reply_email" && this.reply_to_email !== null){
       this.reply_method();
     }else if(this.email_action === "reply_all_email" && this.reply_to_email !== null){
@@ -467,15 +477,55 @@ export default Vue.extend({
       }
 
       axios.post(this.routes.send_mail, data)
-          .then((response) => {
-            let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
-            _this.$notification.success(message, {  timer: 5 });
-            this.close_overlay();
-          }).catch(error => {
-            console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
-          });
+      .then((response) => {
+        let message = _this.email_action === "reply_email" ? "Reply Sent" : "Email Sent";
+        _this.$notification.success(message, {  timer: 5 });
+        this.close_overlay();
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("something went wrong", {  timer: 5 });
+      });
     },
+
+    getEmails(value){
+      this.autocompleteItems = []
+      const _this = this
+
+      clearTimeout(this.debounce);
+      this.debounce = setTimeout(() => {
+      axios.get(this.routes.getContactSearch,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          pageSize: 50,
+          query: value
+          // pageToken: '',
+          // requestSyncToken: '',
+          // syncToken:''
+        },
+      }).then(function(response){
+
+        const emails = response.data;
+        var results = []
+
+        var address = Object.values(emails)
+
+        results = address.filter(element => element.includes(value))
+        _this.autocompleteItems = []
+        for (let x in results) {
+          _this.autocompleteItems.push({text:results[x]})
+        }
+
+      }).catch(error => {
+        this.$notification.error("Something went wrong", {  timer: 5 });
+      })
+
+      }, 500);
+    }
   }
 });
 </script>
