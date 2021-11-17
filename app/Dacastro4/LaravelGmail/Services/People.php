@@ -9,8 +9,7 @@ use Google_Service_PeopleService;
 
 class People
 {
-  public $people;
-  public $peopleService;
+  public $service;
 
 	public $client;
 
@@ -32,15 +31,15 @@ class People
     $this->service = new Google_Service_PeopleService($client);
 	}
 
-  public function list()
+  public function list(Array $optParams)
   {
-    $optParams = array(
-      'pageSize' => 50,
-      'readMask' => 'names,emailAddresses',
-    );
-
-    // return $this->client->getToken();
     $result = $this->service->otherContacts->listOtherContacts($optParams);
+    return response()->json($result, 200);
+  }
+
+  public function search(Array $optParams)
+  {
+    $result = $this->service->otherContacts->search($optParams);
     return response()->json($result, 200);
   }
 
