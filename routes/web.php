@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebmailController;
 use App\Http\Controllers\DataController;
+use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\AccountsController;
 
 /*
@@ -47,6 +48,8 @@ Route::get('/ids', [DataController::class, 'ids'])->name('ids');
 Route::get('/emailView/{id}', [DataController::class, 'emailView'])->name('emailView');
 Route::get('/get_email_htmlBody', [DataController::class, 'get_email_htmlBody'])->name('get_email_htmlBody');
 Route::get('/get_emails', [DataController::class, 'getEmails'])->name('get_emails');
+Route::get('/contacts/list', [PeopleController::class, 'list'])->name('contacts_list');
+Route::get('/contacts/search', [PeopleController::class, 'search'])->name('contacts_search');
 
 Route::get('/gmailAPItest', function () {
   return view('gmailAPItest');
