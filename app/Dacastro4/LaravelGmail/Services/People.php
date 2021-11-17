@@ -3,17 +3,14 @@
 namespace App\Dacastro4\LaravelGmail\Services;
 
 use App\Dacastro4\LaravelGmail\LaravelGmailClass;
-use Google_Service_PeopleService_Resource_People;
-use Google_Service_Gmail;
-use Google_Service_Gmail_BatchModifyMessagesRequest;
-use Google_Service_Gmail_BatchDeleteMessagesRequest;
-use Google_Service_Gmail_Label;
+use Google_Service_PeopleService;
+
 
 
 class People
 {
-
-	public $service;
+  public $people;
+  public $peopleService;
 
 	public $client;
 
@@ -32,7 +29,19 @@ class People
 	public function __construct(LaravelGmailClass $client)
 	{
 		$this->client = $client;
-		$this->service = new Google_Service_PeopleService_Resource_People($client);
+    $this->service = new Google_Service_PeopleService($client);
 	}
+
+  public function list()
+  {
+    $optParams = array(
+      'pageSize' => 50,
+      'readMask' => 'names,emailAddresses',
+    );
+
+    // return $this->client->getToken();
+    $result = $this->service->otherContacts->listOtherContacts($optParams);
+    return response()->json($result, 200);
+  }
 
 }
