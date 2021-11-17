@@ -21,18 +21,25 @@ class PeopleController extends Controller
       'syncToken'         => $syncToken,
       'readMask'          => 'names,emailAddresses,phoneNumbers,metadata',
     );
-    return LaravelGmail::people()->list($optParams);
+
+    $result =  LaravelGmail::people()->search($optParams);
+    return response()->json($result, 200);
   }
 
   public function search(Request $request)
   {
-    $pageSize = $request->pageSize ?? 50;
-    $optParams = array(
-      'query'    => $request->query,
-      'pageSize' => $pageSize,
-      'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
-    );
+    if(isset($request['query'])){
+      $pageSize = $request->pageSize ?? 50;
+      $optParams = array(
+        'query'    => $request->query,
+        'pageSize' => $pageSize,
+        'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
+      );
 
-    return LaravelGmail::people()->search($optParams);
+      $result =  LaravelGmail::people()->search($optParams);
+      return response()->json($result, 200);
+    }else{
+      return response()->json("Query Empty", 500);
+    }
   }
 }
