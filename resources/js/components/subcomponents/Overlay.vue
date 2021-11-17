@@ -493,12 +493,19 @@ export default Vue.extend({
 
       clearTimeout(this.debounce);
       this.debounce = setTimeout(() => {
-      axios.get(this.routes.getEmails,
+      axios.get(this.routes.getContactSearch,
       {
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + this.csrf_token,
           "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          pageSize: 50,
+          query: value
+          // pageToken: '',
+          // requestSyncToken: '',
+          // syncToken:''
         },
       }).then(function(response){
 
@@ -512,6 +519,8 @@ export default Vue.extend({
         for (let x in results) {
           _this.autocompleteItems.push({text:results[x]})
         }
+
+        console.log(emails)
 
       }).catch(error => {
         this.$notification.error("Something went wrong", {  timer: 5 });

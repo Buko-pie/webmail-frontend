@@ -881,7 +881,9 @@ export default Vue.extend({
         ids:                  this.url_base + "/ids",
         emailView:            this.url_base + "/emailView/",
         getHtmlBody:          this.url_base + "/get_email_htmlBody/",
-        getEmails:            this.url_base + "/get_emails"
+        getEmails:            this.url_base + "/get_emails",
+        getContactList:       this.url_base + "/contacts/list",
+        getContactSearch:     this.url_base + "/contacts/search"
       };
 
       this.$store.dispatch("set_routes", routes);

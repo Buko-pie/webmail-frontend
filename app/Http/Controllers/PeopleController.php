@@ -21,7 +21,10 @@ class PeopleController extends Controller
       'syncToken'         => $syncToken,
       'readMask'          => 'names,emailAddresses,phoneNumbers,metadata',
     );
-    return LaravelGmail::people()->list($optParams);
+
+    return response()->json([
+      'emails'=>LaravelGmail::people()->list($optParams)
+    ], 200);
   }
 
   public function search(Request $request)
@@ -33,6 +36,8 @@ class PeopleController extends Controller
       'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
     );
 
-    return LaravelGmail::people()->search($optParams);
+    return response()->json([
+      'emails'=> LaravelGmail::people()->search($optParams)
+    ], 200);
   }
 }
