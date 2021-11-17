@@ -33,14 +33,12 @@ class People
 
   public function list(Array $optParams)
   {
-    $result = $this->service->otherContacts->listOtherContacts($optParams);
-    return response()->json($result, 200);
+    return $this->service->otherContacts->listOtherContacts($optParams);
   }
 
   public function search(Array $optParams)
   {
-    $result = $this->service->otherContacts->search($optParams);
-    return response()->json($result, 200);
+    return $this->service->otherContacts->search($optParams);
   }
 
 }

@@ -22,22 +22,24 @@ class PeopleController extends Controller
       'readMask'          => 'names,emailAddresses,phoneNumbers,metadata',
     );
 
-    return response()->json([
-      'emails'=>LaravelGmail::people()->list($optParams)
-    ], 200);
+    $result =  LaravelGmail::people()->search($optParams);
+    return response()->json($result, 200);
   }
 
   public function search(Request $request)
   {
-    $pageSize = $request->pageSize ?? 50;
-    $optParams = array(
-      'query'    => $request->query,
-      'pageSize' => $pageSize,
-      'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
-    );
+    if(isset($request['query'])){
+      $pageSize = $request->pageSize ?? 50;
+      $optParams = array(
+        'query'    => $request->query,
+        'pageSize' => $pageSize,
+        'readMask' => 'names,emailAddresses,phoneNumbers,metadata',
+      );
 
-    return response()->json([
-      'emails'=> LaravelGmail::people()->search($optParams)
-    ], 200);
+      $result =  LaravelGmail::people()->search($optParams);
+      return response()->json($result, 200);
+    }else{
+      return response()->json("Query Empty", 500);
+    }
   }
 }
