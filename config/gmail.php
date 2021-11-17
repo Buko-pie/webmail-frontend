@@ -56,7 +56,11 @@ return [
 	*/
 
 	'additional_scopes' => [
-
+    'https://www.googleapis.com/auth/contacts',
+    'https://www.googleapis.com/auth/contacts.other.readonly',
+    'https://www.googleapis.com/auth/user.addresses.read',
+    'https://www.googleapis.com/auth/user.emails.read',
+    'https://www.googleapis.com/auth/user.phonenumbers.read'
 	],
 
 	'access_type' => 'offline',
