@@ -509,7 +509,7 @@ export default Vue.extend({
         },
       }).then(function(response){
 
-        const emails = response.data.emails;
+        const emails = response.data;
         var results = []
 
         var address = Object.values(emails)
@@ -520,13 +520,11 @@ export default Vue.extend({
           _this.autocompleteItems.push({text:results[x]})
         }
 
-        console.log(emails)
-
       }).catch(error => {
         this.$notification.error("Something went wrong", {  timer: 5 });
       })
 
-      }, 600);
+      }, 500);
     }
   }
 });
