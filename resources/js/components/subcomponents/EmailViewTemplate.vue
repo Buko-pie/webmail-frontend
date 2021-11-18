@@ -339,7 +339,7 @@ export default Vue.extend({
       get(){
         this.show_reply = false;
         this.email_action = null;
-        let data = this.$store.state.selected_email_data
+        let data = this.$store.state.selected_email_data;
         console.log('email_data');
         console.log(data);
         
@@ -348,14 +348,14 @@ export default Vue.extend({
           this.email_subject = data.subject;
           this.email_date_display = formatDate(data.date);
           this.time_duration = moment(data.date, "YYYYMMDDhhmmss").fromNow();
-          console.log('len-')
+          console.log('len-');
           console.log(data.recipients.length);
 
           if(data.recipients.length == 1 && data.cc != null){ //1 recipient plus cc emails
               this.show_reply_all = true;
           }else if( data.recipients.length == 0 && data.cc != null){ //no recipient, more than 1 cc
           console.log(data.cc.match(/,/g).length);
-              if(data.cc.match(/,/g).length >= 1)
+              if(data.cc.match(/,/g).length >= 1){
                 this.show_reply_all = true;
               }else{
                 this.show_reply_all = false;
@@ -397,7 +397,7 @@ export default Vue.extend({
                 { text: "Pop out reply" },
               ];
           }
-
+        }
         return data;
       },
       set(new_data){
@@ -410,6 +410,7 @@ export default Vue.extend({
     },
 
     email_rowData(){
+       console.log('email_rowData');
       if(this.$store.state.selected_email_rowData){
         this.is_important = this.$store.state.selected_email_rowData.important;
         this.is_starred = this.$store.state.selected_email_rowData.starred;
@@ -971,17 +972,18 @@ export default Vue.extend({
             _this.ref_inboxDisplay.soft_refresh();
           }).catch(error => {
             console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
+            _this.$notification.error("something went wrong", {  timer: 5 });
           });
           break;
       
         default:
-          this.$notification.error("somthing went wrong", {  timer: 5 });
+          this.$notification.error("something went wrong", {  timer: 5 });
           break;
       }
     },
 
     emailView(){
+      console.log('emailView');
       this.viewEmailFull = true;
     },
 
