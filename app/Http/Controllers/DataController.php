@@ -685,6 +685,11 @@ class DataController extends Controller {
             $result = 'edit label';
             $response = LaravelGmail::message()->updateLabel($content->label_id, $content->label_name);
             break;
+
+          case 'hide':
+            $result = 'hide label';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->visibility_op);
+            break;
           
           default:
             return response()->json("Empty label query", 404);
