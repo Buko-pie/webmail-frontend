@@ -109,6 +109,21 @@
     
     
     </div>
+    <div 
+      ref="email_option_dropdown"
+      class="custom-dropdown-user bg-white p-3" 
+      :class="[selected_drpdwn === 'emailOptions' ? 'block' : 'hidden']" 
+      :style="{
+        top: dropdown_label.top + 'px', 
+        left: dropdown_label.left + 'px',
+        'z-index': dropdown_zIndex,
+        width: '200px',
+        height: '200px',
+        align: left
+      }"
+    >
+    <ejs-listview :dataSource="emailOpts" :select="moreEmailOpts"></ejs-listview>
+    </div>
     <!-- label drop down -->
     <div 
       v-click-outside="drpdwn_click_out"
@@ -144,7 +159,7 @@
           <span class="e-frame e-icons e-uncheck"></span>
           <span class="e-label"> </span>
         </div>
-        <ejs-dropdownbutton :items="drop_down_items" :select="dropDownSelect" class="absolute left-5 pl-0 py-1 pr-1.5"></ejs-dropdownbutton>
+        <ejs-dropdownbutton :items="drop_down_items" :select="dropDownSelect" class="absolute left-5 pl-0 py-1 pr-1.5">3</ejs-dropdownbutton>
       </div>
       <div class="pl-5 flex">
         <div :class="{'hidden': items_selected}" class="flex">
@@ -199,7 +214,7 @@
 
           <div class="px-2 flex">
             <!-- Button More  -->
-             <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected_" iconCss="fas fa-ellipsis-v" cssClass="e-round e-caret-hide"></ejs-dropdownbutton>
+             <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected_" iconCss="fas fa-ellipsis-v" cssClass="e-round e-caret-hide">2</ejs-dropdownbutton>
               <ejs-listview id="items_selected_" :dataSource="more_items_selected" :select="moreOptions"></ejs-listview>
           </div>
         </div>
@@ -263,7 +278,8 @@
               <span>({{ time_duration }})</span>
               <ejs-button ref="" @click.native="starEmail" :iconCss="[is_starred ? 'fas fa-star text-yellow-500' : 'far fa-star']" cssClass="e-round shadow-none" class=""></ejs-button>
               <ejs-button ref="" @click.native="hideShowCompose(); replyEmail();" iconCss="fas fa-reply" cssClass="e-round shadow-none" class=""></ejs-button>
-              <ejs-dropdownbutton :items="emailOpts" :select="moreEmailOpts" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide"></ejs-dropdownbutton>
+              <!--<ejs-dropdownbutton :items="emailOpts" :select="moreEmailOpts" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none e-caret-hide">1</ejs-dropdownbutton>-->
+              <ejs-button ref="btn_email_ops" @click.native="emailOptions" iconCss="fas fa-ellipsis-v" cssClass="e-round shadow-none" class=""></ejs-button>
             </p>
           </div>
         </div>
@@ -375,7 +391,7 @@
         </div>
         <div v-if="show_attachment" class="col-span-1">
           <div class="border w-full p-3 mt-5">
-            <p class="text-base font-bold"><i class="fas fa-paperclip"></i> Attchments</p>
+            <p class="text-base font-bold"><i class="fas fa-paperclip"></i> Attachments</p>
           </div>
           <ejs-uploader
             ref="ejs_uploader_reply"
@@ -690,9 +706,11 @@ export default Vue.extend({
 
     viewEmailFull:{
       get(){
+        console.log('get new data');
         return this.$store.state.viewEmailFull;
       },
       set(new_data){
+        console.log('set new data');
         return this.$store.dispatch("set_viewEmailFull", new_data);
       }
     },
@@ -720,9 +738,10 @@ export default Vue.extend({
     // this.$refs.header_comp.in_inbox = false;
     // this.$refs.header_comp.read_tgl_button_tt_content = !this.selected_email_rowData.read ? "Mark as read" : "Mark as unread";
     // this.$refs.header_comp.read_tgl_button_icon = !this.selected_email_rowData.read ? "fas fa-envelope-open-text" : "fas fa-envelope";
+    
     this.read_tgl_button_tt_content = !this.selected_email_rowData.read ? "Mark as read" : "Mark as unread";
     this.read_tgl_button_icon = !this.selected_email_rowData.read ? "fas fa-envelope-open-text" : "fas fa-envelope";
-
+    
     console.log("EMAIL FULL VIEW");
   },
 
@@ -732,6 +751,17 @@ export default Vue.extend({
         this.selected_drpdwn = 'email_details';
         this.dropdown_label.top = this.$refs.btn_email_data.$el.getBoundingClientRect().top + 43;
         this.dropdown_label.left = this.$refs.btn_email_data.$el.getBoundingClientRect().left;
+        this.dropdown_zIndex++;
+      }else{
+        this.selected_drpdwn = null;
+      }
+    },
+
+    emailOptions(args){
+      if(!this.selected_drpdwn){
+        this.selected_drpdwn = 'emailOptions';
+        this.dropdown_label.top = this.$refs.btn_email_ops.$el.getBoundingClientRect().top + 43;
+        this.dropdown_label.left = this.$refs.btn_email_ops.$el.getBoundingClientRect().left - 150;
         this.dropdown_zIndex++;
       }else{
         this.selected_drpdwn = null;
@@ -1121,7 +1151,7 @@ export default Vue.extend({
             this.show_reply = false;
           }).catch(error => {
             console.log(error);
-            _this.$notification.error("somthing went wrong", {  timer: 5 });
+            _this.$notification.error("something went wrong", {  timer: 5 });
           });
     },
 
@@ -1195,8 +1225,12 @@ export default Vue.extend({
     },
 
     moreEmailOpts(args){
+      console.log('moreEmailOpts');
+      console.log(args);
+      console.log(args.item.id);
+      console.log(args.item.id.substr(1));
       let _this = this;
-      switch (args.item.id) {
+      switch (parseInt(args.item.id.substr(1))) {
         case 0:
           //Reply
           this.hideShowCompose(); 
@@ -1204,6 +1238,7 @@ export default Vue.extend({
           break;
 
         case 1:
+          console.log('replyAll');
           //Reply All
           this.replyAllEmail();
           break;
@@ -1256,9 +1291,11 @@ export default Vue.extend({
           this.$notification.error("something went wrong", {  timer: 5 });
           break;
       }
+      this.selected_drpdwn = null;
     },
 
     emailView(){
+      console.log("viewEmailFull-popOut");
       this.viewEmailFull = true;
     },
 
