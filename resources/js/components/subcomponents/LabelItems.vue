@@ -81,8 +81,9 @@ export default Vue.extend({
       hovered: false,
       hover_opts: false,
       more_items:[  
-        { id: 0, text: "Edit label" },
-        { id: 1, text: "Delete label" }
+        { id: 0, text: "Hide label" },
+        { id: 1, text: "Edit label" },
+        { id: 2, text: "Delete label" }
       ],
     }
   },
