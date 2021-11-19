@@ -272,29 +272,7 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels" v-if="labels_tree">
-            <!--<a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
-              <div class="sidebar_icons">
-                <i  class="fas fa-tag rotate-135 text-lg" 
-                    :style="{ color: label.color.backgroundColor }"
-                />
-              </div>
-              <p class="sidebar_text" v-show="toggled">{{ label.text }}</p>
-              
-              <div class="flex ml-auto items-center justify-center text-center">
-                <ejs-dropdownbutton v-show="label_hovered === label.id" :items="more_items" :select="label_options" @click.native="selected_label = label" @mouseover.native="mouseHover_labelOpts" @mouseleave.native="mouseLeave_labelOpts" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
-
-                <div v-if="label.messagesUnread > 0" v-show="label_hovered !== label.id" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
-                  <p>{{label.messagesUnread}}</p>
-                </div>
-
-              </div>
-            </a> 
-            <div v-for="(labels, index) in labels_tree" :key="index">
-              <p>{{ index }}</p>
-
-            </div>-->
             <labels-list :items="labels_tree"/>
-            
           </div>
 
           <a @click="modalShow" class="sidebar_items" href="#">
@@ -1721,6 +1699,15 @@ export default Vue.extend({
 
       let data = null;
       switch (args.item.text) {
+        case "Hide label":
+          data = {
+            option: "hide",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          // this.labels_ajax(data);
+          break;
         case "Delete label":
           await this.getIds()
           data = {
