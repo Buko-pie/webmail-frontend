@@ -13,13 +13,19 @@
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
-        <input id="filter_from" v-model="fromText" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
+        <!-- <input id="filter_from" v-model="fromText" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
+
+        <vue-simple-suggest v-model="fromText" :list="autocompleteItems" :styles="autoCompleteStyle" @focus="inputFocus(1)" @blur="inputBlur(1)" @input="getEmails(fromText)"
+        ></vue-simple-suggest>
       </div>
 
       <!-- Filter by Receiver -->
       <div class="flex flex-wrap content-center"><p class="text-sm">To</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[2].is_focused }">
-        <input id="filter_to" v-model="toText" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder="">
+        <!-- <input id="filter_to" v-model="toText" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder=""> -->
+        
+        <vue-simple-suggest v-model="toText" :list="autocompleteItems" :styles="autoCompleteStyle" @focus="inputFocus(2)" @blur="inputBlur(2)" @input="getEmails(toText)"
+        ></vue-simple-suggest>
       </div>
 
       <!-- Filter by Subject -->
@@ -84,6 +90,9 @@
 <script>
 import Vue from "vue";
 import moment from "moment";
+import VueSimpleSuggest from 'vue-simple-suggest'
+import 'vue-simple-suggest/dist/styles.css'
+
 import { TextBoxPlugin } from '@syncfusion/ej2-vue-inputs';
 import { DropDownListPlugin } from "@syncfusion/ej2-vue-dropdowns";
 import { DatePickerPlugin } from "@syncfusion/ej2-vue-calendars";
@@ -96,6 +105,7 @@ Vue.use(DropDownListPlugin);
 Vue.use(DatePickerPlugin);
 Vue.use(CheckBoxPlugin);
 Vue.use(ButtonPlugin);
+Vue.component('vue-simple-suggest', VueSimpleSuggest)
 
 export default Vue.extend({
   name: "SearchBarComponent",
@@ -117,6 +127,15 @@ export default Vue.extend({
       csrf_token:'',
       user_email:'',
       headers:'',
+      autocompleteItems:[],
+      debounce:null,
+      autoCompleteStyle:{
+        vueSimpleSuggest: "auto-suggest",
+        inputWrapper: "e-input e-textbox auto-suggest",
+        defaultInput : "auto-suggest",
+        suggestions: "",
+        suggestItem: ""
+      },
 
       is_focused: false,
       show_filters: false,
@@ -332,9 +351,88 @@ export default Vue.extend({
       this.search = this.search.slice(0, -1);
       console.log(this.search);
       this.searchInput()
+    },
+    getEmails(value){
+      const _this = this
+
+      axios.get(this.routes.getContactSearch,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          pageSize: 50,
+          query: value
+          // pageToken: '',
+          // requestSyncToken: '',
+          // syncToken:''
+        },
+      }).then(function(response){
+
+        const emails = response.data;
+        var results = []
+
+        var address = Object.values(emails)
+
+        results = address.filter(element => element.includes(value))
+        _this.autocompleteItems = []
+        for (let x in results) {
+          _this.autocompleteItems.push(results[x])
+        }
+
+      }).catch(error => {
+        this.$notification.error("Something went wrong", {  timer: 5 });
+        console.log(error)
+      })
+    },
+
+    getSuggestionList(){
+      const _this = this
+
+      axios.get(this.routes.getContactSearch,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.csrf_token,
+          "X-CSRF-TOKEN": this.csrf_token
+        },
+        params: {
+          pageSize: 50,
+          query: value
+          // pageToken: '',
+          // requestSyncToken: '',
+          // syncToken:''
+        },
+      }).then(function(response){
+
+        const emails = response.data;
+        var results = []
+
+        var address = Object.values(emails)
+
+        results = address.filter(element => element.includes(value))
+        _this.autocompleteItems = []
+        for (let x in results) {
+          _this.autocompleteItems.push(results[x])
+        }
+
+      }).catch(error => {
+        this.$notification.error("Something went wrong", {  timer: 5 });
+        console.log(error)
+      })
     }
   }
 });
 
 
 </script>
+
+<style lang="scss">
+.auto-suggest{
+  width:100%;
+  border: none !important;
+  padding: 0px !important
+}
+</style>
