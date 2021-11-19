@@ -113,6 +113,10 @@ export default Vue.extend({
       dateScale: 0,
       searchIn: 0,
       search: '',
+      routes:'',
+      csrf_token:'',
+      user_email:'',
+      headers:'',
 
       is_focused: false,
       show_filters: false,
@@ -186,6 +190,15 @@ export default Vue.extend({
     }
   },
   mounted(){
+    this.routes = this.$store.state.routes;
+    this.csrf_token = this.$store.state.csrf_token;
+    this.user_email = this.$store.state.user_email;
+    this.headers = {
+      "Content-Type": "multipart/mixed",
+      "Authorization": "Bearer " + this.csrf_token,
+      "X-CSRF-TOKEN": this.csrf_token
+    }
+
     bus.$on('addFilterToSearch', (data) => {
       console.log(data)
       var filter = data.toLowerCase();
