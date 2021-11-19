@@ -429,10 +429,3 @@ export default Vue.extend({
 
 </script>
 
-<style lang="scss">
-.auto-suggest{
-  width:100%;
-  border: none !important;
-  padding: 0px !important
-}
-</style>
