@@ -159,7 +159,7 @@
           <span class="e-frame e-icons e-uncheck"></span>
           <span class="e-label"> </span>
         </div>
-        <ejs-dropdownbutton :items="drop_down_items" :select="dropDownSelect" class="absolute left-5 pl-0 py-1 pr-1.5">3</ejs-dropdownbutton>
+        <ejs-dropdownbutton :items="drop_down_items" :select="dropDownSelect" class="absolute left-5 pl-0 py-1 pr-1.5"></ejs-dropdownbutton>
       </div>
       <div class="pl-5 flex">
         <div :class="{'hidden': items_selected}" class="flex">
@@ -214,7 +214,7 @@
 
           <div class="px-2 flex">
             <!-- Button More  -->
-             <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected_" iconCss="fas fa-ellipsis-v" cssClass="e-round e-caret-hide">2</ejs-dropdownbutton>
+             <ejs-dropdownbutton @click.native="dropdownAction" target="#items_selected_" iconCss="fas fa-ellipsis-v" cssClass="e-round e-caret-hide"></ejs-dropdownbutton>
               <ejs-listview id="items_selected_" :dataSource="more_items_selected" :select="moreOptions"></ejs-listview>
           </div>
         </div>
@@ -265,7 +265,7 @@
             {{ email_data.from.name }} 
               <span class="text-gray-500 text-sm font-light">{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</span>
             </p>
-            <p>
+            <p class="text-xs">
               {{ email_data.to.email === user_email ? "to me" : "to " + email_data.to.name }}{{ email_data.cc ? ", " + email_data.cc : ""}}
               <ejs-button ref="btn_email_data" @click.native="email_details" iconCss="fas fa-caret-down" cssClass="e-round shadow-none" class=""></ejs-button>
             </p>
@@ -273,7 +273,7 @@
           </div>
 
           <div class="ml-auto">
-            <p>
+            <p class="text-xs">
               {{ email_date_display }}
               <span>({{ time_duration }})</span>
               <ejs-button ref="" @click.native="starEmail" :iconCss="[is_starred ? 'fas fa-star text-yellow-500' : 'far fa-star']" cssClass="e-round shadow-none" class=""></ejs-button>
