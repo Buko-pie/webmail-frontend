@@ -45,6 +45,7 @@
         "@syncfusion/ej2-vue-popups": "^19.2.56",
         "@syncfusion/ej2-vue-richtexteditor": "^19.2.57",
         "@syncfusion/ej2-vue-splitbuttons": "^19.2.55",
+        "@trevoreyre/autocomplete-vue": "^2.2.0",
         "codemirror": "^5.62.3",
         "core-js": "^3.16.4",
         "file-icons-js": "github:websemantics/file-icons-js",

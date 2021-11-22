@@ -218,6 +218,8 @@ export default Vue.extend({
       "X-CSRF-TOKEN": this.csrf_token
     }
 
+    this.getSuggestionList();
+
     bus.$on('addFilterToSearch', (data) => {
       console.log(data)
       var filter = data.toLowerCase();
@@ -391,7 +393,7 @@ export default Vue.extend({
     getSuggestionList(){
       const _this = this
 
-      axios.get(this.routes.getContactSearch,
+      axios.get(this.routes.getContactList,
       {
         headers: {
           "Content-Type": "application/json",
@@ -400,22 +402,16 @@ export default Vue.extend({
         },
         params: {
           pageSize: 50,
-          query: value
-          // pageToken: '',
-          // requestSyncToken: '',
-          // syncToken:''
+          pageToken: '',
+          requestSyncToken: '',
+          syncToken:''
         },
       }).then(function(response){
 
         const emails = response.data;
-        var results = []
-
-        var address = Object.values(emails)
-
-        results = address.filter(element => element.includes(value))
         _this.autocompleteItems = []
-        for (let x in results) {
-          _this.autocompleteItems.push(results[x])
+        for (let x in emails) {
+          _this.autocompleteItems.push(emails[x])
         }
 
       }).catch(error => {
