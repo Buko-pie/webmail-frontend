@@ -316,7 +316,7 @@ export default Vue.extend({
         //   this.search = `from:${this.fromText}`
         //   command = `in:drafts from:${this.fromText}`
         // }
-        this.search += `from:(${this.fromTextHolder}) `;
+        this.search += `from:(${this.fromText}) `;
       }
 
       if(this.toText.length > 0) {
