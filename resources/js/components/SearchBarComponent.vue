@@ -13,12 +13,12 @@
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
-        <vue-simple-suggest v-model="fromText" ref="fromValue" :list="autocompleteItems"  mode="select" :styles="autoCompleteStyle" @input="getEmails(fromText)" @suggestion-click="formatInput">
+        <!-- <vue-simple-suggest v-model="fromText" ref="fromValue" :list="autocompleteItems"  mode="select" :styles="autoCompleteStyle" @input="getEmails(fromText)" @suggestion-click="formatInput">
           <input id="filter_from" v-model="fromTextHolder" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
-        </vue-simple-suggest>
-        <!-- <input id="filter_from" v-model="fromText" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
+        </vue-simple-suggest> -->
+        <!-- <input id="filter_from" v-model="fromTextHolder" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
 
-        <!-- <vue-simple-suggest 
+        <vue-simple-suggest 
             v-model="fromText" 
             ref="fromValue" 
             :list="autocompleteItems" 
@@ -28,7 +28,7 @@
             @input="getEmails(fromText)" 
             @suggestion-click="formatInput"
             :remove-list="showList"
-        ></vue-simple-suggest> -->
+        ></vue-simple-suggest>
       </div>
 
       <!-- Filter by Receiver -->
@@ -153,6 +153,7 @@ export default Vue.extend({
       is_focused: false,
       show_filters: false,
       has_attachment: false,
+      switchToInput: false,
 
       size_ops:[
         {id: "larger", option: "greater than"},
@@ -315,7 +316,7 @@ export default Vue.extend({
         //   this.search = `from:${this.fromText}`
         //   command = `in:drafts from:${this.fromText}`
         // }
-        this.search += `from:(${this.fromText}) `;
+        this.search += `from:(${this.fromTextHolder}) `;
       }
 
       if(this.toText.length > 0) {
@@ -374,14 +375,17 @@ export default Vue.extend({
       clearTimeout(this.debounce);
       this.debounce = setTimeout(() => {
 
-        this.fromTextHolder.push(this.$refs.fromValue.selected )
-
+        this.fromTextHolder = this.fromTextHolder.filter(e =>  e);
+        this.fromTextHolder.push(this.$refs.fromValue.selected)
+        this.fromTextHolder.push('')
+        this.fromText = this.fromTextHolder
         this.showList = true
       }, 100);
     },
 
     getEmails(value){
       this.showList= false
+      value = value.slice(value.lastIndexOf(',') + 1);
       const _this = this
       axios.get(this.routes.getContactSearch,
       {
