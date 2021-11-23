@@ -668,6 +668,21 @@ class DataController extends Controller {
         $response = null;
 
         switch ($option) {
+          case 'labelShow':
+            $result = 'labelShow';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+
+          case 'labelShowIfUnread':
+            $result = 'labelShowIfUnread';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+
+          case 'labelHide':
+            $result = 'hide label';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+
           case 'delete':
             $result = 'delete label';
             $response = LaravelGmail::message()->deleteLabel($content->label_id);
@@ -684,11 +699,6 @@ class DataController extends Controller {
           case 'edit':
             $result = 'edit label';
             $response = LaravelGmail::message()->updateLabel($content->label_id, $content->label_name);
-            break;
-
-          case 'hide':
-            $result = 'hide label';
-            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->visibility_op);
             break;
           
           default:
