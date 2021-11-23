@@ -13,9 +13,6 @@
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
-        <!-- <vue-simple-suggest v-model="fromText" ref="fromValue" :list="autocompleteItems"  mode="select" :styles="autoCompleteStyle" @input="getEmails(fromText)" @suggestion-click="formatInput">
-          <input id="filter_from" v-model="fromTextHolder" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder="">
-        </vue-simple-suggest> -->
         <!-- <input id="filter_from" v-model="fromTextHolder" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
 
         <vue-simple-suggest 
@@ -26,7 +23,7 @@
             @focus="inputFocus(1)" 
             @blur="inputBlur(1)" 
             @input="getEmails(fromText)" 
-            @suggestion-click="formatInput"
+            @suggestion-click="formatInput('from')"
             :remove-list="showList"
         ></vue-simple-suggest>
       </div>
@@ -35,8 +32,17 @@
       <div class="flex flex-wrap content-center"><p class="text-sm">To</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[2].is_focused }">
         <!-- <input id="filter_to" v-model="toText" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder=""> -->
-        
-        <vue-simple-suggest v-model="toText" :list="autocompleteItems" :styles="autoCompleteStyle" @focus="inputFocus(2)" @blur="inputBlur(2)" @input="getEmails(toText)"
+
+        <vue-simple-suggest 
+            v-model="toText" 
+            ref="toValue" 
+            :list="autocompleteItems" 
+            :styles="autoCompleteStyle" 
+            @focus="inputFocus(2)" 
+            @blur="inputBlur(2)" 
+            @input="getEmails(toText)" 
+            @suggestion-click="formatInput('to')"
+            :remove-list="showList"
         ></vue-simple-suggest>
       </div>
 
@@ -150,10 +156,10 @@ export default Vue.extend({
       },
       showList: false,
       fromTextHolder: [],
+      toTextHolder: [],
       is_focused: false,
       show_filters: false,
       has_attachment: false,
-      switchToInput: false,
 
       size_ops:[
         {id: "larger", option: "greater than"},
@@ -370,17 +376,30 @@ export default Vue.extend({
       this.searchInput()
     },
 
-    formatInput(){
-      
-      clearTimeout(this.debounce);
-      this.debounce = setTimeout(() => {
+    formatInput(type){
 
-        this.fromTextHolder = this.fromTextHolder.filter(e =>  e);
-        this.fromTextHolder.push(this.$refs.fromValue.selected)
-        this.fromTextHolder.push('')
-        this.fromText = this.fromTextHolder
-        this.showList = true
-      }, 100);
+      if(type=='from'){
+        clearTimeout(this.debounce);
+        this.debounce = setTimeout(() => {
+
+          this.fromTextHolder = this.fromTextHolder.filter(e =>  e);
+          this.fromTextHolder.push(this.$refs.fromValue.selected)
+          this.fromTextHolder.push('')
+          this.fromText = this.fromTextHolder
+          this.showList = true
+        }, 100);
+      }else{
+        clearTimeout(this.debounce);
+        this.debounce = setTimeout(() => {
+
+          this.toTextHolder = this.toTextHolder.filter(e =>  e);
+          this.toTextHolder.push(this.$refs.toValue.selected)
+          this.toTextHolder.push('')
+          this.toText = this.toTextHolder
+          this.showList = true
+        }, 100);
+      }
+      
     },
 
     getEmails(value){
