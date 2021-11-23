@@ -370,4 +370,11 @@ class Message
 
     return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
   }
+
+  public function setMessageListVisibility($label_id, $visibility_op)
+  {
+    $this->labelRequest->setMessageListVisibility($visibility_op);
+
+    return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+  }
 }
