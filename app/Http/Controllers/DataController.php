@@ -668,6 +668,37 @@ class DataController extends Controller {
         $response = null;
 
         switch ($option) {
+          //Show in label list
+          case 'labelShow':
+            $result = 'labelShow';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+          
+          //Show if unread in label list
+          case 'labelShowIfUnread':
+            $result = 'labelShowIfUnread';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+          
+          //Hide in label list
+          case 'labelHide': 
+            $result = 'hide label';
+            $response = LaravelGmail::message()->setLabelListVisibility($content->label_id, $content->option);
+            break;
+          
+          //Show in message list
+          case 'show': 
+            $result = 'showInMsgList';
+            $response = LaravelGmail::message()->setMessageListVisibility($content->label_id, $content->option);
+            break;
+
+          //Hide in message list
+          case 'hide': 
+            $result = 'hideInMsgList';
+            $response = LaravelGmail::message()->setMessageListVisibility($content->label_id, $content->option);
+            break;
+          
+          //Delete label
           case 'delete':
             $result = 'delete label';
             $response = LaravelGmail::message()->deleteLabel($content->label_id);
@@ -675,12 +706,14 @@ class DataController extends Controller {
               $response = LaravelGmail::message()->batchRemoveLabel($content->ids, $content->label_id);
             }
             break;
-
+          
+          //Create new label
           case 'create':
             $result = 'create label';
             $response = LaravelGmail::message()->createLabel($content->label_name);
             break;
-
+          
+          //Edit label
           case 'edit':
             $result = 'edit label';
             $response = LaravelGmail::message()->updateLabel($content->label_id, $content->label_name);

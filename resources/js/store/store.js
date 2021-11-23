@@ -35,6 +35,7 @@ export const store = new Vuex.Store({
     user_labels: null,
     user_labels_keyed: null,
     labels_tree: null,
+    labels_tree_h: null,
     user_profile_photo: null,
     dropdown_menu_opened: null,
     dropdown_btn_lbl: false,
@@ -114,10 +115,12 @@ export const store = new Vuex.Store({
     },
 
     set_user_labels(state, payload){
+      console.log(payload);
       payload.sort((a,b) => (a.text > b.text) ? 1 : ((b.text > a.text) ? -1 : 0));
       
       let labelKey = [];
       let tree = {};
+      let tree_h = {};
       
       //Labels dictionary Note: still need to revise to ids only, no other properties
       payload.forEach(label => {
@@ -130,16 +133,30 @@ export const store = new Vuex.Store({
         let value = {
           id: label.id,
           text: label.text,
+          labelListVisibility: label.labelListVisibility,
+          messageListVisibility: label.messageListVisibility
         }
-        if(labels.length > 1){
+        if(label.labelListVisibility === "labelHide"){
+          if(labels.length > 1){
           
-          assign(tree, labels, value);
-        }else{ 
-          tree[label.text] = {_prop: value};
+            assign(tree_h, labels, value);
+          }else{
+            tree_h[label.text] = {_prop: value};
+          }
+        }else{
+          if(labels.length > 1){
+          
+            assign(tree, labels, value);
+          }else{
+            tree[label.text] = {_prop: value};
+          }
         }
+        
       });
-
+      console.log(labelKey);
+      console.log(tree);
       state.labels_tree = tree;
+      state.labels_tree_h = tree_h;
       state.user_labels_keyed = labelKey;
       state.user_labels = payload;
     },

@@ -10,7 +10,7 @@
         </div>
         <p class="sidebar_text">{{ label }}</p>
         <div class="flex ml-auto items-center justify-center text-center">
-          <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+          <ejs-dropdownbutton v-show="hovered" :items="more_items" :beforOpen="beforeOpen(item._prop)" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
 
           <div v-if="user_labels_keyed[item._prop.id].messagesUnread > 0" v-show="!hovered" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
             <p>{{ user_labels_keyed[item._prop.id].messagesUnread }}</p>
@@ -33,7 +33,7 @@
       </div>
       <p class="sidebar_text">{{ label }}</p>
       <div class="flex ml-auto items-center justify-center text-center">
-        <ejs-dropdownbutton v-show="hovered" :items="more_items" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
+        <ejs-dropdownbutton v-show="hovered" :items="more_items" :beforOpen="beforeOpen(item._prop)" :select="label_options" @click.native="selectLabel(item._prop)" @mouseover.native="hover_opts = true" @mouseleave.native="hover_opts = false" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
 
         <div v-if="user_labels_keyed[item._prop.id].messagesUnread > 0" v-show="!hovered" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
           <p>{{ user_labels_keyed[item._prop.id].messagesUnread }}</p>
@@ -81,8 +81,19 @@ export default Vue.extend({
       hovered: false,
       hover_opts: false,
       more_items:[  
-        { id: 0, text: "Edit label" },
-        { id: 1, text: "Delete label" }
+        { id: 0, text: "In label list", disabled: true},
+        { id: 1, iconCss:"", text: "Show", value: "labelShow"},
+        { id: 2, iconCss:"", text: "Show if unread", value: "labelShowIfUnread"},
+        { id: 3, iconCss:"", text: "Hide", value: "labelHide"},
+        { id: 4, text: "", separator: true},
+
+        { id: 5, text: "In message list", disabled: true},
+        { id: 6, iconCss:"", text: "Show", value: "showInMsgList"},
+        { id: 7, iconCss:"", text: "Hide", value: "hideInMsgList"},
+        { id: 8, text: "", separator: true},
+        
+        { id: 9, text: "Edit label", value: "editLabel"},
+        { id: 10, text: "Delete label", value: "deleteLabel" }
       ],
     }
   },
@@ -127,6 +138,38 @@ export default Vue.extend({
 
     label_options(args){
       this.ref_sidebar.label_options(args);
+    },
+
+    beforeOpen(args){
+      switch (args.labelListVisibility) {
+        case "labelShow":
+          this.more_items[1].iconCss = "fas fa-check";
+          break;
+
+        case "labelShowIfUnread":
+          this.more_items[2].iconCss = "fas fa-check";
+          break;
+
+        case "labelHide":
+          this.more_items[3].iconCss = "fas fa-check";
+          break;
+
+        default:
+          break;
+      }
+
+      switch (args.messageListVisibility) {
+        case "show":
+          this.more_items[6].iconCss = "fas fa-check";
+          break;
+
+        case "hide":
+          this.more_items[7].iconCss = "fas fa-check";
+          break;
+
+        default:
+          break;
+      }
     },
 
     goToLabel(label_name, label_id){
