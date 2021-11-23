@@ -429,6 +429,8 @@ export default Vue.extend({
         for (let x in results) {
           _this.autocompleteItems.push(results[x])
         }
+        _this.$refs.fromValue.suggestions = _this.autocompleteItems
+        _this.$refs.fromValue.showSuggestions()
 
       }).catch(error => {
         this.$notification.error("Something went wrong", {  timer: 5 });
