@@ -61,7 +61,7 @@
 .sidebar_items_selected{
   --tw-text-opacity: 1;
   color: rgba(17, 24, 39, var(--tw-text-opacity));
-  padding-left: 0.125rem;
+  padding-left: 1rem;
   margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -75,6 +75,7 @@
 .sidebar_items{
   --tw-text-opacity: 1;
   color: rgba(17, 24, 39, var(--tw-text-opacity));
+  padding-left: 1rem;
   margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
