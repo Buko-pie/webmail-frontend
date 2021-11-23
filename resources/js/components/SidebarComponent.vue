@@ -272,37 +272,30 @@
 
           <!-- Custom labels -->
           <div ref="sidebar_custom_labels" v-if="labels_tree">
-            <!--<a v-for="(label) in user_labels" :key="label.id" @click="goToLabel(label.text, label.id)" @mouseover="mouseHover_labels(label.id)" @mouseleave="mouseLeave_labels(label.id)" :class="[ current_inbox.name === label.text ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
-              <div class="sidebar_icons">
-                <i  class="fas fa-tag rotate-135 text-lg" 
-                    :style="{ color: label.color.backgroundColor }"
-                />
-              </div>
-              <p class="sidebar_text" v-show="toggled">{{ label.text }}</p>
-              
-              <div class="flex ml-auto items-center justify-center text-center">
-                <ejs-dropdownbutton v-show="label_hovered === label.id" :items="more_items" :select="label_options" @click.native="selected_label = label" @mouseover.native="mouseHover_labelOpts" @mouseleave.native="mouseLeave_labelOpts" iconCss="fas fa-ellipsis-v leading-5" cssClass="e-round shadow-none e-caret-hide w-9 h-9 items-center justify-center"></ejs-dropdownbutton>
-
-                <div v-if="label.messagesUnread > 0" v-show="label_hovered !== label.id" class="px-2.5 py-1 bg-red-500 text-white rounded-full">
-                  <p>{{label.messagesUnread}}</p>
-                </div>
-
-              </div>
-            </a> 
-            <div v-for="(labels, index) in labels_tree" :key="index">
-              <p>{{ index }}</p>
-
-            </div>-->
             <labels-list :items="labels_tree"/>
-            
           </div>
 
-          <a @click="modalShow" class="sidebar_items" href="#">
-            <div class="sidebar_icons">
-              <i class="fas fa-plus text-lg"></i>
+          <a @click="more_toggle = !more_toggle" class="sidebar_items w-full" href="#">
+            <p class="sidebar_text pl-9" v-show="toggled">More</p>
+            <div class="sidebar_icons_rightmost">
+              <i v-show="toggled"  :class="category_toggles"></i>
             </div>
-            <p class="sidebar_text" v-show="toggled">Add new label</p>
           </a>
+
+          <div v-show="more_toggle">
+            <!-- Hidden Custom labels -->
+            <div ref="sidebar_custom_labels" v-if="labels_tree_h">
+              <labels-list :items="labels_tree_h"/>
+            </div>
+
+             <!-- Add more Label -->
+            <a @click="modalShow" class="sidebar_items" href="#">
+              <div class="sidebar_icons">
+                <i class="fas fa-plus text-lg"></i>
+              </div>
+              <p class="sidebar_text" v-show="toggled">Add new label</p>
+            </a>
+          </div>
         </div>
       </ejs-sidebar>
       <!-- end of sidebar element -->
@@ -753,6 +746,7 @@ export default Vue.extend({
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
       category_toggle: false,
+      more_toggle: false,
       hover_label_opt: false,
       selected_label: null,
       email_address_tag: "",
@@ -932,6 +926,10 @@ export default Vue.extend({
     
     labels_tree(){
       return this.$store.state.labels_tree;
+    },
+
+    labels_tree_h(){
+      return this.$store.state.labels_tree_h;
     },
 
     labels_locations(){
@@ -1720,8 +1718,58 @@ export default Vue.extend({
     async label_options(args){
 
       let data = null;
-      switch (args.item.text) {
-        case "Delete label":
+      switch (args.item.value) {
+        case "labelShow":
+          data = {
+            option: "labelShow",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "labelShowIfUnread":
+          data = {
+            option: "labelShowIfUnread",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+        
+        case "labelHide":
+          data = {
+            option: "labelHide",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+        
+        case "showInMsgList":
+          data = {
+            option: "show",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+        
+        case "hideInMsgList":
+          data = {
+            option: "hide",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "deleteLabel":
           await this.getIds()
           data = {
             option: "delete",
@@ -1732,7 +1780,7 @@ export default Vue.extend({
           this.labels_ajax(data);
           break;
 
-        case "Edit label":
+        case "'editLabel":
           let labels = this.selected_label.text.split("/")
           this.parent_label_edit = [];
 
