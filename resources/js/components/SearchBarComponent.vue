@@ -22,7 +22,7 @@
             :styles="autoCompleteStyle" 
             @focus="inputFocus(1)" 
             @blur="inputBlur(1)" 
-            @input="getEmails(fromText)" 
+            @input="getEmails(fromText, 'from')" 
             @suggestion-click="formatInput('from')"
             :remove-list="showList"
         ></vue-simple-suggest>
@@ -40,7 +40,7 @@
             :styles="autoCompleteStyle" 
             @focus="inputFocus(2)" 
             @blur="inputBlur(2)" 
-            @input="getEmails(toText)" 
+            @input="getEmails(toText, 'to')" 
             @suggestion-click="formatInput('to')"
             :remove-list="showList"
         ></vue-simple-suggest>
@@ -385,7 +385,7 @@ export default Vue.extend({
           this.fromTextHolder = this.fromTextHolder.filter(e =>  e);
           this.fromTextHolder.push(this.$refs.fromValue.selected)
           this.fromTextHolder.push('')
-          this.fromText = this.fromTextHolder
+          this.fromText = this.fromTextHolder.toString()
           this.showList = true
         }, 100);
       }else{
@@ -395,14 +395,14 @@ export default Vue.extend({
           this.toTextHolder = this.toTextHolder.filter(e =>  e);
           this.toTextHolder.push(this.$refs.toValue.selected)
           this.toTextHolder.push('')
-          this.toText = this.toTextHolder
+          this.toText = this.toTextHolder.toString()
           this.showList = true
         }, 100);
       }
       
     },
 
-    getEmails(value){
+    getEmails(value, type){
       this.showList= false
       value = value.slice(value.lastIndexOf(',') + 1);
       const _this = this
@@ -429,8 +429,14 @@ export default Vue.extend({
         for (let x in results) {
           _this.autocompleteItems.push(results[x])
         }
-        _this.$refs.fromValue.suggestions = _this.autocompleteItems
-        _this.$refs.fromValue.showSuggestions()
+
+        if(type == 'from'){
+          _this.$refs.fromValue.suggestions = _this.autocompleteItems
+          _this.$refs.fromValue.showSuggestions()
+        }else{
+          _this.$refs.toValue.suggestions = _this.autocompleteItems
+          _this.$refs.toValue.showSuggestions()
+        }
 
       }).catch(error => {
         this.$notification.error("Something went wrong", {  timer: 5 });
