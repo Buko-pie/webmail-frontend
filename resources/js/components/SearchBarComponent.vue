@@ -25,6 +25,7 @@
             @input="getEmails(fromText, 'from')" 
             @suggestion-click="formatInput('from')"
             :remove-list="showList"
+            :controls="controls"
         ></vue-simple-suggest>
       </div>
 
@@ -43,6 +44,7 @@
             @input="getEmails(toText, 'to')" 
             @suggestion-click="formatInput('to')"
             :remove-list="showList"
+            :controls="controls"
         ></vue-simple-suggest>
       </div>
 
@@ -154,6 +156,14 @@ export default Vue.extend({
         suggestions: "",
         suggestItem: ""
       },
+      controls:{
+        selectionUp: [38],
+        selectionDown: [40],
+        select: [13],
+        showList: [40],
+        hideList: [27],
+        autocomplete: [32, 13]
+      },
       showList: false,
       fromTextHolder: [],
       toTextHolder: [],
@@ -161,7 +171,7 @@ export default Vue.extend({
       show_filters: false,
       has_attachment: false,
 
-      size_ops:[
+      size_ops:[ 
         {id: "larger", option: "greater than"},
         {id: "smaller", option: "less than"}
       ],
