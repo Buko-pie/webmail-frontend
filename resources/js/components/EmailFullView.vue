@@ -119,7 +119,6 @@
         'z-index': dropdown_zIndex,
         width: '200px',
         height: '200px',
-        align: left
       }"
     >
     <ejs-listview :dataSource="emailOpts" :select="moreEmailOpts"></ejs-listview>
