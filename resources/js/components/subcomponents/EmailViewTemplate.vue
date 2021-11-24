@@ -18,7 +18,7 @@
         </span>
       </p>
 
-      <ejs-button ref="" v-if="in_inbox" @click.native="emailView" iconCss="far fa-window-restore" cssClass="e-round shadow-none" class="ml-auto"></ejs-button>
+      <ejs-button ref="" v-if="in_inbox" @click.native="emailView" iconCss="far fa-window-restore" :cssClass="viewEmailFull?'e-round shadow':'e-round shadow-none'" class="ml-auto"></ejs-button>
     </div>
     
     <div class="flex">
@@ -283,6 +283,7 @@ export default Vue.extend({
   computed:{
     start(){
       console.log("email view computed")
+      this.viewEmailFull = false;
       this.routes = this.$store.state.routes;
       this.csrf_token = this.$store.state.csrf_token;
       this.user_email = this.$store.state.user_email;
@@ -984,7 +985,11 @@ export default Vue.extend({
 
     emailView(){
       console.log('emailView');
-      this.viewEmailFull = true;
+      if(this.viewEmailFull){
+        this.viewEmailFull = false;
+      }else
+        this.viewEmailFull = true;
+     
     },
 
 
