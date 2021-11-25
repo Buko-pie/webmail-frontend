@@ -13,9 +13,19 @@
       <!-- Filter by Sender -->
       <div class="flex flex-wrap content-center"><p class="text-sm">From</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[1].is_focused }">
-        <!-- <input id="filter_from" v-model="fromText" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
+        <!-- <input id="filter_from" v-model="fromTextHolder" @focus="inputFocus(1)" @blur="inputBlur(1)" class="e-input e-textbox" type="text" placeholder=""> -->
 
-        <vue-simple-suggest v-model="fromText" :list="autocompleteItems" :styles="autoCompleteStyle" @focus="inputFocus(1)" @blur="inputBlur(1)" @input="getEmails(fromText)"
+        <vue-simple-suggest 
+            v-model="fromText" 
+            ref="fromValue" 
+            :list="autocompleteItems" 
+            :styles="autoCompleteStyle" 
+            @focus="inputFocus(1)" 
+            @blur="inputBlur(1)" 
+            @input="getEmails(fromText, 'from')" 
+            @suggestion-click="formatInput('from')"
+            :remove-list="showList"
+            :controls="controls"
         ></vue-simple-suggest>
       </div>
 
@@ -23,8 +33,18 @@
       <div class="flex flex-wrap content-center"><p class="text-sm">To</p></div>
       <div class="e-input-group col-span-4" :class="{ 'e-input-focus': e_inputs[2].is_focused }">
         <!-- <input id="filter_to" v-model="toText" @focus="inputFocus(2)" @blur="inputBlur(2)" class="e-input e-textbox" type="text" placeholder=""> -->
-        
-        <vue-simple-suggest v-model="toText" :list="autocompleteItems" :styles="autoCompleteStyle" @focus="inputFocus(2)" @blur="inputBlur(2)" @input="getEmails(toText)"
+
+        <vue-simple-suggest 
+            v-model="toText" 
+            ref="toValue" 
+            :list="autocompleteItems" 
+            :styles="autoCompleteStyle" 
+            @focus="inputFocus(2)" 
+            @blur="inputBlur(2)" 
+            @input="getEmails(toText, 'to')" 
+            @suggestion-click="formatInput('to')"
+            :remove-list="showList"
+            :controls="controls"
         ></vue-simple-suggest>
       </div>
 
@@ -136,12 +156,22 @@ export default Vue.extend({
         suggestions: "",
         suggestItem: ""
       },
-
+      controls:{
+        selectionUp: [38],
+        selectionDown: [40],
+        select: [13],
+        showList: [40],
+        hideList: [27],
+        autocomplete: [32, 13]
+      },
+      showList: false,
+      fromTextHolder: [],
+      toTextHolder: [],
       is_focused: false,
       show_filters: false,
       has_attachment: false,
 
-      size_ops:[
+      size_ops:[ 
         {id: "larger", option: "greater than"},
         {id: "smaller", option: "less than"}
       ],
@@ -218,6 +248,8 @@ export default Vue.extend({
       "X-CSRF-TOKEN": this.csrf_token
     }
 
+    // this.getSuggestionList();
+
     bus.$on('addFilterToSearch', (data) => {
       console.log(data)
       var filter = data.toLowerCase();
@@ -240,6 +272,7 @@ export default Vue.extend({
   methods: {
     inputFocus(index){
       this.e_inputs[index].is_focused = true;
+      this.showList= false
     },
 
     inputBlur(index){
@@ -352,9 +385,37 @@ export default Vue.extend({
       console.log(this.search);
       this.searchInput()
     },
-    getEmails(value){
-      const _this = this
 
+    formatInput(type){
+
+      if(type=='from'){
+        clearTimeout(this.debounce);
+        this.debounce = setTimeout(() => {
+
+          this.fromTextHolder = this.fromTextHolder.filter(e =>  e);
+          this.fromTextHolder.push(this.$refs.fromValue.selected)
+          this.fromTextHolder.push('')
+          this.fromText = this.fromTextHolder.toString()
+          this.showList = true
+        }, 100);
+      }else{
+        clearTimeout(this.debounce);
+        this.debounce = setTimeout(() => {
+
+          this.toTextHolder = this.toTextHolder.filter(e =>  e);
+          this.toTextHolder.push(this.$refs.toValue.selected)
+          this.toTextHolder.push('')
+          this.toText = this.toTextHolder.toString()
+          this.showList = true
+        }, 100);
+      }
+      
+    },
+
+    getEmails(value, type){
+      this.showList= false
+      value = value.slice(value.lastIndexOf(',') + 1);
+      const _this = this
       axios.get(this.routes.getContactSearch,
       {
         headers: {
@@ -365,9 +426,6 @@ export default Vue.extend({
         params: {
           pageSize: 50,
           query: value
-          // pageToken: '',
-          // requestSyncToken: '',
-          // syncToken:''
         },
       }).then(function(response){
 
@@ -382,6 +440,14 @@ export default Vue.extend({
           _this.autocompleteItems.push(results[x])
         }
 
+        if(type == 'from'){
+          _this.$refs.fromValue.suggestions = _this.autocompleteItems
+          _this.$refs.fromValue.showSuggestions()
+        }else{
+          _this.$refs.toValue.suggestions = _this.autocompleteItems
+          _this.$refs.toValue.showSuggestions()
+        }
+
       }).catch(error => {
         this.$notification.error("Something went wrong", {  timer: 5 });
         console.log(error)
@@ -391,7 +457,7 @@ export default Vue.extend({
     getSuggestionList(){
       const _this = this
 
-      axios.get(this.routes.getContactSearch,
+      axios.get(this.routes.getContactList,
       {
         headers: {
           "Content-Type": "application/json",
@@ -400,22 +466,16 @@ export default Vue.extend({
         },
         params: {
           pageSize: 50,
-          query: value
-          // pageToken: '',
-          // requestSyncToken: '',
-          // syncToken:''
+          pageToken: '',
+          requestSyncToken: '',
+          syncToken:''
         },
       }).then(function(response){
 
         const emails = response.data;
-        var results = []
 
-        var address = Object.values(emails)
-
-        results = address.filter(element => element.includes(value))
-        _this.autocompleteItems = []
-        for (let x in results) {
-          _this.autocompleteItems.push(results[x])
+        for (let x in emails) {
+          _this.autocompleteItems.push(emails[x])
         }
 
       }).catch(error => {

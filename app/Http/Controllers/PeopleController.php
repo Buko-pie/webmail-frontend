@@ -22,8 +22,13 @@ class PeopleController extends Controller
       'readMask'          => 'names,emailAddresses,phoneNumbers,metadata',
     );
 
-    $result =  LaravelGmail::people()->search($optParams);
-    return response()->json($result, 200);
+    $results =  LaravelGmail::people()->list($optParams);
+    $emails = array();
+
+    foreach($results as $key => $result){
+      array_push($emails, $result->emailAddresses[0]->value);
+    }
+    return response()->json($emails, 200);
   }
 
   public function search(Request $request)

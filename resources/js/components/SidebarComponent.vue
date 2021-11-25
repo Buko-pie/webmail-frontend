@@ -201,7 +201,7 @@
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="goToInbox('IMPORTANT', 'IMPORTANT')" :class="[ current_inbox.name === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+          <a @click="goToLabel('IMPORTANT', 'IMPORTANT')" :class="[ current_inbox.name === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <!-- <i class="fas fa-thumbtack text-lg"></i> -->
               <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
