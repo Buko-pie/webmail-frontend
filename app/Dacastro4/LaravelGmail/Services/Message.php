@@ -386,8 +386,9 @@ class Message
       case 'create':
         if($label_name != ''){
           $this->labelRequest->setName($label_name);
-          $this->service->users_labels->create('me', $this->labelRequest);
-          return 'created';
+          $response = $this->service->users_labels->create('me', $this->labelRequest);
+          $result = 'created';
+          return ['response' => $response, 'result' => $result];
         }else{
           throw new Exception('label name empty!');
         }
@@ -395,16 +396,18 @@ class Message
       
       //update delete
       case 'delete':
-        $this->service->users_labels->delete('me', $label_id);
-        return 'deleted';
+        $response = $this->service->users_labels->delete('me', $label_id);
+        $result = 'deleted';
+        return ['response' => $response, 'result' => $result];
       break;
       
       //update label
       case 'update':
         if($label_name != ''){
           $this->labelRequest->setName($label_name);
-          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
-          return 'updated';
+          $response = $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $result = 'updated';
+          return ['response' => $response, 'result' => $result];
         }else{
           throw new Exception('label name empty!');
         }
@@ -414,8 +417,9 @@ class Message
       case 'setLblListVis':
         if($visibility_op!= ''){
           $this->labelRequest->setLabelListVisibility($visibility_op);
-          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
-          return 'Label list visibility updated';
+          $response = $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $result = 'Label list visibility updated';
+          return ['response' => $response, 'result' => $result];
         }else{
           throw new Exception('visibility operation empty!');
         }
@@ -425,8 +429,9 @@ class Message
       case 'setMsgListVis':
         if($visibility_op != ''){
           $this->labelRequest->setMessageListVisibility($visibility_op);
-          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
-          return 'Message list visibility updated';
+          $response = $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $result = 'Message list visibility updated';
+          return ['response' => $response, 'result' => $result];
         }else{
           throw new Exception('visibility operation empty!');
         }
