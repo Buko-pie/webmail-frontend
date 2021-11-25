@@ -675,13 +675,21 @@ class DataController extends Controller {
         $user_labels = [];
 
         foreach ($labels as $label) {
+          $label_data = null;
+          if($label->id == $content->label_id){
+            $label_data = LaravelGmail::message()->getLabel($label->id);
+          }
+
           $user_labels[] = [
             'id'                    => $label->id,
             'text'                  => $label->name,
             'type'                  => $label->type,
             'labelListVisibility'   => $label->labelListVisibility,
             'messageListVisibility' => $label->messageListVisibility,
-            'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff']
+            'messagesTotal'         => $label_data ? $label_data->messagesTotal : null,
+            'messagesUnread'        => $label_data ? $label_data->messagesUnread : null,
+            'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
+            'isChecked'             => false
           ];
         }
 
