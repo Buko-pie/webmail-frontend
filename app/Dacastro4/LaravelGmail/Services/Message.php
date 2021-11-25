@@ -386,7 +386,8 @@ class Message
       case 'create':
         if($label_name != ''){
           $this->labelRequest->setName($label_name);
-          return $this->service->users_labels->create('me', $this->labelRequest);
+          $this->service->users_labels->create('me', $this->labelRequest);
+          return 'created';
         }else{
           throw new Exception('label name empty!');
         }
@@ -394,14 +395,16 @@ class Message
       
       //update delete
       case 'delete':
-        return $this->service->users_labels->delete('me', $label_id);
+        $this->service->users_labels->delete('me', $label_id);
+        return 'deleted';
       break;
       
       //update label
       case 'update':
         if($label_name != ''){
           $this->labelRequest->setName($label_name);
-          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          return 'updated';
         }else{
           throw new Exception('label name empty!');
         }
@@ -411,7 +414,8 @@ class Message
       case 'setLblListVis':
         if($visibility_op!= ''){
           $this->labelRequest->setLabelListVisibility($visibility_op);
-          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          return 'Label list visibility updated';
         }else{
           throw new Exception('visibility operation empty!');
         }
@@ -421,7 +425,8 @@ class Message
       case 'setMsgListVis':
         if($visibility_op != ''){
           $this->labelRequest->setMessageListVisibility($visibility_op);
-          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+          return 'Message list visibility updated';
         }else{
           throw new Exception('visibility operation empty!');
         }

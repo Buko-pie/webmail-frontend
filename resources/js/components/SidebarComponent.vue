@@ -1668,7 +1668,7 @@ export default Vue.extend({
 
           _this.modalHide();
           _this.$store.dispatch("set_user_labels", payload.labels);
-          _this.$notification.success("Label: " + data.label_name + " " + data.option + "ed", {  timer: 5 });
+          _this.$notification.success("Label: " + data.label_name + " " + payload.result + "ed", {  timer: 5 });
 
           if(data.ids?.length > 0) {
             _this.goToInbox('INBOX', 'INBOX');

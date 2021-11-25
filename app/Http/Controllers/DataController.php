@@ -666,9 +666,9 @@ class DataController extends Controller {
         $operation = $content->option;
         $visibility_op = $content->vis_op ?? '';
         $result = null;
-        $response = null;
+        $request = null;
 
-        $response = LaravelGmail::message()->label($operation, $content->label_id, $content->label_name, $visibility_op);
+        $request = LaravelGmail::message()->label($operation, $content->label_id, $content->label_name, $visibility_op);
 
         $labels = LaravelGmail::message()->listLabels()->labels;
         $labels = array_slice($labels, 14);
@@ -684,8 +684,8 @@ class DataController extends Controller {
             'id'                    => $label->id,
             'text'                  => $label->name,
             'type'                  => $label->type,
-            'labelListVisibility'   => $label->labelListVisibility,
-            'messageListVisibility' => $label->messageListVisibility,
+            'labelListVisibility'   => $label_data ? $label_data->labelListVisibility : null,
+            'messageListVisibility' => $label_data ? $label_data->messageListVisibility : null,
             'messagesTotal'         => $label_data ? $label_data->messagesTotal : null,
             'messagesUnread'        => $label_data ? $label_data->messagesUnread : null,
             'color'                 => $label->color ??  ['backgroundColor' => '#000000', 'textColor' => '#ffffff'],
@@ -695,8 +695,8 @@ class DataController extends Controller {
 
         return response()->json([
           'labels' => $user_labels,
-          'result' => $result,
-          'response' => $response
+          'result' => $request['result'],
+          'response' => $request['response']
         ], 200);
       }else{
         return LaravelGmail::redirect();
