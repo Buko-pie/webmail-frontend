@@ -1312,6 +1312,7 @@ export default Vue.extend({
 
             let data = {
               option: "create",
+              label_id: "new_label",
               label_name: new_subLabel,
             };
 
@@ -1326,6 +1327,7 @@ export default Vue.extend({
 
           let data = {
             option: "create",
+            label_id: "new_label",
             label_name: new_lbl_name,
           };
 
@@ -1347,7 +1349,7 @@ export default Vue.extend({
             let new_subLabel = this.selected_parent + "/" + this.new_lbl_name;
 
             let data = {
-              option: "edit",
+              option: "update",
               label_id: this.selected_label.id,
               label_name: new_subLabel,
             };
@@ -1359,7 +1361,7 @@ export default Vue.extend({
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
           let data = {
-            option: "edit",
+            option: "update",
             label_id: this.selected_label.id,
             label_name: this.new_lbl_name,
           }
@@ -1719,52 +1721,22 @@ export default Vue.extend({
 
       let data = null;
       switch (args.item.value) {
-        case "labelShow":
+        case "setLblListVis":
           data = {
-            option: "labelShow",
+            option: args.item.value,
+            vis_op: args.item.vis_op,
             label_id: this.selected_label.id,
             label_name: this.selected_label.text,
-            ids: this.$store.state.ids,
           }
           this.labels_ajax(data);
           break;
 
-        case "labelShowIfUnread":
+        case "setMsgListVis":
           data = {
-            option: "labelShowIfUnread",
+            option: args.item.value,
+            vis_op: args.item.vis_op,
             label_id: this.selected_label.id,
             label_name: this.selected_label.text,
-            ids: this.$store.state.ids,
-          }
-          this.labels_ajax(data);
-          break;
-        
-        case "labelHide":
-          data = {
-            option: "labelHide",
-            label_id: this.selected_label.id,
-            label_name: this.selected_label.text,
-            ids: this.$store.state.ids,
-          }
-          this.labels_ajax(data);
-          break;
-        
-        case "showInMsgList":
-          data = {
-            option: "show",
-            label_id: this.selected_label.id,
-            label_name: this.selected_label.text,
-            ids: this.$store.state.ids,
-          }
-          this.labels_ajax(data);
-          break;
-        
-        case "hideInMsgList":
-          data = {
-            option: "hide",
-            label_id: this.selected_label.id,
-            label_name: this.selected_label.text,
-            ids: this.$store.state.ids,
           }
           this.labels_ajax(data);
           break;
@@ -1780,7 +1752,7 @@ export default Vue.extend({
           this.labels_ajax(data);
           break;
 
-        case "'editLabel":
+        case "editLabel":
           let labels = this.selected_label.text.split("/")
           this.parent_label_edit = [];
 

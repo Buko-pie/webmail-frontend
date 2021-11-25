@@ -82,14 +82,14 @@ export default Vue.extend({
       hover_opts: false,
       more_items:[  
         { id: 0, text: "In label list", disabled: true},
-        { id: 1, iconCss:"", text: "Show", value: "labelShow"},
-        { id: 2, iconCss:"", text: "Show if unread", value: "labelShowIfUnread"},
-        { id: 3, iconCss:"", text: "Hide", value: "labelHide"},
+        { id: 1, iconCss:"", text: "Show", value: "setLblListVis", vis_op: "labelShow"},
+        { id: 2, iconCss:"", text: "Show if unread", value: "setLblListVis", vis_op: "labelShowIfUnread"},
+        { id: 3, iconCss:"", text: "Hide", value: "setLblListVis", vis_op: "labelHide"},
         { id: 4, text: "", separator: true},
 
         { id: 5, text: "In message list", disabled: true},
-        { id: 6, iconCss:"", text: "Show", value: "showInMsgList"},
-        { id: 7, iconCss:"", text: "Hide", value: "hideInMsgList"},
+        { id: 6, iconCss:"", text: "Show", value: "setMsgListVis", vis_op: "show"},
+        { id: 7, iconCss:"", text: "Hide", value: "setMsgListVis", vis_op: "hide"},
         { id: 8, text: "", separator: true},
         
         { id: 9, text: "Edit label", value: "editLabel"},

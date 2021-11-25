@@ -10,6 +10,7 @@ use Google_Service_Gmail;
 use Google_Service_Gmail_BatchModifyMessagesRequest;
 use Google_Service_Gmail_BatchDeleteMessagesRequest;
 use Google_Service_Gmail_Label;
+use Exception;
 
 
 class Message
@@ -376,5 +377,59 @@ class Message
     $this->labelRequest->setMessageListVisibility($visibility_op);
 
     return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+  }
+
+  public function label(String $operation, String $label_id, String $label_name = '', String $visibility_op = '')
+  {
+    switch ($operation) {
+      //create delete
+      case 'create':
+        if($label_name != ''){
+          $this->labelRequest->setName($label_name);
+          return $this->service->users_labels->create('me', $this->labelRequest);
+        }else{
+          throw new Exception('label name empty!');
+        }
+      break;
+      
+      //update delete
+      case 'delete':
+        return $this->service->users_labels->delete('me', $label_id);
+      break;
+      
+      //update label
+      case 'update':
+        if($label_name != ''){
+          $this->labelRequest->setName($label_name);
+          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+        }else{
+          throw new Exception('label name empty!');
+        }
+      break;
+
+      //set label visibility in list
+      case 'setLblListVis':
+        if($visibility_op!= ''){
+          $this->labelRequest->setLabelListVisibility($visibility_op);
+          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+        }else{
+          throw new Exception('visibility operation empty!');
+        }
+      break;
+      
+      //set label visibility in messages list
+      case 'setMsgListVis':
+        if($visibility_op != ''){
+          $this->labelRequest->setMessageListVisibility($visibility_op);
+          return $this->service->users_labels->update('me', $label_id, $this->labelRequest);
+        }else{
+          throw new Exception('visibility operation empty!');
+        }
+      break;
+
+      default:
+        throw new Exception('operation query error or empty!');
+      break;
+    }
   }
 }
