@@ -11,7 +11,7 @@
 </template>
 
 <script>
-export default({
+export default{
   name: "SubheaderTemplate",
   data(){
     return{
@@ -29,5 +29,5 @@ export default({
       this.$eventHub.$emit("read_sort_toggle", {value: this.read_sort_toggle});
     }
   }
-});
+};
 </script>

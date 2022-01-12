@@ -2,8 +2,7 @@
 <div class="control-section sidebar-default">
   <!-- run start computed -->
   <div :start="start"></div>
-  
-  
+
   <!-- Compose Modal  -->
   <modal name="compose_new_modal" :adaptive="true" width="70%" height="70%" @before-open="modalOpened" @before-close="modalClosed">
     <div class="p-2 h-full relative flex ">
@@ -16,10 +15,10 @@
             :tags="email_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="To:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="email_address_tags_new"
             
           />
@@ -30,15 +29,41 @@
             :tags="cc_address_tags"
             :add-on-key="[13, 32]"
             :save-on-key="[13, 32]"
-            :validation="email_address_tag_validation"
             :allowEditTags="true"
             placeholder="Cc:"
             @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
             @tags-changed="cc_address_tags_new"
             
           />
+          <vue-tags-input
+            v-model="bcc_address_tag"
+            ref="bcc_tags_address"
+            :tags="bcc_address_tags"
+            :add-on-key="[13, 32]"
+            :save-on-key="[13, 32]"
+            :allowEditTags="true"
+            placeholder="Bcc:"
+            @before-adding-tag="email_address_tags_add_class"
+            @before-saving-tag="email_address_tags_edit"
+            @tags-changed="bcc_address_tags_new"
+            
+          />
+
+          <ejs-uploader 
+            ref="ejs_uploader"
+            id='ejs_uploader'
+            name="UploadFiles"
+            maxFileSize=26214400
+            :asyncSettings="attachment_path"
+            :uploading="attachmentUpload"
+            :removing="removingAttachment"
+            :sequentialUpload='true'
+            :autoUpload='true' >
+          </ejs-uploader> 
+
           <div class="flex justify-end mt-auto pr-2">
-            <ejs-button @click.native="sendMail" :isPrimary="true">Send</ejs-button>
+            <ejs-button @click.native="sendMail" :isPrimary="true"><i class="fas fa-paper-plane"></i> Send</ejs-button>
           </div>
         </div>
         <div class="col-span-2">
@@ -57,10 +82,37 @@
       <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
         <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
       </div>
+      
+      <div id="subLabels" class="pt-5">
+        <ejs-checkbox label="Nested label under:" :checked="false" :change="nestedCheckbox"></ejs-checkbox>
+        <ejs-dropdownlist id="parent_label" ref="parent_label" :enabled="nested_label" :dataSource="user_labels" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
+      </div>
 
       <div class="absolute bottom-5 right-5">
         <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
         <ejs-button v-on:click.native="createNewLabel" :isPrimary="true">Create</ejs-button>
+      </div>
+    </div>
+  </modal>
+
+  <!-- Edit label modal  -->
+  <modal name="edit_label_modal" @before-open="modalOpened" @before-close="modalClosed">
+    <div class="p-5 h-full relative">
+      <h3 class="text-2xl font-semibold">Edit Label</h3>
+      <br>
+      <p class="text-gray-400">{{ new_lbl_txt }}</p>
+      <div class="e-input-group" :class="{ 'e-input-focus': new_lbl_input_is_focused }">
+        <input id="new_label_name_input" ref="new_label_name_input" v-model="new_lbl_name" @focus="new_lbl_input_is_focused = true" @blur="new_lbl_input_is_focused = false" class="e-input e-textbox" type="text" placeholder="(ex. Appointments)">
+      </div>
+
+      <div id="subLabels_edit" class="pt-5">
+        <ejs-checkbox label="Nested label under:" :checked="nested_label" :change="nestedCheckbox"></ejs-checkbox>
+        <ejs-dropdownlist id="parent_label_edit" ref="parent_label_edit" :enabled="nested_label" :dataSource="parent_label_edit" v-model="selected_parent" placeholder="Parent Label"></ejs-dropdownlist>
+      </div>
+
+      <div class="absolute bottom-5 right-5">
+        <ejs-button v-on:click.native="modalHide" class="mr-3">Cancel</ejs-button>
+        <ejs-button v-on:click.native="editLabel" :isPrimary="true">Edit</ejs-button>
       </div>
     </div>
   </modal>
@@ -127,40 +179,55 @@
             <span class="compose_text" v-show="toggled">Compose</span>
           </button>
         </div>
-        <div id="sidebar_list" ref="sidebar_list" class="sidebar-list">
-          <a @click="getInbox" class="sidebar_items_selected" href="#">
+        <div id="sidebar_list" ref="sidebar_list" class="sidebar-list pb-3">
+          <a @click="goToInbox('All', 'All')" :class="[ current_inbox.name === 'All' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <div class="sidebar_icons">
+              <i class="fas fa-box-open text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">All emails</p>
+          </a>
+
+          <a @click="goToInbox('INBOX', 'INBOX')" :class="[ current_inbox.name === 'INBOX' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="fas fa-inbox text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Inbox</p>
           </a>
 
-          <a @click="starredOnly" class="sidebar_items" href="#">
+          <a @click="goToInbox('STARRED', 'STARRED')" :class="[ current_inbox.name === 'STARRED' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-star text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Starred</p>
           </a>
 
-          <a @click="importantOnly" class="sidebar_items" href="#">
+          <a @click="goToLabel('IMPORTANT', 'IMPORTANT')" :class="[ current_inbox.name === 'IMPORTANT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
-              <i class="fas fa-thumbtack text-lg"></i>
+              <!-- <i class="fas fa-thumbtack text-lg"></i> -->
+              <img :src="'/images/label_important_black_20dp.png'" alt="important icon">
             </div>
             <p class="sidebar_text" v-show="toggled">Important</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="goToInbox('SENT', 'SENT')" :class="[ current_inbox.name === 'SENT' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-paper-plane text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Sent</p>
           </a>
 
-          <a class="sidebar_items" href="#">
+          <a @click="goToInbox('DRAFT', 'DRAFT')" :class="[ current_inbox.name === 'DELETE' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
             <div class="sidebar_icons">
               <i class="far fa-file text-lg"></i>
             </div>
             <p class="sidebar_text" v-show="toggled">Drafts</p>
+          </a>
+
+          <a @click="goToInbox('TRASH', 'TRASH')" :class="[ current_inbox.name === 'TRASH' ? 'sidebar_items_selected' : 'sidebar_items' ]" href="#">
+            <div class="sidebar_icons">
+              <i class="fa fa-trash text-lg"></i>
+            </div>
+            <p class="sidebar_text" v-show="toggled">Trash</p>
           </a>
 
           <a @click="category_toggle = !category_toggle" class="sidebar_items w-full" href="#">
@@ -174,28 +241,28 @@
           </a>
           
           <div v-show="category_toggle">
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('SOCIAL', 'SOCIAL')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-users text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Social</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('UPDATES', 'UPDATES')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-exclamation text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Updates</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('FORUMS', 'FORUMS')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-comments text-lg"></i>
               </div>
               <p class="sidebar_text" v-show="toggled">Forums</p>
             </a>
             
-            <a class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
+            <a @click="goToInbox('PROMOTIONS', 'PROMOTIONS')" class="sidebar_items" :class="{ 'pl-6' : toggled }" href="#">
               <div class="sidebar_icons">
                 <i class="fas fa-bullhorn text-lg"></i>
               </div>
@@ -204,21 +271,31 @@
           </div>
 
           <!-- Custom labels -->
-          <div ref="sidebar_custom_labels">
-            <a v-for="labels in custom_labels" :key="labels.id" class="sidebar_items" href="#">
-              <div class="sidebar_icons">
-                <i class="fas fa-tag rotate-135 text-lg"></i>
-              </div>
-              <p class="sidebar_text" v-show="toggled">{{ labels.text }}</p>
-            </a>
+          <div ref="sidebar_custom_labels" v-if="labels_tree">
+            <labels-list :items="labels_tree"/>
           </div>
 
-          <a @click="modalShow" class="sidebar_items" href="#">
-            <div class="sidebar_icons">
-              <i class="fas fa-plus text-lg"></i>
+          <a @click="more_toggle = !more_toggle" class="sidebar_items w-full" href="#">
+            <p class="sidebar_text pl-9" v-show="toggled">More</p>
+            <div class="sidebar_icons_rightmost">
+              <i v-show="toggled"  :class="category_toggles"></i>
             </div>
-            <p class="sidebar_text" v-show="toggled">Add new label</p>
           </a>
+
+          <div v-show="more_toggle">
+            <!-- Hidden Custom labels -->
+            <div ref="sidebar_custom_labels" v-if="labels_tree_h">
+              <labels-list :items="labels_tree_h"/>
+            </div>
+
+             <!-- Add more Label -->
+            <a @click="modalShow" class="sidebar_items" href="#">
+              <div class="sidebar_icons">
+                <i class="fas fa-plus text-lg"></i>
+              </div>
+              <p class="sidebar_text" v-show="toggled">Add new label</p>
+            </a>
+          </div>
         </div>
       </ejs-sidebar>
       <!-- end of sidebar element -->
@@ -230,7 +307,7 @@
         <ejs-splitter id="splitter" ref="splitterObj" orientation="Vertical" :resizing="splitterResizing" width="100%" height="92%">
           <e-panes>
             <e-pane size="50%" min="20%" :content="inbox_template" cssClass="overflow-y-hidden e-inbox-display"></e-pane>
-            <e-pane size="50%" min ="20%" :content="email_view_template"></e-pane>
+            <e-pane size="50%" min ="20%" :content="email_view_template" cssClass="pane_1"></e-pane>
           </e-panes>
         </ejs-splitter>
       
@@ -256,15 +333,15 @@
       'z-index': dropdown_zIndex
     }"
   >
-  <div class="grid grid-cols-1 divide-y">
-    <div>
+    <div class="grid grid-cols-1 divide-y">
+      <div>
         <p>Label as:</p>
         <div class="e-input-group" :class="{ 'e-input-focus' : searchbar_label }"> 
-          <input id="searchbar_label" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
+          <input id="searchbar_label" ref='textboxEle' @keyup='searchInput' :value="search" @focus="searchbar_label = true" @blur="searchbar_label = false" class="e-input e-textbox" type="text" placeholder="Search">
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="custom_labels" showCheckBox="true" :fields="fields"></ejs-listview>
+          <ejs-listview :dataSource="user_labels_temp" ref='listObj' showCheckBox="true" :select="selected" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -292,7 +369,7 @@
           <span id="show_filters_icon"  class="e-input-group-icon e-input-calendar"><i class="h-4 w-4 text-lg fas fa-search mr-2"></i></span>
         </div>
         <div class="overflow-y-auto w-full h-72">
-          <ejs-listview :dataSource="moveTo_locations" :fields="fields"></ejs-listview>
+          <ejs-listview id="moveTo_options_0" ref="moveTo_options_0" :select="selectMoveToOps" :dataSource="labels_locations" :fields="fields"></ejs-listview>
         </div>
       </div>
       <div>
@@ -354,27 +431,175 @@
     </div>
   </div>
   
+  <!-- Email details dropdown -->
+  <div 
+    v-click-outside="dropdownHideEmailData"
+    ref="email_data_dropdown"
+    class="custom-dropdown-user bg-white p-3" 
+    :class="[!dropdown_btn_email_data ? 'hidden' : 'block']" 
+    :style="{
+      top: dropdown_label.top + 'px', 
+      left: dropdown_label.left + 'px',
+      'width': '38%',
+      'z-index': dropdown_zIndex,
+    }"
+  >
+    <div v-if="email_data" class="p-3">
+      <table class="table-fixed">
+        <thead>
+          <tr>
+            <th class="w-1/5"></th>
+            <th class="w-1/2 "></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-right align-top">
+              <p>from:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-right align-top">
+              <p>reply-to:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.from.name ? email_data.from.name : "" }}{{ email_data.from.email ? "&lt;" + email_data.from.email + "&gt;" : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>to:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.to.email ? email_data.to.email : email_data.to.name }}</p>
+            </td>
+          </tr>
+          
+          <tr v-if="email_data.cc">
+            <td class="text-right align-top">
+              <p>cc:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.cc ? email_data.cc : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr v-if="email_data.bcc">
+            <td class="text-right align-top">
+              <p>bcc:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.bcc ? email_data.bcc : "" }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>date:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.date }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>subject:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.subject }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>mailed-by:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.arc_auth }}</p>
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text-right align-top">
+              <p>signed-by:</p>
+            </td>
+            <td class="pl-2">
+              <p>{{ email_data.arc_auth }}</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!--
+  <portal to="destination">
+    <email-full-view/>
+  </portal>
+  
+  <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
+    <portal-target name="destination">
+      
+    </portal-target>
+  </WindowPortal> 
+  -->
+  
+  <!-- -->
+  <WindowPortal ref="portal_viewEmailFull" :open="viewEmailFull" @closed="emailViewClosed" :width="800" :height="600">
+    <email-full-view/>
+  </WindowPortal> 
+  
+  <div ref="overlays_container">
+  </div>
+  <!-- <div v-for="(overlay, index) in overlays" :key="index">
+    <Overlay :index="index" :ref="'overlay_' +  index"/>
     
+    <ejs-dialog
+      :id="'overlay_dialog_' + index"
+      class="overlay_dialog"
+      ref="overlay_dialog"
+      width="600px"
+      height="600px"
+      :header="overlay_header"
+      :content="overlay_body"
+      :showCloseIcon="false"
+      :position="{ X: 'right', Y: 'bottom'}" 
+      :isModal="false"
+    />overlay_x overlay_y
+  </div>-->
 </div>
 </template>
 
 <script>
+
 import Vue from "vue";
 import moment from "moment";
 import VModal from "vue-js-modal";
-import ClickOutside from 'vue-click-outside';
+import ClickOutside from "vue-click-outside";
 import AvatarCropper from "vue-avatar-cropper";
+import WindowPortal from "./VueWindowPortal.vue";
 // import myUpload from "vue-image-crop-upload/upload-2.vue";
 import $ from "jquery";
 
 import { SidebarPlugin } from "@syncfusion/ej2-vue-navigations";
-import { ButtonPlugin , RadioButtonPlugin } from "@syncfusion/ej2-vue-buttons";
+import { ButtonPlugin , RadioButtonPlugin, CheckBoxPlugin } from "@syncfusion/ej2-vue-buttons";
 import { ListViewPlugin } from "@syncfusion/ej2-vue-lists";
-import { enableRipple } from "@syncfusion/ej2-base";
+import { enableRipple, isNullOrUndefined  } from "@syncfusion/ej2-base";
 import { CalendarPlugin } from "@syncfusion/ej2-vue-calendars";
 import { SplitterPlugin } from "@syncfusion/ej2-vue-layouts";
-import { VueTagsInput } from '@johmun/vue-tags-input';
-
+import { VueTagsInput } from "@johmun/vue-tags-input";
+import { UploaderPlugin } from "@syncfusion/ej2-vue-inputs";
+import VueNotification from "@kugatsu/vuenotification";
+import { DataManager, Query } from "@syncfusion/ej2-data";
+import PortalVue from "portal-vue";
+import { DialogPlugin } from "@syncfusion/ej2-vue-popups";
+import Overlay from "./subcomponents/Overlay.vue";
+import {bus} from "../app";
 
 Vue.component('avatar-cropper', AvatarCropper);
 // Vue.component('my-upload', myUpload);
@@ -387,14 +612,42 @@ Vue.use(ListViewPlugin);
 Vue.use(CalendarPlugin);
 Vue.use(SplitterPlugin);
 Vue.use(VueTagsInput);
+Vue.use(UploaderPlugin);
+Vue.use(CheckBoxPlugin);
+Vue.use(PortalVue);
+Vue.use(DialogPlugin);
+Vue.use(VueNotification, {
+  timer: 20
+});
 
 enableRipple(true);
-
+const csrf_token = $('meta[name="csrf-token"]').attr('content');
 const inbox_component = Vue.component("inbox-component", require("./InboxDisplayComponent.vue").default);
 const email_view_component = Vue.component("email-view-component", require("./subcomponents/EmailViewTemplate.vue").default);
 const accounts_list_template = Vue.component("accounts-list-template", require("./subcomponents/AccountsListTemplate.vue").default);
-const csrf_token = $('meta[name="csrf-token"]').attr('content');
-const email_regex = /^(([^<>()[]\\.,;:\s@\"]+(\.[^<>()[]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const label_item = Vue.component("label-item", require("./subcomponents/LabelItems.vue").default);
+const labels_list = Vue.component("labels-list", require("./subcomponents/LabelList.vue").default);
+const overlay = Vue.component("Overlay", require("./subcomponents/Overlay.vue").default);
+const overlay_header = Vue.component("overlay-header", require("./subcomponents/OverlayHeader.vue").default);
+const overlay_body = Vue.component("overaly-body", require("./subcomponents/OverlayBody.vue").default);
+
+var overlayClass = Vue.extend(Overlay);
+
+
+// const labels_list = Vue.component("labels-list", {
+//   props:{
+//     items: { type: Object, required: true }
+//   },
+//   functional: true,
+//   render: function(createElement, { props, children }){ 
+//     console.log(props.items)
+    
+//     return Object.keys(props.items).map((item)=>createElement('label-item',{ props: {item} }));
+//   },
+//   mounted(){
+//     console.log(this.items);
+//   }
+// });
 
 
 function formatDate(data) {
@@ -411,10 +664,24 @@ function formatDate(data) {
   return data;
 }
 
-function isExistLabel(new_label, custom_labels){
-  for (let i = 0; i < custom_labels.length; i++) {
-    console.log(custom_labels)
-    if(custom_labels[i].title === new_label){
+function validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validateEmails(emailArray){
+  let results = emailArray.some(function(email, index){
+    if(!validateEmail(email)){
+      return true;
+    }
+  });
+
+  return results;
+}
+
+function isExistLabel(new_label, user_labels){
+  for (let i = 0; i < user_labels.length; i++) {
+    if(user_labels[i].text === new_label){
       return true;
     }
   }
@@ -422,16 +689,36 @@ function isExistLabel(new_label, custom_labels){
   return false;
 }
 
+function isExistSubLabel(new_label, parent_label, user_labels){
+  for (let i = 0; i < user_labels.length; i++) {
+    if(user_labels[i].text === parent_label + "/" + new_label){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 export default Vue.extend({
   name: "SidebarComponent",
   props:{
-    routes: { type: Object, required: true },
-    gmail_user: { type: String, required: true }
-    // user: { type: Object, required: true }
+    gmail_user: { type: String, required: true },
+    url_base: { type: String, required: true }
   },
 
   data() {
     return {
+      overlays: [],
+      search: '',
+      labeled_arr: [],
+      unchecked_arr: [],
+      saveResult: false,
+      removeResult: false,
+      user_labels_temporary: [],
+      label_selected: false,
+      label_selected_array: [],
+      routes: null,
       enableDock:  true,
       dockSize : "72px",
       width : "16rem",
@@ -459,29 +746,39 @@ export default Vue.extend({
       toggled_sidebar_before_modal_open: false,
       new_lbl_input_is_focused: false,
       category_toggle: false,
+      more_toggle: false,
+      hover_label_opt: false,
+      selected_label: null,
       email_address_tag: "",
       email_address_tags: [],
       email_addresses: null,
       cc_address_tag: "",
       cc_address_tags: [],
       cc_addresses: null,
+      bcc_address_tag: "",
+      bcc_address_tags: [],
+      bcc_addresses: null,
       email_subject: "",
       email_address_tag_validation: [],
       new_lbl_txt: "Please enter new label name:",
+      nested_label: false,
+      selected_parent: null,
+      parent_label_edit: null,
       fields: { tooltip: 'text'},
-      custom_labels:[
-        {id: 0, text: "test_label"},
-        {id: 1, text: "test_label_2"}
-      ],
+      custom_labels: [],
+      custom_labels_temp: [],
+      label_hovered: null,
 
       labels_options:[
         {id: 0, text: "Create new"}, 
-        {id: 1, text: "Manage labels"}
+        //{id: 1, text: "Manage labels"},
+        {id: 2, text: "Apply"},
       ],
 
       moveTo_options:[
         {id: 0, text: "Spam"}, 
-        {id: 1, text: "Trash"}
+        {id: 1, text: "Trash"},
+        {id: 2, text: "Inbox"},
       ],
 
       categories:[
@@ -491,7 +788,12 @@ export default Vue.extend({
         { id: 0, text: "Promotions" }
       ],
 
-      moveTo_locations:[],
+      more_items:[  
+        { id: 0, text: "Edit label" },
+        { id: 1, text: "Delete label" }
+      ],
+
+      // moveTo_locations:[],
       searchbar_label: false,
       dropdown_btn_tgl: false,
       dropdown_zIndex: 1005,
@@ -505,9 +807,7 @@ export default Vue.extend({
       ],
       
       accounts_list_template(){
-        return{
-          template: accounts_list_template
-        }
+        return{ template: accounts_list_template }
       },
 
       inbox_template(){
@@ -516,16 +816,83 @@ export default Vue.extend({
       
       email_view_template(){
         return{ template: email_view_component}
-      }
+      },
 
+      overlay_header(){
+        return{ template: overlay_header}
+      },
+
+      overlay_body(){
+        return{ template: overlay_body}
+      },
+
+      attachment_path: null,
+
+      dropElement: '.control-fluid',
+      email_date_display: null,
+      overlay_x: 100,
+      overlay_y: 937,
     }
   },
 
   computed:{
+    rowSelected() {
+      return this.$store.state.rowSelected
+    },
+
+    rowDeselected() {
+      return this.$store.state.rowDeselected
+    },
+
+    ref_headerTemplate(){
+      return this.$store.state.headerTemplate;
+    },
+
+    user_labels_temp() {
+      return this.user_labels_temporary
+    },
+
     start(){
       console.log("Sidebar component computed");
-      this.$store.dispatch("set_routes", this.routes);
+      let routes = {
+        data_route:           this.url_base + "/get_data",
+        send_mail:            this.url_base + "/send_mail",
+        upload_attachment:    this.url_base + "/upload_attachment",
+        check_attachment:     this.url_base + "/check_attachment",
+        download_attachment:  this.url_base + "/download_attachment",
+        remove_attachment:    this.url_base + "/remove_attachment",
+        toggle_route:         this.url_base + "/toggle_data",
+        set_many_route:       this.url_base + "/toggle_many_data",
+        logging_out:          this.url_base + "/logging_out",
+        upload_profile_pic:   this.url_base + "/upload_profile_pic",
+        user_profile_path:    this.url_base + "/img/users_profile_photo/",
+        delete_mail:          this.url_base + "/delete_mail",
+        delete_mail_forever:  this.url_base + "/delete_mail_forever",
+        move_to_inbox:        this.url_base + "/move_to_inbox",
+        labels:               this.url_base + "/labels",
+        labels_add:           this.url_base + "/labels/add",
+        labels_remove:        this.url_base + "/labels/remove",
+        ids:                  this.url_base + "/ids",
+        emailView:            this.url_base + "/emailView/",
+        getHtmlBody:          this.url_base + "/get_email_htmlBody/",
+        getContactList:       this.url_base + "/contacts/list",
+        getContactSearch:     this.url_base + "/contacts/search"
+      };
+
+      this.$store.dispatch("set_routes", routes);
       this.$store.dispatch("set_csrf_token", csrf_token);
+      this.$store.dispatch("set_user_email", this.gmail_user);
+      this.$store.dispatch("set_sidebar", this);
+
+      this.attachment_path = {
+        saveUrl: routes.upload_attachment,
+        removeUrl: routes.remove_attachment
+      }
+      this.routes = routes;
+    },
+
+    current_inbox(){
+      return this.$store.state.current_inbox;
     },
     
     category_toggles(){
@@ -547,33 +914,136 @@ export default Vue.extend({
 
     dropdown_btn_user(){
       return this.$store.state.dropdown_btn_user;
+    },
+
+    dropdown_btn_email_data(){
+      return this.$store.state.dropdown_btn_email_data;
+    },
+
+    user_labels(){
+      return this.$store.state.user_labels;
+    },
+    
+    labels_tree(){
+      return this.$store.state.labels_tree;
+    },
+
+    labels_tree_h(){
+      return this.$store.state.labels_tree_h;
+    },
+
+    labels_locations(){
+      if(this.user_labels){
+        // return this.user_labels.concat(this.categories);
+        return this.user_labels;
+      }else{
+        // return this.categories;
+      }
+      
+    },
+
+    email_data(){
+      let data = this.$store.state.selected_email_data;
+
+      if(data !== null){
+        this.data = moment(data.date).format("LLL");
+      }
+
+      return data;
+    },
+
+    selected_items_dataID(){
+      return this.$store.state.selected_items_dataID;
+    },
+
+    dropdown_menu_opened(){
+      return this.$store.state.dropdown_menu_opened;
+    },
+
+    viewEmailFull:{
+      get(){
+        return this.$store.state.viewEmailFull;
+      },
+      set(new_data){
+        return this.$store.dispatch("set_viewEmailFull", new_data);
+      }
     }
   },
 
   components:{
+    labels_list,
+    label_item,
+    WindowPortal,
+    email_view_component,
+    overlay
   },
 
   created(){
+    
+
     console.log("Sidebar component created");
+  },
+
+  destroyed() {
+   
+  },
+
+  beforeMount(){
+    window.addEventListener('unload', this.page_event);
+    window.addEventListener("resize", this.window_changed);
   },
 
   mounted(){
     console.log("Sidebar component mounted");
-    console.log(this.gmail_user);
-    console.log("bruh");
+
     
     this.$store.dispatch("set_splitter_height", this.$refs.splitterObj.$el.clientHeight);
     // console.log("user_profile_photo: " + this.user_profile_photo);
-    if(this.custom_labels.length > 0){
-      this.moveTo_locations = this.custom_labels.concat(this.categories);
-    }
+    
+    // if(this.user_labels.length > 0){
+    //   this.moveTo_locations = this.user_labels.concat(this.categories);
+    // }
     
     // this.$store.dispatch("set_user_profile_photo", this.user_profile_photo);
 
     // console.log(this.$store.state.user_profile_photo);
+    this.custom_labels_temp = this.custom_labels
+  },
+
+  beforeDestroy(){
+    window.removeEventListener('unload', this.page_event);
+    window.removeEventListener("resize", this.window_changed);
   },
 
   methods: {
+    page_event(){
+      this.$refs.portal_viewEmailFull.closePortal();
+    },
+
+    window_changed(){
+      this.overlay_y = window.innerHeight - 100;
+      this.overlay_x = window.innerWidth - 100;
+      // this.$refs.overlay_dialog.forEach(overlay => {
+      //   overlay.refreshPosition();
+      // });
+    },
+
+    mouseHover_labelOpts(){
+      this.hover_label_opt = true;
+    },
+
+    mouseLeave_labelOpts(){
+      this.hover_label_opt = false;
+    },
+
+    mouseHover_labels(id){
+      this.label_hovered = id;
+    },
+
+    mouseLeave_labels(id){
+      this.label_hovered = null;
+    },
+   
     openModalNewProfile(){
       // this.$modal.show('new_profile_modal');
       this.show_upload_profile_pic = !this.show_upload_profile_pic;
@@ -641,24 +1111,59 @@ export default Vue.extend({
       this.$store.dispatch("dropdown_btn_user_toggle", false);
     },
 
-    modalShow(){
+    dropdownHideEmailData(){
+      this.$store.dispatch("dropdown_btn_email_data_toggle", false);
+    },
+
+    modalShow(args){
+      if(this.rowSelected.length === 0) {
+        this.$store.dispatch("set_selected_items_dataID", [])
+      }
+      if(args){
+        this.$store.dispatch("set_dropdown_menu_opened", null);
+      }
       this.$modal.show('new_label_modal');
+    },
+
+    selectReset(){
+      // if(this.saveResult) {
+      //   this.$store.dispatch("set_selected_items_dataID", [])
+      // }
+      // this.saveResult = false
+      this.$store.dispatch("set_selected_items_dataID", [])
+    },
+
+    modalShow_editLabel(){
+      this.$modal.show('edit_label_modal');
     },
 
     modalHide(){
       this.$modal.hide('new_label_modal');
+      this.$modal.hide('edit_label_modal');
+      this.selected_label = null;
+      this.selected_parent = null;
+      this.nested_label = false;
     },
 
     modalOpened(){
-      if(this.toggled){
-        this.$refs.dockSidebar.toggle();
-      }
+      // if(this.toggled){
+      //   this.$refs.dockSidebar.toggle();
+      // }
     },
     
-    modalClosed(){
-      if(!this.toggled_sidebar_before_modal_open){
-        this.$refs.dockSidebar.toggle();
+    modalClosed(args){
+      if(args.name === "new_label_modal" && this.dropdown_menu_opened){
+        let _this = this;
+        setTimeout(function() {
+          _this.$store.dispatch(_this.dropdown_menu_opened, true);
+        }, 0);
+        
+      }else{
+        this.$store.dispatch("set_dropdown_menu_opened", null);
       }
+      // if(!this.toggled_sidebar_before_modal_open){
+      //   this.$refs.dockSidebar.toggle();
+      // }
     },
 
     toggleClick() {
@@ -683,9 +1188,23 @@ export default Vue.extend({
     },
 
     email_address_tags_add_class(args){
-      // console.log(args);
-      args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
       args.addTag();
+    },
+
+    email_address_tags_edit(args){
+      if(validateEmail(args.tag.text)){
+        args.tag.classes = "bg-pink-500 rounded-full px-3 justify-center items-center";
+      }else{
+        args.tag.classes = "bg-red-500 rounded-full px-3 justify-center items-center";
+      }
+      
+      args.saveTag();
     },
 
     email_address_tags_new(tags){
@@ -708,41 +1227,111 @@ export default Vue.extend({
       this.cc_addresses = tags_text;
     },
 
-    sendMail(){
-      console.log("sending Mail ...");
-      let _this = this;
-      
-      axios({
-        method: "POST",
-        url: this.routes.send_mail,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          addresses: this.email_addresses,
-          cc: this.cc_addresses,
-          subject: this.email_subject,
-          message: this.$refs.vueditor.getContent()
-        }
-      }).then(function (response) {
-        console.log(response.data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
+    bcc_address_tags_new(tags){
+      let tags_text = [];
+
+      tags.forEach(tag => {
+        tags_text.push(tag.text);
       });
+
+      this.bcc_addresses = tags_text;
+    },
+
+    sendMail(){
+      let _this = this;
+      let invalid_emails = validateEmails(this.email_addresses);
+      let invalid_ccs = false;
+      let invalid_bccs = false;
+      let files = this.$refs.ejs_uploader.getFilesData();
+      let attachments = [];
+
+      if(this.cc_addresses !== null){
+        invalid_ccs = validateEmails(this.cc_addresses);
+      }
+
+       if(this.bcc_addresses !== null){
+        invalid_bccs = validateEmails(this.bcc_addresses);
+      }
+
+      if(files.length !== 0){
+        files.forEach(file => {
+          if(file.statusCode === "2"){
+            attachments.push({
+              id: file.id,
+              filename: file.name,
+              size: file.size,
+              status: "uploaded",
+              type: file.type,
+            });
+          }
+        });
+      }
+      
+      
+      if(!invalid_emails && !invalid_ccs && !invalid_bccs){
+        console.log("sending Email...");
+        let data = {
+            option: "new_email",
+            addresses: this.email_addresses,
+            cc: this.cc_addresses,
+            bcc: this.bcc_addresses,
+            subject: this.email_subject,
+            message: this.$refs.vueditor.getContent(),
+            attachments: attachments,
+        };
+
+        axios.post(this.routes.send_mail, data, {
+          headers:{
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
+          }
+        }).then(function (response) {
+          console.log(response);
+          _this.$modal.hide("compose_new_modal");
+          _this.$notification.success("Message Sent", {  timer: 5 });
+        }).catch(error => {
+          console.log(error);
+          _this.$modal.hide("compose_new_modal");
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
+
+      }else{
+        this.$notification.warning("invalid email exists!", {  timer: 5 });
+      }
     },
 
     createNewLabel(){
       if(this.new_lbl_name){
-        if(isExistLabel(this.new_lbl_name, this.custom_labels)){
+        if(this.nested_label){
+
+          if(isExistSubLabel(this.new_lbl_name, this.selected_parent, this.labels_locations)){
+            this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+          }else{
+            let new_subLabel = this.selected_parent + "/" + this.new_lbl_name;
+
+            let data = {
+              option: "create",
+              label_id: "new_label",
+              label_name: new_subLabel,
+            };
+
+            this.labels_ajax(data);
+          }
+          
+        }else if(isExistLabel(this.new_lbl_name, this.labels_locations)){
           this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
         }else{
-          console.log(this.new_lbl_name);
-          this.custom_labels.push({id: (this.custom_labels.length), text: this.new_lbl_name});
-          
-          this.moveTo_locations = this.custom_labels.concat(this.categories);
+          let _this = this;
+          let new_lbl_name = this.new_lbl_name;
 
-          this.new_lbl_name = null;
-          this.$modal.hide("new_label_modal");
+          let data = {
+            option: "create",
+            label_id: "new_label",
+            label_name: new_lbl_name,
+          };
+
+          this.labels_ajax(data);
         }
       }else{
         this.new_lbl_txt = "No name specified. Please try another name:"
@@ -750,195 +1339,499 @@ export default Vue.extend({
       
     },
 
+    editLabel(){
+      if(this.new_lbl_name){
+        if(this.nested_label){
+
+          if(isExistSubLabel(this.new_lbl_name, this.selected_parent, this.labels_locations)){
+            this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+          }else{
+            let new_subLabel = this.selected_parent + "/" + this.new_lbl_name;
+
+            let data = {
+              option: "update",
+              label_id: this.selected_label.id,
+              label_name: new_subLabel,
+            };
+
+            this.labels_ajax(data);
+          }
+
+        }else if(isExistLabel(this.new_lbl_name, this.labels_locations)){
+          this.new_lbl_txt = "The label name you have chosen already exists. Please try another name:"
+        }else{
+          let data = {
+            option: "update",
+            label_id: this.selected_label.id,
+            label_name: this.new_lbl_name,
+          }
+          this.labels_ajax(data);
+        }
+      }else{
+        this.new_lbl_txt = "No name specified. Please try another name:"
+      }
+      
+     
+    },
+
     //Compose new email
     composeNew(args){
-      this.$modal.show("compose_new_modal");
-    },
-     mirrorConversion: function(e) {
-        var textArea = this.$refs.rteObj.ej2Instances.contentModule.getEditPanel();
-        var id = this.$refs.rteObj.ej2Instances.getID() +  'mirror-view';
-        var mirrorView = this.$refs.rteObj.$el.parentNode.querySelector('#' + id);
-        var charCount = this.$refs.rteObj.$el.parentNode.querySelector('.e-rte-character-count');
-        if (e.targetItem === 'Preview') {
-          textArea.style.display = 'block';
-          mirrorView.style.display = 'none';
-          textArea.innerHTML = this.myCodeMirror.getValue();
-          charCount.style.display = 'block';
-        }
-        else {
-          if (!mirrorView) {
-            mirrorView = document.createElement('div', { className: 'e-content' });
-            mirrorView.id = id;
-            textArea.parentNode.appendChild(mirrorView);
+      //Need to implement multiple compose overlays
+      if(this.overlays.length < 1){
+        this.overlays.push(0);
+
+        var overlayInstance = new overlayClass({
+          propsData: {
+            ref_sidebar: this,
+            index: this.overlays.length - 1,
+            routes: this.routes,
+            csrf_token: this.token,
+            user_email: this.gmail_user,
+            attachment_path: {
+              saveUrl: this.routes.upload_attachment,
+              removeUrl: this.routes.remove_attachment
+            },
           }
-          else {
-            mirrorView.innerHTML = '';
+        });
+        overlayInstance.$mount();
+        this.$refs.overlays_container.appendChild(overlayInstance.$el);
+      }
+
+      // this.$modal.show("compose_new_modal");
+    },
+
+    attachmentUpload(args){
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
+      
+      args.customFormData = [
+        {id: args.fileData.id},
+        {filename: args.fileData.name},
+        {size: args.fileData.size},
+        {type: args.fileData.type}
+      ];
+      console.log(args);
+    },
+
+    removingAttachment(args){
+      args.postRawFile = false;
+      args.currentRequest.setRequestHeader("Authorization", "Bearer " + csrf_token);
+      args.currentRequest.setRequestHeader("X-CSRF-TOKEN", csrf_token);
+    },
+
+    goToInbox(inbox_name, inbox_id){
+
+      let _this = this;
+
+      bus.$emit('addFilterToSearch', inbox_name);
+
+      _this.$store.dispatch("set_email_html_body",'');
+      _this.$store.dispatch("set_email_data",'');
+      _this.$store.dispatch("set_email_rowData",'');
+
+      //remove this if category is now working
+      const categoryOptions = ['SOCIAL', 'UPDATES', 'FORUMS', 'PROMOTIONS']
+
+      if(categoryOptions.includes(inbox_name)){
+        return;
+      }
+      /***************************************/
+
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
+
+      axios.get(this.routes.data_route,{
+        headers: this.headers,
+        params: {
+          inbox: inbox_name,
+          inbox_id: inbox_id,
+          option: null
+        }
+      }).then(function (response) {
+
+        _this.$store.dispatch("set_current_inbox", {name: inbox_name, id: inbox_id, type: 0});
+        _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));+
+        _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+        _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+        
+        _this.ref_headerTemplate.show_loading = false;
+        _this.ref_headerTemplate.loading = false;
+        _this.$eventHub.$emit("page_change");
+      }).catch(error => {
+
+        this.$notification.error("something went wrong", {  timer: 5 });
+      });
+    },
+
+    goToLabel(label_name, lable_id){
+      if(!this.hover_label_opt){
+        let _this = this;
+
+        _this.ref_headerTemplate.show_loading = true;
+        _this.ref_headerTemplate.loading = true;
+        axios.get(this.routes.data_route,{
+          headers: this.headers,
+          params: {
+            inbox: label_name,
+            label_id: lable_id,
+            option: "labeled"
           }
-          textArea.style.display = 'none';
-          mirrorView.style.display = 'block';
-          this.renderCodeMirror(mirrorView, this.$refs.rteObj.ej2Instances.value);
-          charCount.style.display = 'none';
-        }
-      },
-      renderCodeMirror: function(mirrorView, content) {
-      this.myCodeMirror = CodeMirror(mirrorView, {
-        value: content,
-        lineNumbers: true,
-        mode: 'text/html',
-        lineWrapping: true,
+        }).then(function (response) {
 
-      });
-    },
-    handleFullScreen: function(e){
-      var sbCntEle = document.querySelector('.sb-content.e-view');
-      var sbHdrEle = document.querySelector('.sb-header.e-view');
-      var leftBar;
-      var transformElement;
-      if (Browser.isDevice) {
-        leftBar = document.querySelector('#right-sidebar');
-        transformElement = document.querySelector('.sample-browser.e-view.e-content-animation');
+          _this.$store.dispatch("set_current_inbox", {name: label_name, id: lable_id, type: 1});
+          _this.$store.dispatch("set_email_batch", formatDate(response.data.repackaged_data));
+          _this.$store.dispatch("set_inbox_items", response.data.inbox_items_length);
+          _this.$store.dispatch("set_inbox_total", response.data.inbox_info.messagesTotal);
+          
+          _this.ref_headerTemplate.show_loading = false;
+          _this.ref_headerTemplate.loading = false;
+          _this.$eventHub.$emit("page_change");
+        }).catch(error => {
+
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
       }
-      else {
-        leftBar = document.querySelector('#left-sidebar');
-        transformElement = document.querySelector('#right-pane');
-      }
-      if (e.targetItem === 'Maximize') {
-        if (Browser.isDevice && Browser.isIos) {
-          addClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        addClass([leftBar], ['e-close']);
-        removeClass([leftBar], ['e-open']);
-        if (!Browser.isDevice) {
-          transformElement.style.marginLeft = '0px';
-        }
-        transformElement.style.transform = 'inherit';
-      }
-      else if (e.targetItem === 'Minimize') {
-        if (Browser.isDevice && Browser.isIos) {
-          removeClass([sbCntEle, sbHdrEle], ['hide-header']);
-        }
-        removeClass([leftBar], ['e-close']);
-        if (!Browser.isDevice) {
-          addClass([leftBar], ['e-open']);
-          transformElement.style.marginLeft = leftBar.offsetWidth + 'px';
-        }
-        transformElement.style.transform = 'translateX(0px)';
-      }
-    },
-
-    actionCompleteHandler: function(e) {
-      if (e.targetItem && (e.targetItem === 'SourceCode' || e.targetItem === 'Preview')) {
-        this.$refs.rteObj.ej2Instances.sourceCodeModule.getPanel().style.display = 'none';
-        this.mirrorConversion(e);
-      }
-      else {
-        var proxy = this;
-        setTimeout(function () { proxy.$refs.rteObj.ej2Instances.toolbarModule.refreshToolbarOverflow(); }, 400);
-      }
-    },
-
-
-    getInbox(event){
-      console.log("get all");
-      let _this = this;
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          option: "get_all"
-        }
-      }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
-    },
-
-    starredOnly(event) {
-      console.log("starred Only");
-      let _this = this;
-
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          option: "starred_only"
-        }
-      }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
-    },
-    importantOnly(event) {
-      console.log("important Only");
-      let _this = this;
-
-      axios({
-        method: "GET",
-        url: this.routes.data_route,
-        headers: this.headers,
-        params: {
-          token: this.token,
-          option: "important_only"
-        }
-      }).then(function (response) {
-        let data = response.data.dummy_data;
-        _this.$refs.data_grid.viewData = formatDate(data);
-        console.log(response.data.dummy_data);
-      }).catch(error => {
-        console.log(error);
-        alert("somthing went wrong");
-      });
+      
     },
 
     selectMoveToOps(args){
-      console.log(args);
+      let _this = this;
       this.dropdownHideMoveTo();
+      this.$refs.moveTo_options_0.selectItem();
       this.$refs.moveTo_options_1.selectItem();
       this.$refs.moveTo_options_2.selectItem();
-
+  
       if(args.data.text === "Create new"){
-        console.log("bruh");
         this.modalShow();
+      }else if(args.data.id === 1) { // Trash
+        this.selectedItemsTo(9, this.$store.state.selected_items_dataID, this.$store.state.routes);
+      }else{
+        // Move to labels
+        
+        _this.ref_headerTemplate.show_loading = true;
+        _this.ref_headerTemplate.loading = true;
+        axios.get(this.routes.set_many_route, {
+          headers: {
+            "Content-Type":   "application/json",
+            "Authorization":  "Bearer {{ csrf_token() }}"
+          },
+          params: {
+            option:   10,
+            dataIDs:  this.selected_items_dataID,
+            labelID:  args.data.id,
+            current_inbox_id: this.current_inbox.id,
+          }
+        }).then(function (response) {
+          // _this.refreshInbox();
+          _this.$eventHub.$emit("refresh_inbox", {
+            event: "refresh_inbox"
+          });
+
+        }).catch(error => {
+          console.log(error);
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+        });
       }
     },
 
-    selectLabelOps(args){
+    async selectLabelOps(args){
       console.log(this.$refs.lbl_options);
       this.dropdownHideLabel();
       this.$refs.lbl_options.selectItem();
       if(args.data.text === "Create new"){
-        console.log("bruh");
         this.modalShow();
+      } else if(args.data.text === "Apply") { // Apply button
+        // resets the and unchecked_arr
+        this.unchecked_arr = []
+        this.user_labels_temporary.forEach(element => {
+          if(!element.isChecked) {
+            this.unchecked_arr.push(element.id)
+          }
+        });
+
+        // set labels
+        await this.saveLabels(this.selected_items_dataID, this.label_selected_array,0)
+        // remove labels
+        await this.removeLabels(this.selected_items_dataID, this.unchecked_arr)
+
+        if(this.saveResult && this.removeResult) {
+          this.refreshInbox()
+          this.$notification.success("Label updated", {  timer: 5 })
+        } else {
+          this.$notification.error("Something went wrong", {  timer: 5 })
+        }
       }
     },
 
+    async saveLabels(labelsId,labelsArr,mode) {
+      this.saveResult = false
+      let _this = this
+      await axios.get(this.routes.labels_add, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id: labelsId,
+          labels: labelsArr,
+          mode
+        }
+      }).then(function (response) {
+        console.log(response.data.success)
+        _this.saveResult = true
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    async removeLabels(id,labels) {
+      this.removeResult = false
+      let _this = this
+      await axios.get(this.routes.labels_remove, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id,
+          labels
+        }
+      }).then(function (response) {
+        console.log(response.data)
+        _this.removeResult = true
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
     logout(){
-      axios({
-        method: "GET",
-        url: this.routes.logging_out,
+      axios.get(this.routes.logging_out, {
         headers: this.headers,
         params: {
-          token: this.token,
           message: "loggout"
         }
       }).then(function (response) {
         window.location.href = response.data;
       }).catch(error => {
         console.log(error);
-        alert("somthing went wrong");
+        this.$notification.error("somthing went wrong", {  timer: 5 });
       });
+    },
+
+    refreshInbox(){
+      console.log("header refresh inbox");
+      this.$eventHub.$emit("refresh_inbox", {
+        event: "refresh_inbox"
+      });
+      this.loading = true;
+    },
+
+    selectedItemsTo(option, dataIDs, route) {
+      let _this = this;
+
+      _this.ref_headerTemplate.show_loading = true;
+      _this.ref_headerTemplate.loading = true;
+      axios.get(route.set_many_route, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{ csrf_token() }}"
+        },
+        params: {
+          option: option,
+          dataIDs: dataIDs,
+        }
+      }).then(function (response) {
+        _this.refreshInbox();
+
+      }).catch(error => {
+        console.log(error);
+        _this.$notification.error("somthing went wrong", {  timer: 5 });
+      });
+    },
+
+    async labels_ajax(data){
+      this.modalHide();
+      if(data){
+        let _this = this;
+        await axios.post(this.routes.labels, data, {
+        headers:{
+            "Content-Type": "multipart/mixed",
+            "Authorization": "Bearer " + csrf_token,
+            "X-CSRF-TOKEN": csrf_token
+          }
+        }).then(async function (response) {
+          let payload = response.data;
+
+          _this.modalHide();
+          _this.$store.dispatch("set_user_labels", payload.labels);
+          _this.$notification.success("Label: " + data.label_name + " " + payload.result + "ed", {  timer: 5 });
+
+          if(data.ids?.length > 0) {
+            _this.goToInbox('INBOX', 'INBOX');
+          } else {
+            // add label to mail
+            if(_this.selected_items_dataID.length > 0) {
+              await _this.saveLabels(_this.selected_items_dataID, payload.response.id,1) // for 2nd param only pass the string since it creates only 1 label
+              if(_this.saveResult) {
+                _this.refreshInbox()
+              }
+            }
+          }
+        }).catch(error => {
+          console.log(error);
+          _this.modalHide();
+          _this.$notification.error("somthing went wrong", {  timer: 5 });
+          return error
+        });
+
+        this.new_lbl_txt = null;
+        this.new_lbl_name = null;
+        this.selected_parent = null;
+        this.nested_label = false;
+      }else{
+        this.$notification.error("data query empty!", {  timer: 5 });
+      }
+    },
+
+    async getIds() {
+      let _this = this
+      await axios.get(this.routes.ids,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + csrf_token,
+          "X-CSRF-TOKEN": csrf_token
+        },
+        params: {
+          id: this.selected_label.id
+        },
+      }).then(function(response){
+        _this.$store.dispatch("set_ids", response.data.ids)
+      }).catch(error => {
+        console.log(error);
+        this.$notification.error("Something went wrong", {  timer: 5 });
+      })
+    },
+
+    async label_options(args){
+
+      let data = null;
+      switch (args.item.value) {
+        case "setLblListVis":
+          data = {
+            option: args.item.value,
+            vis_op: args.item.vis_op,
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "setMsgListVis":
+          data = {
+            option: args.item.value,
+            vis_op: args.item.vis_op,
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "deleteLabel":
+          await this.getIds()
+          data = {
+            option: "delete",
+            label_id: this.selected_label.id,
+            label_name: this.selected_label.text,
+            ids: this.$store.state.ids,
+          }
+          this.labels_ajax(data);
+          break;
+
+        case "editLabel":
+          let labels = this.selected_label.text.split("/")
+          this.parent_label_edit = [];
+
+          if(labels.length > 1){
+            this.nested_label = true;
+            
+
+            let sub_label = labels[labels.length - 1];
+            labels.pop();
+            let parent_label = "";
+
+            labels.forEach((label, index) => {
+              if(index == 0){
+                parent_label = label;
+              }else{
+                if(index < labels.length){
+                  parent_label = parent_label + "/";
+                }
+                parent_label = parent_label + label;
+              }
+            });
+            // console.log(sub_label);
+            // console.log(parent_label);
+
+            this.new_lbl_name = sub_label;
+            this.selected_parent = parent_label;
+          }else{
+            this.new_lbl_name = this.selected_label.text;
+          }
+
+          //removes labels equal to itself and its parent label
+          this.user_labels.forEach((label, index) => {
+            if(!label.text.includes(this.selected_label.text) && label.text !== this.selected_parent){
+              this.parent_label_edit.push(label);
+            }
+          });
+
+          this.modalShow_editLabel();
+          break;
+      
+        default:
+          this.$notification.error("somthing went wrong", {  timer: 5 });
+          break;
+      }
+    },
+
+    searchInput(e) {
+      const value = e.target.value
+      this.search = value
+      const result = this.user_labels.filter(word => word.text.includes(this.search))
+      this.user_labels_temporary = result
+    },
+
+    nestedCheckbox(args){
+      this.nested_label = args.checked;
+    },
+
+    selected(args) {
+      const i = this.user_labels_temporary.findIndex(element => {
+        if(element.id === args.data.id) {
+          return true
+        }
+      })
+      if(!args.isChecked) {
+        const pos = this.label_selected_array.findIndex( element => {
+          if (element.id === args.data.id) {
+            return true
+          }
+        })
+        this.label_selected_array.splice(pos,1)
+        this.user_labels_temporary[i].isChecked = false
+      } else {
+        this.label_selected_array.push(args.data)
+        this.user_labels_temporary[i].isChecked = true
+      }
+    },
+    
+    emailViewClosed(args){
+      this.viewEmailFull = false;
     }
   },
 
@@ -950,6 +1843,7 @@ export default Vue.extend({
     let _this = this;
 
     this.$eventHub.$on("show_custom_dropdown", (e) => {
+      // console.log(e);
       // this.dropdown_btn_tgl = this.dropdown_btn_tgl ? false : true;
       this.dropdown_zIndex++;
       if(e.button === "btn_labels"){
@@ -958,16 +1852,62 @@ export default Vue.extend({
       }else if(e.button === "btn_move"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left);
+      }else if(e.button === "btn_email_data"){
+        this.dropdown_label.top = parseInt(e.top + 43);
+        this.dropdown_label.left = parseInt(e.left);
       }else if(e.button === "user_dropdown"){
         this.dropdown_label.top = parseInt(e.top + 43);
         this.dropdown_label.left = parseInt(e.left - 298);
-        console.log(this.$refs.user_dropdown.clientWidth);
       }
     });
 
     this.$eventHub.$on("show_datepick_modal", (e) => {
       this.$modal.show('date_picker_modal');
     });
+
+    this.$eventHub.$on("show_custom_dropdown", (e) => {
+      this.user_labels_temporary = this.user_labels
+      const selected_count = this.$store.state.email_batch.length
+
+      let label_arr = []
+
+      this.$store.state.selected_items_dataID.forEach((element, key) => {
+        for (let i = 0; i < selected_count; i++) {
+          if(this.$store.state.email_batch[i].id === this.$store.state.selected_items_dataID[key]) {
+            label_arr.push(this.$store.state.email_batch[i].labels)
+          }
+        }
+      });
+
+      if(this.user_labels_temporary.length > 0) {
+        this.user_labels_temporary.forEach((element,index) => {
+          this.user_labels_temporary[index].isChecked = false
+        });
+  
+          console.log('====================')
+        label_arr[0].forEach((element) => {
+          if(element === "UNREAD" || element === "CATEGORY_UPDATES" || element === "INBOX") {
+            // console.log(element)
+          } else {
+            let pos = this.user_labels_temporary.map(function (e) {
+              return e.id;
+            }).indexOf(element);
+            this.user_labels_temporary[pos].isChecked = true
+          }
+        });
+      }
+
+      const result = this.user_labels.filter(word => word.text.includes(this.search))
+      this.user_labels_temporary = result
+
+      this.user_labels_temporary.findIndex( el => {
+        if(el.isChecked === true) {
+          this.labeled_arr.push(el)
+          this.label_selected_array.push(el)
+        }
+      })
+    });
   }
 });
+
 </script>

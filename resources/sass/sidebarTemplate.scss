@@ -1,3 +1,17 @@
+.e-sidebar {
+  -webkit-tap-highlight-color: transparent;
+  background: #fff;
+  height: 93.5% !important;
+  overflow: auto;
+  position: fixed;
+  top: 0;
+  transition: none;
+  vertical-align: middle;
+  visibility: hidden;
+  will-change: transform;
+  z-index: 900 !important;
+}
+
 .custom-dropdown-menu{
   position: absolute;
   width: 213px;
@@ -47,7 +61,7 @@
 .sidebar_items_selected{
   --tw-text-opacity: 1;
   color: rgba(17, 24, 39, var(--tw-text-opacity));
-  padding-left: 0.125rem;
+  padding-left: 1rem;
   margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -61,6 +75,7 @@
 .sidebar_items{
   --tw-text-opacity: 1;
   color: rgba(17, 24, 39, var(--tw-text-opacity));
+  padding-left: 1rem;
   margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -76,6 +91,40 @@
   --tw-bg-opacity: 1;
 }
 .sidebar_items:focus{
+  --tw-bg-opacity: 1;
+}
+
+.label_items_selected{
+  --tw-text-opacity: 1;
+  color: rgba(17, 24, 39, var(--tw-text-opacity));
+  padding-left: 0.125rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  border-radius: 0.5rem;
+  width: 100% !important;
+  --tw-bg-opacity: 1;
+  background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
+}
+
+.label_items{
+  --tw-text-opacity: 1;
+  color: rgba(17, 24, 39, var(--tw-text-opacity));
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  width: 100% !important;
+  --tw-bg-opacity: 0;
+  background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
+}
+.label_items:hover{
+  --tw-bg-opacity: 1;
+}
+.label_items:focus{
   --tw-bg-opacity: 1;
 }
 
@@ -121,4 +170,32 @@
   height: auto;
   position: relative;
   vertical-align: middle;
+}
+
+.notificationCenter {
+  font-family: Avenir,Helvetica,Arial,sans-serif;
+  position: fixed;
+  width: 300px;
+  max-width: 90vw;
+  top: 0;
+  right: 0;
+  z-index: 900 !important;
+  margin: 0 8px;
+}
+
+.overlay_dialog .e-dlg-header-content { 
+  padding: 0px 0px !important;
+}
+
+.overlay_dialog .e-dlg-header-content .e-dlg-header { 
+  width: 100% !important;
+}
+
+.overlay{
+  z-index: 9999;
+}
+
+.overlay .mini_btn {
+  padding: 2px 5px !important;
+  height: 1.2rem !important;
 }
